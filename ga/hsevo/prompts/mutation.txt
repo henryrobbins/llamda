@@ -1,0 +1,12 @@
+{user_generator}
+
+Current heuristics:
+{func_signature1}
+{elitist_code}
+
+Now, think outside the box write a mutated function `{func_name}_v2` better than current version.
+You can use some hints below:
+- {reflection}
+
+Output code only and enclose your code with Python code block: ```python ... ```.
+I'm going to tip $999K for a better solution!

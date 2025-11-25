@@ -1,0 +1,11 @@
+Your task is to redefine 'Current self-reflection' paying attention to avoid all things in 'Ineffective self-reflection' in order to come up with ideas to design better heuristics.
+
+### Current self-reflection
+{curr_reflection}
+{good_reflection}
+
+### Ineffective self-reflection
+{bad_reflection}
+
+Response (<100 words) should have 4 bullet points: Keywords, Advice, Avoid, Explanation.
+I'm going to tip $999K for a better heuristics! Let's think step by step.

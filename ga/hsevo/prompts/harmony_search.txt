@@ -1,0 +1,7 @@
+[code]
+{code_extract}
+
+Now extract all threshold, weight or hardcode variable of the function make it become default parameters and give me a 'parameter_ranges' dictionary representation. Key of dict is name of variable. Value of key is a tuple in Python MUST include 2 float elements, first element is begin value, second element is end value corresponding with parameter.
+
+- Output code only and enclose your code with Python code block: ```python ... ```.
+- Output 'parameter_ranges' dictionary only and enclose your code with other Python code block: ```python ... ```.
