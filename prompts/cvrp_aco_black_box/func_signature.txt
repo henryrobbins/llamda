@@ -1,1 +1,0 @@
-def heuristics_v{version}(edge_attr: np.ndarray, node_attr: np.ndarray) -> np.ndarray:

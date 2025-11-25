@@ -1,1 +1,0 @@
-Download the checkpoint from its [official repository](https://github.com/CIAM-Group/NCO_code/tree/main/single_objective/LEHD) and place it here (`checkpoints/checkpoint-40.pt`).
