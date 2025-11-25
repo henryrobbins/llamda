@@ -1,0 +1,15 @@
+[submodule "reevo"]
+	path = reevo
+	url = git@github.com:ai4co/reevo.git
+[submodule "eoh"]
+	path = eoh
+	url = git@github.com:FeiLiu36/EoH.git
+[submodule "mcts-ahd"]
+	path = mcts-ahd
+	url = git@github.com:zz1358m/MCTS-AHD-master.git
+[submodule "hsevo"]
+	path = hsevo
+	url = git@github.com:datphamvn/HSEvo.git
+[submodule "funsearch"]
+	path = funsearch
+	url = git@github.com:google-deepmind/funsearch.git
