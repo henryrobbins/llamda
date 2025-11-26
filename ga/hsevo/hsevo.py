@@ -3,8 +3,8 @@ import numpy as np
 import json
 import tiktoken
 from datetime import datetime
-from utils.utils import *
-from baselines.reevo.gls_tsp_adapt.gls_tsp_eval import Sandbox
+from .utils.utils import *
+# from baselines.reevo.gls_tsp_adapt.gls_tsp_eval import Sandbox
 
 
 class HSEvo:
@@ -37,6 +37,7 @@ class HSEvo:
         logging.info("Problem description: " + self.problem_desc)
         logging.info("Function name: " + self.func_name)
 
+        self.hsevo_dir = f"{self.root_dir}/ga/hsevo"
         self.prompt_dir = f"{self.root_dir}/prompts"
         self.output_file = f"{self.root_dir}/problems/{self.problem}/gpt.py"
 
@@ -54,21 +55,21 @@ class HSEvo:
         self.str_comprehensive_memory = self.external_knowledge
 
         # Common prompts
-        self.user_flash_reflection_prompt = file_to_string(f'{self.prompt_dir}/common/user_flash_reflection.txt')
+        self.user_flash_reflection_prompt = file_to_string(f'{self.hsevo_dir}/prompts/user_flash_reflection.txt')
         self.user_comprehensive_reflection_prompt = file_to_string(
-            f'{self.prompt_dir}/common/user_comprehensive_reflection.txt')
-        self.system_generator_prompt = file_to_string(f'{self.prompt_dir}/common/system_generator.txt')
-        self.system_reflector_prompt = file_to_string(f'{self.prompt_dir}/common/system_reflector.txt')
-        self.crossover_prompt = file_to_string(f'{self.prompt_dir}/common/crossover.txt')
-        self.mutation_prompt = file_to_string(f'{self.prompt_dir}/common/mutation.txt')
-        self.user_generator_prompt = file_to_string(f'{self.prompt_dir}/common/user_generator.txt')
-        self.seed_prompt = file_to_string(f'{self.prompt_dir}/common/seed.txt').format(
+            f'{self.hsevo_dir}/prompts/user_comprehensive_reflection.txt')
+        self.system_generator_prompt = file_to_string(f'{self.hsevo_dir}/prompts/system_generator.txt')
+        self.system_reflector_prompt = file_to_string(f'{self.hsevo_dir}/prompts/system_reflector.txt')
+        self.crossover_prompt = file_to_string(f'{self.hsevo_dir}/prompts/crossover.txt')
+        self.mutation_prompt = file_to_string(f'{self.hsevo_dir}/prompts/mutation.txt')
+        self.user_generator_prompt = file_to_string(f'{self.hsevo_dir}/prompts/user_generator.txt')
+        self.seed_prompt = file_to_string(f'{self.hsevo_dir}/prompts/seed.txt').format(
             seed_func=self.seed_func,
             func_name=self.func_name,
         )
 
-        self.system_hs_prompt = file_to_string(f'{self.prompt_dir}/common/system_harmony_search.txt')
-        self.hs_prompt = file_to_string(f'{self.prompt_dir}/common/harmony_search.txt')
+        self.system_hs_prompt = file_to_string(f'{self.hsevo_dir}/prompts/system_harmony_search.txt')
+        self.hs_prompt = file_to_string(f'{self.hsevo_dir}/prompts/harmony_search.txt')
 
         # Flag to print prompts
         self.print_crossover_prompt = True  # Print crossover prompt for the first iteration
@@ -232,15 +233,16 @@ class HSEvo:
             logging.info(f"Iteration {self.iteration}: Running Code {response_id}")
 
             if self.problem == 'tsp_gls':
-                try:
-                    # Use sandboxed execution for 'tsp_gls'
-                    sandbox = Sandbox()
-                    result, run_ok = sandbox.run(population[response_id]['code'])
-                    inner_runs.append((result, run_ok))
-                except Exception as e:  # If sandbox execution fails
-                    logging.info(f"Error for response_id {response_id}: {e}")
-                    population[response_id] = self.mark_invalid_individual(population[response_id], str(e))
-                    inner_runs.append(None)
+                pass
+                # try:
+                #     # Use sandboxed execution for 'tsp_gls'
+                #     sandbox = Sandbox()
+                #     result, run_ok = sandbox.run(population[response_id]['code'])
+                #     inner_runs.append((result, run_ok))
+                # except Exception as e:  # If sandbox execution fails
+                #     logging.info(f"Error for response_id {response_id}: {e}")
+                #     population[response_id] = self.mark_invalid_individual(population[response_id], str(e))
+                #     inner_runs.append(None)
             else:
                 try:
                     # Use default code execution for other problems
