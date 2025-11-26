@@ -4,6 +4,7 @@ import json
 import tiktoken
 from datetime import datetime
 from utils.utils import *
+
 # from baselines.reevo.gls_tsp_adapt.gls_tsp_eval import Sandbox
 
 
@@ -44,35 +45,54 @@ class HSEvo:
         # Loading all text prompts
         # Problem-specific prompt components
         prompt_path_suffix = "_black_box" if self.problem_type == "black_box" else ""
-        problem_prompt_path = f'{self.prompt_dir}/{self.problem}{prompt_path_suffix}'
-        self.seed_func = file_to_string(f'{problem_prompt_path}/seed_func.txt')
-        self.func_signature = file_to_string(f'{problem_prompt_path}/func_signature.txt')
-        self.func_desc = file_to_string(f'{problem_prompt_path}/func_desc.txt')
-        if os.path.exists(f'{problem_prompt_path}/external_knowledge.txt'):
-            self.external_knowledge = file_to_string(f'{problem_prompt_path}/external_knowledge.txt')
+        problem_prompt_path = f"{self.prompt_dir}/{self.problem}{prompt_path_suffix}"
+        self.seed_func = file_to_string(f"{problem_prompt_path}/seed_func.txt")
+        self.func_signature = file_to_string(
+            f"{problem_prompt_path}/func_signature.txt"
+        )
+        self.func_desc = file_to_string(f"{problem_prompt_path}/func_desc.txt")
+        if os.path.exists(f"{problem_prompt_path}/external_knowledge.txt"):
+            self.external_knowledge = file_to_string(
+                f"{problem_prompt_path}/external_knowledge.txt"
+            )
         else:
             self.external_knowledge = ""
         self.str_comprehensive_memory = self.external_knowledge
 
         # Common prompts
-        self.user_flash_reflection_prompt = file_to_string(f'{self.hsevo_dir}/prompts/user_flash_reflection.txt')
+        self.user_flash_reflection_prompt = file_to_string(
+            f"{self.hsevo_dir}/prompts/user_flash_reflection.txt"
+        )
         self.user_comprehensive_reflection_prompt = file_to_string(
-            f'{self.hsevo_dir}/prompts/user_comprehensive_reflection.txt')
-        self.system_generator_prompt = file_to_string(f'{self.hsevo_dir}/prompts/system_generator.txt')
-        self.system_reflector_prompt = file_to_string(f'{self.hsevo_dir}/prompts/system_reflector.txt')
-        self.crossover_prompt = file_to_string(f'{self.hsevo_dir}/prompts/crossover.txt')
-        self.mutation_prompt = file_to_string(f'{self.hsevo_dir}/prompts/mutation.txt')
-        self.user_generator_prompt = file_to_string(f'{self.hsevo_dir}/prompts/user_generator.txt')
-        self.seed_prompt = file_to_string(f'{self.hsevo_dir}/prompts/seed.txt').format(
+            f"{self.hsevo_dir}/prompts/user_comprehensive_reflection.txt"
+        )
+        self.system_generator_prompt = file_to_string(
+            f"{self.hsevo_dir}/prompts/system_generator.txt"
+        )
+        self.system_reflector_prompt = file_to_string(
+            f"{self.hsevo_dir}/prompts/system_reflector.txt"
+        )
+        self.crossover_prompt = file_to_string(
+            f"{self.hsevo_dir}/prompts/crossover.txt"
+        )
+        self.mutation_prompt = file_to_string(f"{self.hsevo_dir}/prompts/mutation.txt")
+        self.user_generator_prompt = file_to_string(
+            f"{self.hsevo_dir}/prompts/user_generator.txt"
+        )
+        self.seed_prompt = file_to_string(f"{self.hsevo_dir}/prompts/seed.txt").format(
             seed_func=self.seed_func,
             func_name=self.func_name,
         )
 
-        self.system_hs_prompt = file_to_string(f'{self.hsevo_dir}/prompts/system_harmony_search.txt')
-        self.hs_prompt = file_to_string(f'{self.hsevo_dir}/prompts/harmony_search.txt')
+        self.system_hs_prompt = file_to_string(
+            f"{self.hsevo_dir}/prompts/system_harmony_search.txt"
+        )
+        self.hs_prompt = file_to_string(f"{self.hsevo_dir}/prompts/harmony_search.txt")
 
         # Flag to print prompts
-        self.print_crossover_prompt = True  # Print crossover prompt for the first iteration
+        self.print_crossover_prompt = (
+            True  # Print crossover prompt for the first iteration
+        )
         self.print_mutate_prompt = True  # Print mutate prompt for the first iteration
         self.print_flash_reflection_prompt = True
         self.print_comprehensive_reflection_prompt = True
@@ -89,11 +109,11 @@ class HSEvo:
             "You are Stephen Hawking, black hole theorist.",
             "You are Richard Feynman, quantum mechanics genius.",
             "You are Rosalind Franklin, DNA structure revealer.",
-            "You are Ada Lovelace, computer programming pioneer."
+            "You are Ada Lovelace, computer programming pioneer.",
         ]
 
         _cur_file_ = os.path.dirname(__file__)
-        _cur_timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        _cur_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         self.init_population()
 
@@ -123,7 +143,9 @@ class HSEvo:
 
         # If seed function is invalid, stop
         if not self.seed_ind["exec_success"]:
-            raise RuntimeError(f"Seed function is invalid. Please check the stdout file in {os.getcwd()}.")
+            raise RuntimeError(
+                f"Seed function is invalid. Please check the stdout file in {os.getcwd()}."
+            )
 
         self.update_iter()
 
@@ -143,25 +165,40 @@ class HSEvo:
 
             # Generate responses
             system = system_generator_prompt_full
-            user = user_generator_prompt_full + "\n" + self.seed_prompt + "\n" + self.long_term_reflection_str
+            user = (
+                user_generator_prompt_full
+                + "\n"
+                + self.seed_prompt
+                + "\n"
+                + self.long_term_reflection_str
+            )
 
             pre_messages = {"system": system, "user": user}
             messages = format_messages(self.cfg, pre_messages)
             messages_lst.append(messages)
 
-            logging.info("Initial Population Prompt: \nSystem Prompt: \n" + system + "\nUser Prompt: \n" + user)
+            logging.info(
+                "Initial Population Prompt: \nSystem Prompt: \n"
+                + system
+                + "\nUser Prompt: \n"
+                + user
+            )
 
             # Write to file
             file_name = f"problem_iter{self.iteration}_prompt{i}.txt"
-            with open(file_name, 'w') as file:
+            with open(file_name, "w") as file:
                 file.writelines(json.dumps(pre_messages))
 
-        responses = multi_chat_completion(messages_lst, 1, self.cfg.model, self.cfg.temperature + 0.3)
+        responses = multi_chat_completion(
+            messages_lst, 1, self.cfg.model, self.cfg.temperature + 0.3
+        )
         self.cal_usage_LLM(messages_lst, responses)
-        '''responses = multi_chat_completion([messages], self.cfg.init_pop_size, self.cfg.model,
-                                          self.cfg.temperature + 0.3)  # Increase the temperature for diverse initial population'''
-        population = [self.response_to_individual(response, response_id) for response_id, response in
-                      enumerate(responses)]
+        """responses = multi_chat_completion([messages], self.cfg.init_pop_size, self.cfg.model,
+                                          self.cfg.temperature + 0.3)  # Increase the temperature for diverse initial population"""
+        population = [
+            self.response_to_individual(response, response_id)
+            for response_id, response in enumerate(responses)
+        ]
 
         # Run code and evaluate population
         population = self.evaluate_population(population)
@@ -170,19 +207,29 @@ class HSEvo:
         self.population = population
         self.update_iter()
 
-    def response_to_individual(self, response: str, response_id: int, file_name: str = None) -> dict:
+    def response_to_individual(
+        self, response: str, response_id: int, file_name: str = None
+    ) -> dict:
         """
         Convert response to individual
         """
         # Write response to file
-        file_name = f"problem_iter{self.iteration}_response{response_id}.txt" if file_name is None else file_name + ".txt"
-        with open(file_name, 'w') as file:
-            file.writelines(response + '\n')
+        file_name = (
+            f"problem_iter{self.iteration}_response{response_id}.txt"
+            if file_name is None
+            else file_name + ".txt"
+        )
+        with open(file_name, "w") as file:
+            file.writelines(response + "\n")
 
         code = extract_code_from_generator(response)
 
         # Extract code and description from response
-        std_out_filepath = f"problem_iter{self.iteration}_stdout{response_id}.txt" if file_name is None else file_name + "_stdout.txt"
+        std_out_filepath = (
+            f"problem_iter{self.iteration}_stdout{response_id}.txt"
+            if file_name is None
+            else file_name + "_stdout.txt"
+        )
 
         individual = {
             "stdout_filepath": std_out_filepath,
@@ -207,15 +254,16 @@ class HSEvo:
 
         if logHS is False:
             file_name = f"objs_log_iter{self.iteration}.txt"
-            with open(file_name, 'w') as file:
-                file.writelines("\n".join(map(str, objs)) + '\n')
+            with open(file_name, "w") as file:
+                file.writelines("\n".join(map(str, objs)) + "\n")
         else:
             file_name = f"objs_log_iter{self.iteration}_hs.txt"
-            with open(file_name, 'w') as file:
-                file.writelines("\n".join(map(str, objs + [self.local_sel_hs])) + '\n')
+            with open(file_name, "w") as file:
+                file.writelines("\n".join(map(str, objs + [self.local_sel_hs])) + "\n")
 
-
-    def evaluate_population(self, population: list[dict], hs_try_idx: int = None) -> list[dict]:
+    def evaluate_population(
+        self, population: list[dict], hs_try_idx: int = None
+    ) -> list[dict]:
         """
         Evaluate population by running code in parallel and computing objective values.
         """
@@ -226,13 +274,15 @@ class HSEvo:
             self.function_evals += 1
             # Skip if response is invalid
             if population[response_id]["code"] is None:
-                population[response_id] = self.mark_invalid_individual(population[response_id], "Invalid response!")
+                population[response_id] = self.mark_invalid_individual(
+                    population[response_id], "Invalid response!"
+                )
                 inner_runs.append(None)
                 continue
 
             logging.info(f"Iteration {self.iteration}: Running Code {response_id}")
 
-            if self.problem == 'tsp_gls':
+            if self.problem == "tsp_gls":
                 pass
                 # try:
                 #     # Use sandboxed execution for 'tsp_gls'
@@ -250,7 +300,9 @@ class HSEvo:
                     inner_runs.append(process)
                 except Exception as e:  # If code execution fails
                     logging.info(f"Error for response_id {response_id}: {e}")
-                    population[response_id] = self.mark_invalid_individual(population[response_id], str(e))
+                    population[response_id] = self.mark_invalid_individual(
+                        population[response_id], str(e)
+                    )
                     inner_runs.append(None)
 
         # Update population with objective values
@@ -260,47 +312,64 @@ class HSEvo:
 
             individual = population[response_id]
 
-            if self.problem == 'tsp_gls':
+            if self.problem == "tsp_gls":
                 result, run_ok = inner_run
                 if run_ok:
                     try:
-                        individual["obj"] = float(result) if self.obj_type == "min" else -float(result)
+                        individual["obj"] = (
+                            float(result) if self.obj_type == "min" else -float(result)
+                        )
                         individual["exec_success"] = True
                     except:
-                        population[response_id] = self.mark_invalid_individual(population[response_id],
-                                                                               "Invalid objective value!")
+                        population[response_id] = self.mark_invalid_individual(
+                            population[response_id], "Invalid objective value!"
+                        )
                 else:
-                    population[response_id] = self.mark_invalid_individual(population[response_id],
-                                                                           "Sandbox execution failed!")
+                    population[response_id] = self.mark_invalid_individual(
+                        population[response_id], "Sandbox execution failed!"
+                    )
             else:
                 try:
-                    inner_run.communicate(timeout=self.cfg.timeout)  # Wait for code execution to finish
+                    inner_run.communicate(
+                        timeout=self.cfg.timeout
+                    )  # Wait for code execution to finish
                 except subprocess.TimeoutExpired as e:
                     logging.info(f"Error for response_id {response_id}: {e}")
-                    population[response_id] = self.mark_invalid_individual(population[response_id], str(e))
+                    population[response_id] = self.mark_invalid_individual(
+                        population[response_id], str(e)
+                    )
                     inner_run.kill()
                     continue
 
                 stdout_filepath = individual["stdout_filepath"]
-                with open(stdout_filepath, 'r') as f:  # read the stdout file
+                with open(stdout_filepath, "r") as f:  # read the stdout file
                     stdout_str = f.read()
                 traceback_msg = filter_traceback(stdout_str)
 
-                if traceback_msg == '':  # If execution has no error
+                if traceback_msg == "":  # If execution has no error
                     try:
-                        individual["obj"] = float(stdout_str.split('\n')[-2]) if self.obj_type == "min" else -float(
-                            stdout_str.split('\n')[-2])
+                        individual["obj"] = (
+                            float(stdout_str.split("\n")[-2])
+                            if self.obj_type == "min"
+                            else -float(stdout_str.split("\n")[-2])
+                        )
                         individual["exec_success"] = True
                     except:
-                        population[response_id] = self.mark_invalid_individual(population[response_id],
-                                                                               "Invalid std out / objective value!")
+                        population[response_id] = self.mark_invalid_individual(
+                            population[response_id],
+                            "Invalid std out / objective value!",
+                        )
                 else:  # Otherwise, also provide execution traceback error feedback
-                    population[response_id] = self.mark_invalid_individual(population[response_id], traceback_msg)
+                    population[response_id] = self.mark_invalid_individual(
+                        population[response_id], traceback_msg
+                    )
 
         # Log after all population is evaluated
         valid_objs = [ind["obj"] for ind in population if ind["exec_success"]]
         best_obj = min(valid_objs) if valid_objs else float("inf")
-        logging.info(f"Eval={self.function_evals}, TokenIn={self.prompt_tokens}, TokenOut={self.completion_tokens}, MaxObj={best_obj}")
+        logging.info(
+            f"Eval={self.function_evals}, TokenIn={self.prompt_tokens}, TokenOut={self.completion_tokens}, MaxObj={best_obj}"
+        )
 
         return population
 
@@ -310,17 +379,35 @@ class HSEvo:
         """
         logging.debug(f"Iteration {self.iteration}: Processing Code Run {response_id}")
 
-        with open(self.output_file, 'w') as file:
-            file.writelines(individual["code"] + '\n')
+        with open(self.output_file, "w") as file:
+            file.writelines(individual["code"] + "\n")
 
         # Execute the python file with flags
-        with open(individual["stdout_filepath"], 'w') as f:
-            eval_file_path = f'{self.root_dir}/problems/{self.problem}/eval.py' if self.problem_type != "black_box" else f'{self.root_dir}/problems/{self.problem}/eval_black_box.py'
-            process = subprocess.Popen(['python', '-u', eval_file_path, f'{self.problem_size}', self.root_dir, "train"],
-                                       stdout=f, stderr=f)
+        with open(individual["stdout_filepath"], "w") as f:
+            eval_file_path = (
+                f"{self.root_dir}/problems/{self.problem}/eval.py"
+                if self.problem_type != "black_box"
+                else f"{self.root_dir}/problems/{self.problem}/eval_black_box.py"
+            )
+            process = subprocess.Popen(
+                [
+                    "python",
+                    "-u",
+                    eval_file_path,
+                    f"{self.problem_size}",
+                    self.root_dir,
+                    "train",
+                ],
+                stdout=f,
+                stderr=f,
+            )
 
-        block_until_running(individual["stdout_filepath"], log_status=True, iter_num=self.iteration,
-                            response_id=response_id)
+        block_until_running(
+            individual["stdout_filepath"],
+            log_status=True,
+            iter_num=self.iteration,
+            response_id=response_id,
+        )
         return process
 
     def update_iter(self) -> None:
@@ -351,10 +438,16 @@ class HSEvo:
         selected_population = []
         # Eliminate invalid individuals
         if self.problem_type == "black_box":
-            population = [individual for individual in population if
-                          individual["exec_success"] and individual["obj"] < self.seed_ind["obj"]]
+            population = [
+                individual
+                for individual in population
+                if individual["exec_success"]
+                and individual["obj"] < self.seed_ind["obj"]
+            ]
         else:
-            population = [individual for individual in population if individual["exec_success"]]
+            population = [
+                individual for individual in population if individual["exec_success"]
+            ]
         if len(population) < 2:
             return None
         trial = 0
@@ -373,13 +466,17 @@ class HSEvo:
         lst_str_method = []
         seen_elements = set()
 
-        sorted_population = sorted(population, key=lambda x: x['obj'], reverse=False)
+        sorted_population = sorted(population, key=lambda x: x["obj"], reverse=False)
         for idx, individual in enumerate(sorted_population):
-            suffix = "th" if 11 <= idx + 1 <= 13 else {1: "st", 2: "nd", 3: "rd"}.get((idx + 1) % 10, "th")
+            suffix = (
+                "th"
+                if 11 <= idx + 1 <= 13
+                else {1: "st", 2: "nd", 3: "rd"}.get((idx + 1) % 10, "th")
+            )
             str_idx_method = f"[Heuristics {idx + 1}{suffix}]"
             # str_idx_method = f"[Heuristics {individual['code_path']}]"
             # str_obj = f"* Objective score: {individual['obj']}"
-            str_code = individual['code']
+            str_code = individual["code"]
             temp_str = str_idx_method + "\n" + str_code + "\n"
 
             if temp_str not in seen_elements:
@@ -390,48 +487,64 @@ class HSEvo:
         user = self.user_flash_reflection_prompt.format(
             problem_desc=self.problem_desc,
             lst_method="\n".join(lst_str_method),
-            schema_reflection={"analyze": "str", "exp": "str"}
+            schema_reflection={"analyze": "str", "exp": "str"},
         )
 
         pre_messages = {"system": system, "user": user}
         messages = format_messages(self.cfg, pre_messages)
 
         if self.print_flash_reflection_prompt:
-            logging.info("Flash reflection Prompt: \nSystem Prompt: \n" + system + "\nUser Prompt: \n" + user)
+            logging.info(
+                "Flash reflection Prompt: \nSystem Prompt: \n"
+                + system
+                + "\nUser Prompt: \n"
+                + user
+            )
             self.print_flash_reflection_prompt = False
 
-        flash_reflection_res = multi_chat_completion([messages], 1, self.cfg.model, self.cfg.temperature)[0]
+        flash_reflection_res = multi_chat_completion(
+            [messages], 1, self.cfg.model, self.cfg.temperature
+        )[0]
         self.cal_usage_LLM([messages], flash_reflection_res)
         print(flash_reflection_res)
-        analyze_start = flash_reflection_res.find("**Analysis:**") + len("**Analysis:**")
+        analyze_start = flash_reflection_res.find("**Analysis:**") + len(
+            "**Analysis:**"
+        )
         exp_start = flash_reflection_res.find("**Experience:**")
 
         analysis_text = flash_reflection_res[analyze_start:exp_start].strip()
-        experience_text = flash_reflection_res[exp_start + len("**Experience:**"):].strip()
+        experience_text = flash_reflection_res[
+            exp_start + len("**Experience:**") :
+        ].strip()
 
         # Create the JSON structure
-        flash_reflection_json = {
-            "analyze": analysis_text,
-            "exp": experience_text
-        }
+        flash_reflection_json = {"analyze": analysis_text, "exp": experience_text}
 
         # Convert to JSON string
         self.str_flash_memory = flash_reflection_json
 
         # Write reflections to file
         file_name = f"problem_iter{self.iteration}_lst_code_method.txt"
-        with open(file_name, 'w') as file:
+        with open(file_name, "w") as file:
             file.writelines(json.dumps(pre_messages))
 
         file_name = f"problem_iter{self.iteration}_flash_reflection.txt"
-        with open(file_name, 'w') as file:
+        with open(file_name, "w") as file:
             file.writelines(flash_reflection_res)
 
     def comprehensive_reflection(self):
         system = self.system_reflector_prompt
 
-        good_reflection = '\n\n'.join(self.lst_good_reflection) if len(self.lst_good_reflection) > 0 else "None"
-        bad_reflection = '\n\n'.join(self.lst_bad_reflection) if len(self.lst_bad_reflection) > 0 else "None"
+        good_reflection = (
+            "\n\n".join(self.lst_good_reflection)
+            if len(self.lst_good_reflection) > 0
+            else "None"
+        )
+        bad_reflection = (
+            "\n\n".join(self.lst_bad_reflection)
+            if len(self.lst_bad_reflection) > 0
+            else "None"
+        )
 
         user = self.user_comprehensive_reflection_prompt.format(
             bad_reflection=bad_reflection,
@@ -443,19 +556,28 @@ class HSEvo:
         messages = format_messages(self.cfg, pre_messages)
 
         if self.print_comprehensive_reflection_prompt:
-            logging.info("Comprehensive reflection Prompt: \nSystem Prompt: \n" + system + "\nUser Prompt: \n" + user)
+            logging.info(
+                "Comprehensive reflection Prompt: \nSystem Prompt: \n"
+                + system
+                + "\nUser Prompt: \n"
+                + user
+            )
             self.print_comprehensive_reflection_prompt = False
 
-        comprehensive_response = multi_chat_completion([messages], 1, self.cfg.model, self.cfg.temperature)[0]
+        comprehensive_response = multi_chat_completion(
+            [messages], 1, self.cfg.model, self.cfg.temperature
+        )[0]
         self.cal_usage_LLM([messages], comprehensive_response)
-        self.str_comprehensive_memory = self.external_knowledge + '\n' + comprehensive_response
+        self.str_comprehensive_memory = (
+            self.external_knowledge + "\n" + comprehensive_response
+        )
 
         file_name = f"problem_iter{self.iteration}_comprehensive_reflection_prompt.txt"
-        with open(file_name, 'w') as file:
+        with open(file_name, "w") as file:
             file.writelines(json.dumps(pre_messages))
 
         file_name = f"problem_iter{self.iteration}_comprehensive_reflection.txt"
-        with open(file_name, 'w') as file:
+        with open(file_name, "w") as file:
             file.writelines(self.str_comprehensive_memory)
 
     def crossover(self, population: list[dict]) -> list[dict]:
@@ -495,7 +617,7 @@ class HSEvo:
 
             # Write to file
             file_name = f"problem_iter{self.iteration}_response{num_choice}_prompt.txt"
-            with open(file_name, 'w') as file:
+            with open(file_name, "w") as file:
                 file.writelines(json.dumps(pre_messages))
             num_choice += 1
 
@@ -503,14 +625,23 @@ class HSEvo:
 
             # Print crossover prompt for the first iteration
             if self.print_crossover_prompt:
-                logging.info("Crossover Prompt: \nSystem Prompt: \n" + system + "\nUser Prompt: \n" + user)
+                logging.info(
+                    "Crossover Prompt: \nSystem Prompt: \n"
+                    + system
+                    + "\nUser Prompt: \n"
+                    + user
+                )
                 self.print_crossover_prompt = False
 
         # Asynchronously generate responses
-        response_lst = multi_chat_completion(messages_lst, 1, self.cfg.model, self.cfg.temperature)
+        response_lst = multi_chat_completion(
+            messages_lst, 1, self.cfg.model, self.cfg.temperature
+        )
         self.cal_usage_LLM(messages_lst, response_lst)
-        crossed_population = [self.response_to_individual(response, response_id) for response_id, response in
-                              enumerate(response_lst)]
+        crossed_population = [
+            self.response_to_individual(response, response_id)
+            for response_id, response in enumerate(response_lst)
+        ]
 
         assert len(crossed_population) == self.cfg.pop_size
         return crossed_population
@@ -539,33 +670,48 @@ class HSEvo:
 
         # Write to file
         file_name = f"problem_iter{self.iteration}_prompt.txt"
-        with open(file_name, 'w') as file:
+        with open(file_name, "w") as file:
             file.writelines(json.dumps(pre_messages))
 
         if self.print_mutate_prompt:
-            logging.info("Mutation Prompt: \nSystem Prompt: \n" + system + "\nUser Prompt: \n" + user)
+            logging.info(
+                "Mutation Prompt: \nSystem Prompt: \n"
+                + system
+                + "\nUser Prompt: \n"
+                + user
+            )
             self.print_mutate_prompt = False
 
-        responses = multi_chat_completion([messages], int(self.cfg.pop_size * self.mutation_rate), self.cfg.model,
-                                          self.cfg.temperature)
+        responses = multi_chat_completion(
+            [messages],
+            int(self.cfg.pop_size * self.mutation_rate),
+            self.cfg.model,
+            self.cfg.temperature,
+        )
         self.cal_usage_LLM([messages], responses)
-        population = [self.response_to_individual(response, response_id) for response_id, response in
-                      enumerate(responses)]
+        population = [
+            self.response_to_individual(response, response_id)
+            for response_id, response in enumerate(responses)
+        ]
         return population
 
     def sel_individual_hs(self):
-        candidate_hs = [individual for individual in self.population if individual["tryHS"] is False]
+        candidate_hs = [
+            individual for individual in self.population if individual["tryHS"] is False
+        ]
         best_candidate_id = self.find_best_obj(candidate_hs)
         self.local_sel_hs = best_candidate_id
-        self.population[best_candidate_id]['tryHS'] = True
-        return self.population[best_candidate_id]['code']
+        self.population[best_candidate_id]["tryHS"] = True
+        return self.population[best_candidate_id]["code"]
 
     def initialize_harmony_memory(self, bounds):
         problem_size = len(bounds)
         harmony_memory = np.zeros((self.cfg.hm_size, problem_size))
         for i in range(problem_size):
             lower_bound, upper_bound = bounds[i]
-            harmony_memory[:, i] = np.random.uniform(lower_bound, upper_bound, self.cfg.hm_size)
+            harmony_memory[:, i] = np.random.uniform(
+                lower_bound, upper_bound, self.cfg.hm_size
+            )
         return harmony_memory
 
     def responses_to_population(self, responses, try_hs_idx=None) -> list[dict]:
@@ -574,17 +720,25 @@ class HSEvo:
         """
         population = []
         for response_id, response in enumerate(responses):
-            filename = None if try_hs_idx is None else f"problem_iter{self.iteration}_hs{try_hs_idx}"
+            filename = (
+                None
+                if try_hs_idx is None
+                else f"problem_iter{self.iteration}_hs{try_hs_idx}"
+            )
             individual = self.response_to_individual(response, response_id, filename)
             population.append(individual)
         return population
 
-    def create_population_hs(self, str_code, parameter_ranges, harmony_memory, try_hs_idx=None):
+    def create_population_hs(
+        self, str_code, parameter_ranges, harmony_memory, try_hs_idx=None
+    ):
         str_create_pop = []
         for i in range(len(harmony_memory)):
             tmp_str = str_code
             for j in range(len(list(parameter_ranges))):
-                tmp_str = tmp_str.replace(('{' + list(parameter_ranges)[j] + '}'), str(harmony_memory[i][j]))
+                tmp_str = tmp_str.replace(
+                    ("{" + list(parameter_ranges)[j] + "}"), str(harmony_memory[i][j])
+                )
                 if tmp_str == str_code:
                     return None
             str_create_pop.append(tmp_str)
@@ -601,22 +755,37 @@ class HSEvo:
         new_harmony = np.zeros((harmony_memory.shape[1],))
         for i in range(harmony_memory.shape[1]):
             if np.random.rand() < self.cfg.hmcr:
-                new_harmony[i] = harmony_memory[np.random.randint(0, harmony_memory.shape[0]), i]
+                new_harmony[i] = harmony_memory[
+                    np.random.randint(0, harmony_memory.shape[0]), i
+                ]
                 if np.random.rand() < self.cfg.par:
-                    adjustment = np.random.uniform(-1, 1) * (bounds[i][1] - bounds[i][0]) * self.cfg.bandwidth
+                    adjustment = (
+                        np.random.uniform(-1, 1)
+                        * (bounds[i][1] - bounds[i][0])
+                        * self.cfg.bandwidth
+                    )
                     new_harmony[i] += adjustment
             else:
                 new_harmony[i] = np.random.uniform(bounds[i][0], bounds[i][1])
         return new_harmony
 
-    def update_harmony_memory(self, population_hs, harmony_memory, new_harmony, func_block, parameter_ranges,
-                              try_hs_idx):
+    def update_harmony_memory(
+        self,
+        population_hs,
+        harmony_memory,
+        new_harmony,
+        func_block,
+        parameter_ranges,
+        try_hs_idx,
+    ):
         objs = [individual["obj"] for individual in population_hs]
         worst_index = np.argmax(np.array(objs))
 
-        new_individual = self.create_population_hs(func_block, parameter_ranges, [new_harmony.tolist()], try_hs_idx)[0]
+        new_individual = self.create_population_hs(
+            func_block, parameter_ranges, [new_harmony.tolist()], try_hs_idx
+        )[0]
 
-        if new_individual['obj'] < population_hs[worst_index]['obj']:
+        if new_individual["obj"] < population_hs[worst_index]["obj"]:
             population_hs[worst_index] = new_individual
             harmony_memory[worst_index] = new_harmony
         return population_hs, harmony_memory
@@ -628,15 +797,22 @@ class HSEvo:
         messages = format_messages(self.cfg, pre_messages)
         # Print get hs prompt for the first iteration
         if self.print_hs_prompt:
-            logging.info("Harmony Search Prompt: \nSystem Prompt: \n" + system + "\nUser Prompt: \n" + user)
+            logging.info(
+                "Harmony Search Prompt: \nSystem Prompt: \n"
+                + system
+                + "\nUser Prompt: \n"
+                + user
+            )
             self.print_hs_prompt = False
 
         # Write to file
         file_name = f"problem_iter{self.iteration}_prompt.txt"
-        with open(file_name, 'w') as file:
+        with open(file_name, "w") as file:
             file.writelines(json.dumps(pre_messages))
 
-        responses = multi_chat_completion([messages], 1, self.cfg.model, self.cfg.temperature)
+        responses = multi_chat_completion(
+            [messages], 1, self.cfg.model, self.cfg.temperature
+        )
         self.cal_usage_LLM([messages], [str(responses[0])])
 
         logging.info("LLM Response for HS step: " + str(responses[0]))
@@ -646,18 +822,35 @@ class HSEvo:
         bounds = [value for value in parameter_ranges.values()]
 
         harmony_memory = self.initialize_harmony_memory(bounds)
-        population_hs = self.create_population_hs(func_block, parameter_ranges, harmony_memory)
+        population_hs = self.create_population_hs(
+            func_block, parameter_ranges, harmony_memory
+        )
 
         if population_hs is None:
             return None
-        elif len([individual for individual in population_hs if individual["exec_success"] is True]) == 0:
+        elif (
+            len(
+                [
+                    individual
+                    for individual in population_hs
+                    if individual["exec_success"] is True
+                ]
+            )
+            == 0
+        ):
             self.function_evals -= self.cfg.hm_size
             return None
 
         for iteration in range(self.cfg.max_iter):
             new_harmony = self.create_new_harmony(harmony_memory, bounds)
-            population_hs, harmony_memory = self.update_harmony_memory(population_hs, harmony_memory, new_harmony,
-                                                                       func_block, parameter_ranges, iteration)
+            population_hs, harmony_memory = self.update_harmony_memory(
+                population_hs,
+                harmony_memory,
+                new_harmony,
+                func_block,
+                parameter_ranges,
+                iteration,
+            )
         best_obj_id = self.find_best_obj(population_hs)
         population_hs[best_obj_id]["tryHS"] = True
         return population_hs[best_obj_id]
@@ -666,10 +859,15 @@ class HSEvo:
         while self.function_evals < self.cfg.max_fe:
             # If all individuals are invalid, stop
             if all([not individual["exec_success"] for individual in self.population]):
-                raise RuntimeError(f"All individuals are invalid. Please check the stdout files in {os.getcwd()}.")
+                raise RuntimeError(
+                    f"All individuals are invalid. Please check the stdout files in {os.getcwd()}."
+                )
             # Select
-            population_to_select = self.population if (self.elitist is None or self.elitist in self.population) else [
-                                                                                                                         self.elitist] + self.population  # add elitist to population for selection
+            population_to_select = (
+                self.population
+                if (self.elitist is None or self.elitist in self.population)
+                else [self.elitist] + self.population
+            )  # add elitist to population for selection
             selected_population = self.random_select(population_to_select)
             if selected_population is None:
                 raise RuntimeError("Selection failed. Please check the population.")

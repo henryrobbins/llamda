@@ -41,15 +41,15 @@ def evaluate(instances: dict) -> float:
     num_bins = []
     # Perform online binpacking for each instance.
     for name in instances:
-        if name == 'l1_bound':
+        if name == "l1_bound":
             continue
         instance = instances[name]
-        capacity = instance['capacity']
-        items = instance['items']
+        capacity = instance["capacity"]
+        items = instance["items"]
         items = np.array(items) if isinstance(items, list) else items
         # Create num_items bins so there will always be space for all items,
         # regardless of packing order. Array has shape (num_items,).
-        bins = np.array([capacity for _ in range(instance['num_items'])])
+        bins = np.array([capacity for _ in range(instance["num_items"])])
         # Pack items into bins and return remaining capacity in bins_packed, which
         # has shape (num_items,).
         _, bins_packed = online_binpack(items.astype(float), bins)
@@ -90,32 +90,34 @@ def is_valid_packing(
 
 if __name__ == "__main__":
     import os
+
     print("[*] Running ...")
 
     problem_size = int(sys.argv[1])
-    root_dir = sys.argv[2] # reserved for compatibility
+    root_dir = sys.argv[2]  # reserved for compatibility
     mood = sys.argv[3]
-    assert mood in ['train', 'val']
+    assert mood in ["train", "val"]
     assert problem_size in [5000, -1]
-    
+
     file_name = f"weibull_5k_{mood}.pickle"
     basepath = os.path.dirname(__file__)
     dataset_path = os.path.join(basepath, "dataset", file_name)
-    
+
     if not os.path.isfile(dataset_path):
         from gen_inst import generate_datasets
+
         generate_datasets()
-    
-    dataset = pickle.load(open(dataset_path, 'rb'))
-    
+
+    dataset = pickle.load(open(dataset_path, "rb"))
+
     # Evaluate heuristic function on dataset
     avg_num_bins = -evaluate(dataset)
-    l1_bound = dataset['l1_bound']
+    l1_bound = dataset["l1_bound"]
     excess = (avg_num_bins - l1_bound) / l1_bound
     print(file_name)
-    print(f'\t Average number of bins: {avg_num_bins}')
-    print(f'\t Lower bound on optimum: {l1_bound}')
-    print(f'\t Excess: {100 * excess:.2f}%')
-    
+    print(f"\t Average number of bins: {avg_num_bins}")
+    print(f"\t Lower bound on optimum: {l1_bound}")
+    print(f"\t Excess: {100 * excess:.2f}%")
+
     print("[*] Average:")
     print(excess * 100)

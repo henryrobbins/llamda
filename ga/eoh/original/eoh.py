@@ -4,6 +4,8 @@ import random
 import time
 
 from .eoh_interface_EC import InterfaceEC
+
+
 # main class for eoh
 class EOH:
 
@@ -13,7 +15,7 @@ class EOH:
         self.prob = problem
         self.select = select
         self.manage = manage
-        
+
         # LLM settings
         self.use_local_llm = paras.llm_use_local
         self.url = paras.llm_local_url
@@ -22,22 +24,28 @@ class EOH:
         self.llm_model = paras.llm_model
 
         # ------------------ RZ: use local LLM ------------------
-        self.use_local_llm = kwargs.get('use_local_llm', False)
+        self.use_local_llm = kwargs.get("use_local_llm", False)
         assert isinstance(self.use_local_llm, bool)
         if self.use_local_llm:
-            assert 'url' in kwargs, 'The keyword "url" should be provided when use_local_llm is True.'
-            assert isinstance(kwargs.get('url'), str)
-            self.url = kwargs.get('url')
+            assert (
+                "url" in kwargs
+            ), 'The keyword "url" should be provided when use_local_llm is True.'
+            assert isinstance(kwargs.get("url"), str)
+            self.url = kwargs.get("url")
         # -------------------------------------------------------
 
-        # Experimental settings       
-        self.pop_size = paras.ec_pop_size  # popopulation size, i.e., the number of algorithms in population
+        # Experimental settings
+        self.pop_size = (
+            paras.ec_pop_size
+        )  # popopulation size, i.e., the number of algorithms in population
         self.n_pop = paras.ec_n_pop  # number of populations
 
         self.operators = paras.ec_operators
         self.operator_weights = paras.ec_operator_weights
         if paras.ec_m > self.pop_size or paras.ec_m == 1:
-            print("m should not be larger than pop size or smaller than 2, adjust it to m=2")
+            print(
+                "m should not be larger than pop size or smaller than 2, adjust it to m=2"
+            )
             paras.ec_m = 2
         self.m = paras.ec_m
 
@@ -53,7 +61,7 @@ class EOH:
         self.output_path = paras.exp_output_path
 
         self.exp_n_proc = paras.exp_n_proc
-        
+
         self.timeout = paras.eva_timeout
 
         self.use_numba = paras.eva_numba_decorator
@@ -67,13 +75,12 @@ class EOH:
     def add2pop(self, population, offspring):
         for off in offspring:
             for ind in population:
-                if ind['objective'] == off['objective']:
-                    if (self.debug_mode):
+                if ind["objective"] == off["objective"]:
+                    if self.debug_mode:
                         print("duplicated result, retrying ... ")
             population.append(off)
-    
 
-    # run eoh 
+    # run eoh
     def run(self):
 
         print("- Evolution Start -")
@@ -87,10 +94,21 @@ class EOH:
         interface_prob = self.prob
 
         # interface for ec operators
-        interface_ec = InterfaceEC(self.pop_size, self.m, self.api_endpoint, self.api_key, self.llm_model,
-                                   self.debug_mode, interface_prob, use_local_llm=self.use_local_llm, url=self.url, select=self.select,n_p=self.exp_n_proc,
-                                   timeout = self.timeout, use_numba=self.use_numba
-                                   )
+        interface_ec = InterfaceEC(
+            self.pop_size,
+            self.m,
+            self.api_endpoint,
+            self.api_key,
+            self.llm_model,
+            self.debug_mode,
+            interface_prob,
+            use_local_llm=self.use_local_llm,
+            url=self.url,
+            select=self.select,
+            n_p=self.exp_n_proc,
+            timeout=self.timeout,
+            use_numba=self.use_numba,
+        )
 
         # initialization
         population = []
@@ -99,7 +117,7 @@ class EOH:
                 data = json.load(file)
             population = interface_ec.population_generation_seed(data)
             filename = self.output_path + "population_generation_0.json"
-            with open(filename, 'w') as f:
+            with open(filename, "w") as f:
                 json.dump(population, f, indent=5)
             n_start = 0
         else:
@@ -114,7 +132,9 @@ class EOH:
             else:  # create new population
                 print("creating initial population:")
                 population = interface_ec.population_generation()
-                population = self.manage.population_management(population, self.pop_size)
+                population = self.manage.population_management(
+                    population, self.pop_size
+                )
 
                 # print(len(population))
                 # if len(population)<self.pop_size:
@@ -125,33 +145,34 @@ class EOH:
                 #         if len(population) >= self.pop_size:
                 #             break
                 #         print(len(population))
-     
-                
+
                 print(f"Pop initial: ")
                 for off in population:
-                    print(" Obj: ", off['objective'], end="|")
+                    print(" Obj: ", off["objective"], end="|")
                 print()
                 print("initial population has been created!")
                 # Save population to a file
                 filename = self.output_path + "population_generation_0.json"
-                with open(filename, 'w') as f:
+                with open(filename, "w") as f:
                     json.dump(population, f, indent=5)
                 n_start = 0
 
         # main loop
         n_op = len(self.operators)
 
-        for pop in range(n_start, self.n_pop):  
-            #print(f" [{na + 1} / {self.pop_size}] ", end="|")         
+        for pop in range(n_start, self.n_pop):
+            # print(f" [{na + 1} / {self.pop_size}] ", end="|")
             for i in range(n_op):
                 op = self.operators[i]
-                print(f" OP: {op}, [{i + 1} / {n_op}] ", end="|") 
+                print(f" OP: {op}, [{i + 1} / {n_op}] ", end="|")
                 op_w = self.operator_weights[i]
-                if (np.random.rand() < op_w):
+                if np.random.rand() < op_w:
                     parents, offsprings = interface_ec.get_algorithm(population, op)
-                self.add2pop(population, offsprings)  # Check duplication, and add the new offspring
+                self.add2pop(
+                    population, offsprings
+                )  # Check duplication, and add the new offspring
                 for off in offsprings:
-                    print(" Obj: ", off['objective'], end="|")
+                    print(" Obj: ", off["objective"], end="|")
                 # if is_add:
                 #     data = {}
                 #     for i in range(len(parents)):
@@ -165,24 +186,29 @@ class EOH:
                 population = self.manage.population_management(population, size_act)
                 print()
 
-
             # Save population to a file
-            filename = self.output_path + "population_generation_" + str(pop + 1) + ".json"
-            with open(filename, 'w') as f:
+            filename = (
+                self.output_path + "population_generation_" + str(pop + 1) + ".json"
+            )
+            with open(filename, "w") as f:
                 json.dump(population, f, indent=5)
 
             # Save the best one to a file
-            filename = self.output_path + "best_population_generation_" + str(pop + 1) + ".json"
-            with open(filename, 'w') as f:
+            filename = (
+                self.output_path
+                + "best_population_generation_"
+                + str(pop + 1)
+                + ".json"
+            )
+            with open(filename, "w") as f:
                 json.dump(population[0], f, indent=5)
 
-
-            print(f"--- {pop + 1} of {self.n_pop} populations finished. Time Cost:  {((time.time()-time_start)/60):.1f} m")
+            print(
+                f"--- {pop + 1} of {self.n_pop} populations finished. Time Cost:  {((time.time()-time_start)/60):.1f} m"
+            )
             print("Pop Objs: ", end=" ")
             for i in range(len(population)):
-                print(str(population[i]['objective']) + " ", end="")
+                print(str(population[i]["objective"]) + " ", end="")
             print()
-        
+
         return population[0]["code"], filename
-
-

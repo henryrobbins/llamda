@@ -11,17 +11,31 @@ import re
 import concurrent.futures
 
 
-class InterfaceEC():
-    def __init__(self, m, api_endpoint, api_key, llm_model, debug_mode, interface_prob, select, n_p, timeout, use_numba,
-                 **kwargs):
-        assert 'use_local_llm' in kwargs
-        assert 'url' in kwargs
+class InterfaceEC:
+    def __init__(
+        self,
+        m,
+        api_endpoint,
+        api_key,
+        llm_model,
+        debug_mode,
+        interface_prob,
+        select,
+        n_p,
+        timeout,
+        use_numba,
+        **kwargs,
+    ):
+        assert "use_local_llm" in kwargs
+        assert "url" in kwargs
         # -----------------------------------------------------------
 
         # LLM settings
         self.interface_eval = interface_prob
         prompts = interface_prob.prompts
-        self.evol = Evolution(api_endpoint, api_key, llm_model, debug_mode, prompts, **kwargs)
+        self.evol = Evolution(
+            api_endpoint, api_key, llm_model, debug_mode, prompts, **kwargs
+        )
         self.m = m
         self.debug = debug_mode
 
@@ -42,7 +56,7 @@ class InterfaceEC():
 
     def add2pop(self, population, offspring):
         for ind in population:
-            if ind['objective'] == offspring['objective']:
+            if ind["objective"] == offspring["objective"]:
                 if self.debug:
                     print("duplicated result, retrying ... ")
                 return False
@@ -51,13 +65,13 @@ class InterfaceEC():
 
     def check_duplicate_obj(self, population, obj):
         for ind in population:
-            if obj == ind['objective']:
+            if obj == ind["objective"]:
                 return True
         return False
 
     def check_duplicate(self, population, code):
         for ind in population:
-            if code == ind['code']:
+            if code == ind["code"]:
                 return True
         return False
 
@@ -65,19 +79,19 @@ class InterfaceEC():
 
         population = []
 
-        fitness = self.interface_eval.batch_evaluate([seed['code'] for seed in seeds])
+        fitness = self.interface_eval.batch_evaluate([seed["code"] for seed in seeds])
 
         for i in range(len(seeds)):
             try:
                 seed_alg = {
-                    'algorithm': seeds[i]['algorithm'],
-                    'code': seeds[i]['code'],
-                    'objective': None,
-                    'other_inf': None
+                    "algorithm": seeds[i]["algorithm"],
+                    "code": seeds[i]["code"],
+                    "objective": None,
+                    "other_inf": None,
                 }
 
                 obj = np.array(fitness[i])
-                seed_alg['objective'] = np.round(obj, 5)
+                seed_alg["objective"] = np.round(obj, 5)
                 population.append(seed_alg)
 
             except Exception as e:
@@ -90,20 +104,20 @@ class InterfaceEC():
 
     def _get_alg(self, pop, operator, father=None):
         offspring = {
-            'algorithm': None,
-            'thought': None,
-            'code': None,
-            'objective': None,
-            'other_inf': None
+            "algorithm": None,
+            "thought": None,
+            "code": None,
+            "objective": None,
+            "other_inf": None,
         }
         if operator == "i1":
             parents = None
-            [offspring['code'], offspring['thought']] = self.evol.i1()
+            [offspring["code"], offspring["thought"]] = self.evol.i1()
         elif operator == "e1":
             real_m = random.randint(2, self.m)
             real_m = min(real_m, len(pop))
             parents = self.select.parent_selection_e1(pop, real_m)
-            [offspring['code'], offspring['thought']] = self.evol.e1(parents)
+            [offspring["code"], offspring["thought"]] = self.evol.e1(parents)
         elif operator == "e2":
             other = copy.deepcopy(pop)
             if father in pop:
@@ -113,34 +127,36 @@ class InterfaceEC():
             # real_m = min(real_m, len(other))
             parents = self.select.parent_selection(other, real_m)
             parents.append(father)
-            [offspring['code'], offspring['thought']] = self.evol.e2(parents)
+            [offspring["code"], offspring["thought"]] = self.evol.e2(parents)
         elif operator == "m1":
             parents = [father]
-            [offspring['code'], offspring['thought']] = self.evol.m1(parents[0])
+            [offspring["code"], offspring["thought"]] = self.evol.m1(parents[0])
         elif operator == "m2":
             parents = [father]
-            [offspring['code'], offspring['thought']] = self.evol.m2(parents[0])
+            [offspring["code"], offspring["thought"]] = self.evol.m2(parents[0])
         elif operator == "s1":
             parents = pop
-            [offspring['code'], offspring['thought']] = self.evol.s1(pop)
+            [offspring["code"], offspring["thought"]] = self.evol.s1(pop)
         else:
             print(f"Evolution operator [{operator}] has not been implemented ! \n")
 
-        offspring['algorithm'] = self.evol.post_thought(offspring['code'], offspring['thought'])
+        offspring["algorithm"] = self.evol.post_thought(
+            offspring["code"], offspring["thought"]
+        )
         return parents, offspring
 
     def get_offspring(self, pop, operator, father=None):
         while True:
             try:
                 p, offspring = self._get_alg(pop, operator, father=father)
-                code = offspring['code']
+                code = offspring["code"]
                 n_retry = 1
-                while self.check_duplicate(pop, offspring['code']):
+                while self.check_duplicate(pop, offspring["code"]):
                     n_retry += 1
                     if self.debug:
                         print("duplicated code, wait 1 second and retrying ... ")
                     p, offspring = self._get_alg(pop, operator, father=father)
-                    code = offspring['code']
+                    code = offspring["code"]
                     if n_retry > 1:
                         break
                 break
@@ -152,10 +168,14 @@ class InterfaceEC():
         while True:
             eval_times += 1
             parents, offspring = self.get_offspring(pop, operator)
-            objs = self.interface_eval.batch_evaluate([offspring['code']], 0)
-            if objs == 'timeout' or objs[0] == float('inf') or self.check_duplicate_obj(pop, np.round(objs[0], 5)):
+            objs = self.interface_eval.batch_evaluate([offspring["code"]], 0)
+            if (
+                objs == "timeout"
+                or objs[0] == float("inf")
+                or self.check_duplicate_obj(pop, np.round(objs[0], 5))
+            ):
                 continue
-            offspring['objective'] = np.round(objs[0], 5)
+            offspring["objective"] = np.round(objs[0], 5)
 
             return eval_times, pop, offspring
         return eval_times, None, None
@@ -164,12 +184,12 @@ class InterfaceEC():
         for i in range(3):
             eval_times += 1
             _, offspring = self.get_offspring(pop, operator, father=node)
-            objs = self.interface_eval.batch_evaluate([offspring['code']], 0)
-            if objs == 'timeout':
+            objs = self.interface_eval.batch_evaluate([offspring["code"]], 0)
+            if objs == "timeout":
                 return eval_times, None
-            if objs[0] == float('inf') or self.check_duplicate(pop, offspring['code']):
+            if objs[0] == float("inf") or self.check_duplicate(pop, offspring["code"]):
                 continue
-            offspring['objective'] = np.round(objs[0], 5)
+            offspring["objective"] = np.round(objs[0], 5)
 
             return eval_times, offspring
         return eval_times, None
