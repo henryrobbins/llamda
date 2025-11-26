@@ -1,7 +1,7 @@
-from source.mcts_ahd import MCTS_AHD
-from source.getParas import Paras
-from source import prob_rank, pop_greedy
-from problem_adapter import Problem
+from .source.mcts_ahd import MCTS_AHD
+from .source.getParas import Paras
+from .source import prob_rank, pop_greedy
+from .problem_adapter import Problem
 
 from utils.utils import init_client
 
@@ -35,5 +35,3 @@ class AHD:
         print("-----------------------------------------")
 
         return results
-
-
