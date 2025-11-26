@@ -4,8 +4,9 @@ import sys
 import numpy as np
 from scipy.spatial import distance_matrix
 import logging
+import os
 import sys
-sys.path.insert(0, "../../../")
+sys.path.insert(0, os.path.abspath(os.path.join(__file__, "../../../")))
 
 import gpt
 from utils.utils import get_heuristic_name

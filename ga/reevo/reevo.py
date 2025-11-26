@@ -5,8 +5,8 @@ import numpy as np
 import os
 from omegaconf import DictConfig
 
-from utils.utils import *
-from utils.llm_client.base import BaseClient
+from .utils.utils import *
+from .utils.llm_client.base import BaseClient
 
 
 class ReEvo:
@@ -60,6 +60,7 @@ class ReEvo:
         logging.info("Problem description: " + self.problem_desc)
         logging.info("Function name: " + self.func_name)
         
+        self.reevo_dir = f"{self.root_dir}/ga/reevo"
         self.prompt_dir = f"{self.root_dir}/prompts"
         self.output_file = f"{self.root_dir}/problems/{self.problem}/gpt.py"
         
@@ -78,18 +79,18 @@ class ReEvo:
         
         
         # Common prompts
-        self.system_generator_prompt = file_to_string(f'{self.prompt_dir}/common/system_generator.txt')
-        self.system_reflector_prompt = file_to_string(f'{self.prompt_dir}/common/system_reflector.txt')
-        self.user_reflector_st_prompt = file_to_string(f'{self.prompt_dir}/common/user_reflector_st.txt') if self.problem_type != "black_box" else file_to_string(f'{self.prompt_dir}/common/user_reflector_st_black_box.txt') # shrot-term reflection
-        self.user_reflector_lt_prompt = file_to_string(f'{self.prompt_dir}/common/user_reflector_lt.txt') # long-term reflection
-        self.crossover_prompt = file_to_string(f'{self.prompt_dir}/common/crossover.txt')
-        self.mutation_prompt = file_to_string(f'{self.prompt_dir}/common/mutation.txt')
-        self.user_generator_prompt = file_to_string(f'{self.prompt_dir}/common/user_generator.txt').format(
+        self.system_generator_prompt = file_to_string(f'{self.reevo_dir}/prompts/system_generator.txt')
+        self.system_reflector_prompt = file_to_string(f'{self.reevo_dir}/prompts/system_reflector.txt')
+        self.user_reflector_st_prompt = file_to_string(f'{self.reevo_dir}/prompts/user_reflector_st.txt') if self.problem_type != "black_box" else file_to_string(f'{self.reevo_dir}/prompts/user_reflector_st_black_box.txt') # shrot-term reflection
+        self.user_reflector_lt_prompt = file_to_string(f'{self.reevo_dir}/prompts/user_reflector_lt.txt') # long-term reflection
+        self.crossover_prompt = file_to_string(f'{self.reevo_dir}/prompts/crossover.txt')
+        self.mutation_prompt = file_to_string(f'{self.reevo_dir}/prompts/mutation.txt')
+        self.user_generator_prompt = file_to_string(f'{self.reevo_dir}/prompts/user_generator.txt').format(
             func_name=self.func_name, 
             problem_desc=self.problem_desc,
             func_desc=self.func_desc,
             )
-        self.seed_prompt = file_to_string(f'{self.prompt_dir}/common/seed.txt').format(
+        self.seed_prompt = file_to_string(f'{self.reevo_dir}/prompts/seed.txt').format(
             seed_func=self.seed_func,
             func_name=self.func_name,
         )

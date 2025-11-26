@@ -1,4 +1,4 @@
-_target_: utils.llm_client.openai.OpenAIClient
+_target_: ga.reevo.utils.llm_client.openai.OpenAIClient
 
 # Using SILICONFLOW API
 # see more models at https://cloud.siliconflow.cn/models
