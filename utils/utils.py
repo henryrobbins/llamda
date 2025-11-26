@@ -1,4 +1,8 @@
+from litellm import completion
+import os
 import logging
+import concurrent.futures
+import time
 import re
 import inspect
 import hydra
@@ -97,10 +101,13 @@ def extract_code_from_generator(content):
     if code_string is None:
         return None
     # Add import statements if not present
-    if "np" in code_string:
-        code_string = "import numpy as np\n" + code_string
-    if "torch" in code_string:
-        code_string = "import torch\n" + code_string
+    # TODO: Using HSEvo convention for this (other methods used commented out code)
+    # if "np" in code_string:
+    #     code_string = "import numpy as np\n" + code_string
+    # if "torch" in code_string:
+    #     code_string = "import torch\n" + code_string
+    if "import" not in code_string:
+        code_string = "import numpy as np\nimport random\nimport math\nimport scipy\nimport torch\n" + code_string
     return code_string
 
 
@@ -129,3 +136,122 @@ def get_heuristic_name(module, possible_names: list[str]):
         if hasattr(module, func_name):
             if inspect.isfunction(getattr(module, func_name)):
                 return func_name
+
+
+def multi_chat_completion(messages_list: list[list[dict]], n, model, temperature):
+    """
+    An example of messages_list:
+
+    messages_list = [
+        [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Hello!"},
+        ],
+        [
+            {"role": "system", "content": "You are a knowledgeable guide."},
+            {"role": "user", "content": "How are you?"},
+        ],
+        [
+            {"role": "system", "content": "You are a witty comedian."},
+            {"role": "user", "content": "Tell me a joke."},
+        ]
+    ]
+    param: n: number of responses to generate for each message in messages_list
+    """
+    # If messages_list is not a list of list (i.e., only one conversation), convert it to a list of list
+    assert isinstance(messages_list, list), "messages_list should be a list."
+    try:
+        if not isinstance(messages_list[0], list):
+            messages_list = [messages_list]
+    except:
+        print(messages_list)
+        raise IndexError("Something is wrong.")
+
+    if len(messages_list) > 1:
+        assert n == 1, "Currently, only n=1 is supported for multi-chat completion."
+
+    num_workers = os.cpu_count()
+    if "gpt" not in model:
+        # Transform messages if n > 1
+        messages_list *= n
+        n = 1
+        num_workers = 2
+    with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
+        args = [(n, messages, model, temperature) for messages in messages_list]
+        choices = executor.map(lambda p: chat_completion(*p), args)
+
+    contents: list[str] = []
+    for choice in choices:
+        for c in choice:
+            contents.append(c.message.content)
+    return contents
+
+
+def chat_completion(n: int, messages: list[dict], model: str, temperature: float) -> list[dict]:
+    """
+    Generate n responses using OpenAI Chat Completions API
+    """
+
+    for attempt in range(30):
+        try:
+            response_cur = completion(model=model, messages=messages, temperature=temperature, n=n)
+            break
+        except Exception as e:
+            logging.info(f"Attempt {attempt + 1} failed with error: {e}")
+            time.sleep(3)
+    if response_cur is None:
+        logging.info("Code terminated due to too many failed attempts!")
+        exit()
+
+    return response_cur.choices
+
+def extract_to_hs(input_string: str):
+    code_blocks = input_string.split("```python\n")[1:]
+
+    try:
+        parameter_ranges_block = "import numpy as np\n" + code_blocks[1].split("```")[0].strip()
+        if any(keyword in parameter_ranges_block for keyword in ['inf', 'np.inf', 'None']):
+            return None, None
+        exec_globals = {}
+        exec(parameter_ranges_block, exec_globals)
+        parameter_ranges = exec_globals['parameter_ranges']
+    except:
+        return None, None
+
+    function_block = code_blocks[0].split("```")[0].strip()
+
+    paren_count = 0
+    in_signature = False
+    signature_start_index = None
+    signature_end_index = None
+
+    # Loop through the function block to find the start and end of the function signature
+    for i, char in enumerate(function_block):
+        if char == "d" and function_block[i:i + 3] == 'def':
+            in_signature = True
+            signature_start_index = i
+        if in_signature:
+            if char == '(':
+                paren_count += 1
+            elif char == ')':
+                paren_count -= 1
+            if char == ':' and paren_count == 0:
+                signature_end_index = i
+                break
+
+    if signature_start_index is not None and signature_end_index is not None:
+        function_signature = function_block[signature_start_index:signature_end_index + 1]
+        for param in parameter_ranges:
+            pattern = rf"(\b{param}\b[^=]*=)[^,)]+"
+            replacement = r"\1 {" + param + "}"
+            function_signature = re.sub(pattern, replacement, function_signature, flags=re.DOTALL)
+        function_block = function_block[:signature_start_index] + function_signature + function_block[
+                                                                                       signature_end_index + 1:]
+
+    return parameter_ranges, function_block
+
+
+def format_messages(cfg, pre_messages):
+    messages = [{"role": "system", "content": pre_messages["system"]},
+                {"role": "user", "content": pre_messages["user"]}]
+    return messages

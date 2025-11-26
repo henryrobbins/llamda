@@ -1,4 +1,4 @@
-_target_: ga.reevo.utils.llm_client.llama_api.LlamaAPIClient
+_target_: utils.llm_client.llama_api.LlamaAPIClient
 
 # Using llama api. See the available models at https://docs.llama-api.com/quickstart#available-models
 model: llama3-70b

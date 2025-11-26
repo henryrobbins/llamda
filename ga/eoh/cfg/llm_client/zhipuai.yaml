@@ -1,4 +1,4 @@
-_target_: ga.reevo.utils.llm_client.zhipuai.ZhipuAIClient
+_target_: utils.llm_client.zhipuai.ZhipuAIClient
 
 # use LLM API provided by Zhipu AI
 model: GLM-3-Turbo

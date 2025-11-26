@@ -3,7 +3,7 @@ import logging
 import os
 from pathlib import Path
 import subprocess
-from ga.reevo.utils.utils import init_client, print_hyperlink
+from utils.utils import init_client, print_hyperlink
 
 
 ROOT_DIR = os.getcwd()

@@ -1,4 +1,4 @@
-_target_: ga.reevo.utils.llm_client.openai.OpenAIClient
+_target_: utils.llm_client.openai.OpenAIClient
 
 # Using Aliyun Bailian API
 # see more models at https://bailian.console.aliyun.com/?tab=model

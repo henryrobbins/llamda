@@ -3,7 +3,7 @@ import numpy as np
 import json
 import tiktoken
 from datetime import datetime
-from .utils.utils import *
+from utils.utils import *
 # from baselines.reevo.gls_tsp_adapt.gls_tsp_eval import Sandbox
 
 

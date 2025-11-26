@@ -1,4 +1,4 @@
-_target_: ga.reevo.utils.llm_client.azure.AzureOpenAIClient
+_target_: utils.llm_client.azure.AzureOpenAIClient
 
 model: "azure-openai" # model name is not
 temperature: 1.0 # temperature for chat completion

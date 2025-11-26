@@ -1,4 +1,4 @@
-_target_: ga.reevo.utils.llm_client.litellm.LiteLLMClient
+_target_: utils.llm_client.litellm.LiteLLMClient
 
 # Using LiteLLM for Chat Completion
 # Some environment variables are required to be set to provide api key to LiteLLM client, which are reported upon running

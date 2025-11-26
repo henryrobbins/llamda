@@ -5,8 +5,8 @@ import numpy as np
 import os
 from omegaconf import DictConfig
 
-from .utils.utils import *
-from .utils.llm_client.base import BaseClient
+from utils.utils import *
+from utils.llm_client.base import BaseClient
 
 
 class ReEvo:

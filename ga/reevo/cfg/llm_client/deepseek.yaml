@@ -1,4 +1,4 @@
-_target_: ga.reevo.utils.llm_client.openai.OpenAIClient
+_target_: utils.llm_client.openai.OpenAIClient
 
 # Using deepseek API
 model: deepseek-chat
