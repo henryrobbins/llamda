@@ -6,14 +6,10 @@ from ga.mcts.source.prompts.problem import ProblemPrompts
 from utils.llm_client.base import BaseClient
 from utils.utils import file_to_string
 
-input = lambda: ...
-
 
 class Evolution:
 
-    def __init__(
-        self, api_endpoint, api_key, model_LLM, debug_mode, prompts: ProblemPrompts
-    ):
+    def __init__(self, llm_client, prompts: ProblemPrompts):
 
         self.prompts_dir = Path(__file__).parent / "prompts"
         self.prompts = prompts
@@ -31,13 +27,9 @@ class Evolution:
         else:
             self.joined_outputs = "'" + self.prompts.prompt_func_outputs[0] + "'"
 
-        # set LLMs
-        self.api_endpoint = api_endpoint
-        self.api_key = api_key
-        self.model_LLM = model_LLM
-        self.debug_mode = debug_mode  # close prompt checking
+        self.llm_client = llm_client
 
-    def get_prompt_post(self, code, algorithm):
+    def get_prompt_post(self, code):
         post = file_to_string(self.prompts_dir / "post.txt")
         return post.format(
             prompt_task=self.prompts.prompt_task,
@@ -196,7 +188,7 @@ class Evolution:
     def _get_thought(self, prompt_content):
 
         response = chat_completion(
-            client=self.model_LLM, prompt_content=prompt_content, temperature=0
+            client=self.llm_client, prompt_content=prompt_content, temperature=0
         )
 
         # algorithm = response.split(':')[-1]
@@ -204,7 +196,9 @@ class Evolution:
 
     def _get_alg(self, prompt_content):
 
-        response = chat_completion(client=self.model_LLM, prompt_content=prompt_content)
+        response = chat_completion(
+            client=self.llm_client, prompt_content=prompt_content
+        )
 
         algorithm = re.search(r"\{(.*?)\}", response, re.DOTALL).group(1)
         if len(algorithm) == 0:
@@ -227,7 +221,7 @@ class Evolution:
                 )
 
             response = chat_completion(
-                client=self.model_LLM, prompt_content=prompt_content
+                client=self.llm_client, prompt_content=prompt_content
             )
 
             algorithm = re.search(r"\{(.*?)\}", response, re.DOTALL).group(1)
@@ -253,144 +247,32 @@ class Evolution:
         return [code_all, algorithm]
 
     def post_thought(self, code, algorithm):
-
         prompt_content = self.get_prompt_refine(code, algorithm)
-
-        post_thought = self._get_thought(prompt_content)
-
-        return post_thought
+        return self._get_thought(prompt_content)
 
     def i1(self):
-
         prompt_content = self.get_prompt_i1()
-
-        if self.debug_mode:
-            print(
-                "\n >>> check prompt for creating algorithm using [ i1 ] : \n",
-                prompt_content,
-            )
-            print(">>> Press 'Enter' to continue")
-            input()
-
-        [code_all, algorithm] = self._get_alg(prompt_content)
-
-        if self.debug_mode:
-            print("\n >>> check designed algorithm: \n", algorithm)
-            print("\n >>> check designed code: \n", code_all)
-            print(">>> Press 'Enter' to continue")
-            input()
-
-        return [code_all, algorithm]
+        return self._get_alg(prompt_content)
 
     def e1(self, parents):
-
         prompt_content = self.get_prompt_e1(parents)
-
-        if self.debug_mode:
-            print(
-                "\n >>> check prompt for creating algorithm using [ e1 ] : \n",
-                prompt_content,
-            )
-            print(">>> Press 'Enter' to continue")
-            input()
-
-        [code_all, algorithm] = self._get_alg(prompt_content)
-
-        if self.debug_mode:
-            print("\n >>> check designed algorithm: \n", algorithm)
-            print("\n >>> check designed code: \n", code_all)
-            print(">>> Press 'Enter' to continue")
-            input()
-
-        return [code_all, algorithm]
+        return self._get_alg(prompt_content)
 
     def e2(self, parents):
-
         prompt_content = self.get_prompt_e2(parents)
-
-        if self.debug_mode:
-            print(
-                "\n >>> check prompt for creating algorithm using [ e2 ] : \n",
-                prompt_content,
-            )
-            print(">>> Press 'Enter' to continue")
-            input()
-
-        [code_all, algorithm] = self._get_alg(prompt_content)
-
-        if self.debug_mode:
-            print("\n >>> check designed algorithm: \n", algorithm)
-            print("\n >>> check designed code: \n", code_all)
-            print(">>> Press 'Enter' to continue")
-            input()
-
-        return [code_all, algorithm]
+        return self._get_alg(prompt_content)
 
     def m1(self, parents):
-
         prompt_content = self.get_prompt_m1(parents)
-
-        if self.debug_mode:
-            print(
-                "\n >>> check prompt for creating algorithm using [ m1 ] : \n",
-                prompt_content,
-            )
-            print(">>> Press 'Enter' to continue")
-            input()
-
-        [code_all, algorithm] = self._get_alg(prompt_content)
-
-        if self.debug_mode:
-            print("\n >>> check designed algorithm: \n", algorithm)
-            print("\n >>> check designed code: \n", code_all)
-            print(">>> Press 'Enter' to continue")
-            input()
-
-        return [code_all, algorithm]
+        return self._get_alg(prompt_content)
 
     def m2(self, parents):
-
         prompt_content = self.get_prompt_m2(parents)
-
-        if self.debug_mode:
-            print(
-                "\n >>> check prompt for creating algorithm using [ m2 ] : \n",
-                prompt_content,
-            )
-            print(">>> Press 'Enter' to continue")
-            input()
-
-        [code_all, algorithm] = self._get_alg(prompt_content)
-
-        if self.debug_mode:
-            print("\n >>> check designed algorithm: \n", algorithm)
-            print("\n >>> check designed code: \n", code_all)
-            print(">>> Press 'Enter' to continue")
-            input()
-
-        return [code_all, algorithm]
+        return self._get_alg(prompt_content)
 
     def s1(self, parents):
-
         prompt_content = self.get_prompt_s1(parents)
-
-        if self.debug_mode:
-            print(
-                "\n >>> check prompt for creating algorithm using [ s1 ] : \n",
-                prompt_content,
-            )
-            print(">>> Press 'Enter' to continue")
-            input()
-
-        [code_all, algorithm] = self._get_alg(prompt_content)
-
-        if self.debug_mode:
-            print("\n >>> check designed algorithm: \n", algorithm)
-            print("\n >>> check designed code: \n", code_all)
-            print(">>> Press 'Enter' to continue")
-            input()
-
-        return [code_all, algorithm]
+        return self._get_alg(prompt_content)
 
 
 def chat_completion(

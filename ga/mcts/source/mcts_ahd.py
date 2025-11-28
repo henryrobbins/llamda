@@ -16,22 +16,7 @@ class MCTS_AHD:
 
         self.prob = problem
         # LLM settings
-        self.use_local_llm = paras.llm_use_local
-        self.url = paras.llm_local_url
-        self.api_endpoint = paras.llm_api_endpoint  # currently only API2D + GPT
-        self.api_key = paras.llm_api_key
-        self.llm_model = paras.llm_model
-
-        # ------------------ RZ: use local LLM ------------------
-        self.use_local_llm = kwargs.get("use_local_llm", False)
-        assert isinstance(self.use_local_llm, bool)
-        if self.use_local_llm:
-            assert (
-                "url" in kwargs
-            ), 'The keyword "url" should be provided when use_local_llm is True.'
-            assert isinstance(kwargs.get("url"), str)
-            self.url = kwargs.get("url")
-        # -------------------------------------------------------
+        self.llm_client = paras.llm_model
 
         # Experimental settings
         self.init_size = (
@@ -171,13 +156,9 @@ class MCTS_AHD:
         # interface for ec operators
         self.interface_ec = InterfaceEC(
             self.m,
-            self.api_endpoint,
-            self.api_key,
-            self.llm_model,
+            self.llm_client,
             self.debug_mode,
             interface_prob,
-            use_local_llm=self.use_local_llm,
-            url=self.url,
             n_p=self.exp_n_proc,
             timeout=self.timeout,
             use_numba=self.use_numba,
