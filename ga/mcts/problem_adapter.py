@@ -118,7 +118,7 @@ class Problem:
         individual["traceback_msg"] = traceback_msg
         return individual
 
-    def batch_evaluate(self, codes: list[str], iteration: int) -> str | list[Any]:
+    def batch_evaluate(self, codes: list[str], iteration: int) -> str | list[float]:
         """
         Evaluate population by running code in parallel and computing objective values and fitness.
         """

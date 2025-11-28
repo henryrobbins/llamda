@@ -8,7 +8,7 @@ from ga.mcts.source.evolution import MCTSOperator
 from ga.mcts.source.mcts import MCTS, MCTSNode
 from ga.mcts.source.config import Config
 from ga.mcts.problem_adapter import Problem
-from ga.mcts.source.evolution_interface import InterfaceEC
+from ga.mcts.source.evolution_interface import Heuristic, InterfaceEC
 from utils.llm_client.base import BaseClient
 
 
@@ -36,13 +36,16 @@ class MCTS_AHD:
         random.seed(2024)
 
     # add new individual to population
-    def add2pop(self, population, offspring):
+    def add2pop(self, population: list[dict], offspring: dict) -> None:
         for ind in population:
             if ind["algorithm"] == offspring["algorithm"]:
+                # TODO: no actual retry logic implemented
                 print("duplicated result, retrying ... ")
         population.append(offspring)
 
-    def expand(self, mcts, cur_node, nodes_set, option):
+    def expand(
+        self, mcts: MCTS, cur_node: MCTSNode, nodes_set: list[Heuristic], option: str
+    ) -> list[Heuristic]:
         if option == "s1":
             path_set = []
             now = copy.deepcopy(cur_node)
@@ -127,7 +130,7 @@ class MCTS_AHD:
         return nodes_set
 
     # run eoh
-    def run(self):
+    def run(self) -> tuple[str, str]:
         print("- Initialization Start -")
 
         self.interface_ec = InterfaceEC(
@@ -136,45 +139,46 @@ class MCTS_AHD:
             llm_client=self.llm_client,
         )
 
-        brothers = []
+        brothers: list[Heuristic] = []
         mcts = MCTS("Root")
         # main loop
         n_op = len(self.operators)
-        self.eval_times, brothers, offsprings = self.interface_ec.get_algorithm(
-            self.eval_times, brothers, MCTSOperator.I1
+        n_evals, brothers, offspring = self.interface_ec.get_algorithm(
+            brothers, MCTSOperator.I1
         )
-        brothers.append(offsprings)
+        self.eval_times += n_evals
+        brothers.append(offspring)
         nownode = MCTSNode(
-            offsprings["algorithm"],
-            offsprings["code"],
-            offsprings["objective"],
+            offspring.algorithm,
+            offspring.code,
+            offspring.objective,
             parent=mcts.root,
             depth=1,
             visit=1,
-            Q=-1 * offsprings["objective"],
-            raw_info=offsprings,
+            Q=-1 * offspring.objective,
+            raw_info=offspring,
         )
         mcts.root.add_child(nownode)
-        mcts.root.children_info.append(offsprings)
+        mcts.root.children_info.append(offspring)
         mcts.backpropagate(nownode)
         nownode.subtree.append(nownode)
         for i in range(1, self.init_size):
-            self.eval_times, brothers, offsprings = self.interface_ec.get_algorithm(
+            self.eval_times, brothers, offspring = self.interface_ec.get_algorithm(
                 self.eval_times, brothers, MCTSOperator.E1
             )
-            brothers.append(offsprings)
+            brothers.append(offspring)
             nownode = MCTSNode(
-                offsprings["algorithm"],
-                offsprings["code"],
-                offsprings["objective"],
+                offspring.algorithm,
+                offspring.code,
+                offspring.objective,
                 parent=mcts.root,
                 depth=1,
                 visit=1,
-                Q=-1 * offsprings["objective"],
-                raw_info=offsprings,
+                Q=-1 * offspring.objective,
+                raw_info=offspring,
             )
             mcts.root.add_child(nownode)
-            mcts.root.children_info.append(offsprings)
+            mcts.root.children_info.append(offspring)
             mcts.backpropagate(nownode)
             nownode.subtree.append(nownode)
         nodes_set = brothers

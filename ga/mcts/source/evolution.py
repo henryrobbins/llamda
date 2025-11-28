@@ -1,6 +1,5 @@
 from enum import StrEnum
 from pathlib import Path
-from typing import Dict, List
 
 from ga.mcts.source.prompts.problem import ProblemPrompts
 from utils.llm_client.base import BaseClient
@@ -203,7 +202,7 @@ class Evolution:
         # algorithm = response.split(':')[-1]
         return response
 
-    def _get_alg(self, prompt_content: str) -> tuple[str, list[str]]:
+    def _get_alg(self, prompt_content: str) -> tuple[str, str]:
 
         response = chat_completion(
             client=self.llm_client, prompt_content=prompt_content
@@ -226,43 +225,45 @@ class Evolution:
                 break
             n_retry += 1
 
+        # TODO: I believe this resolves a bug in original implementation
+        algorithm = algorithms[0]
         code = code[0]
         code_all = code + " " + ", ".join(s for s in self.prompts.prompt_func_outputs)
 
-        return code_all, algorithms
+        return code_all, algorithm
 
-    def post_thought(self, code, algorithm):
+    def post_thought(self, code: str, algorithm: str) -> str:
         prompt_content = self.get_prompt_refine(code, algorithm)
         return self._get_thought(prompt_content)
 
-    def i1(self) -> tuple[str, list[str]]:
+    def i1(self) -> tuple[str, str]:
         prompt_content = self.get_prompt_i1()
         return self._get_alg(prompt_content)
 
-    def e1(self, parents: list[dict]) -> tuple[str, list[str]]:
+    def e1(self, parents: list[dict]) -> tuple[str, str]:
         prompt_content = self.get_prompt_e1(parents)
         return self._get_alg(prompt_content)
 
-    def e2(self, parents: list[dict]) -> tuple[str, list[str]]:
+    def e2(self, parents: list[dict]) -> tuple[str, str]:
         prompt_content = self.get_prompt_e2(parents)
         return self._get_alg(prompt_content)
 
-    def m1(self, parents: dict) -> tuple[str, list[str]]:
+    def m1(self, parents: dict) -> tuple[str, str]:
         prompt_content = self.get_prompt_m1(parents)
         return self._get_alg(prompt_content)
 
-    def m2(self, parents: dict) -> tuple[str, list[str]]:
+    def m2(self, parents: dict) -> tuple[str, str]:
         prompt_content = self.get_prompt_m2(parents)
         return self._get_alg(prompt_content)
 
-    def s1(self, parents: list[dict]) -> tuple[str, list[str]]:
+    def s1(self, parents: list[dict]) -> tuple[str, str]:
         prompt_content = self.get_prompt_s1(parents)
         return self._get_alg(prompt_content)
 
 
 def chat_completion(
     client: BaseClient, prompt_content: str, temperature: int | None = None
-) -> List[Dict]:
+) -> str:
     response = client.chat_completion(
         n=1,
         messages=[{"role": "user", "content": prompt_content}],

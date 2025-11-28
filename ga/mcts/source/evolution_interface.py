@@ -1,4 +1,5 @@
 import copy
+from dataclasses import dataclass
 import random
 from typing import List
 
@@ -9,6 +10,15 @@ from ga.mcts.source.evolution import Evolution, MCTSOperator
 from utils.llm_client.base import BaseClient
 
 
+@dataclass
+class Heuristic:
+    algorithm: str
+    thought: str | None
+    code: str
+    objective: float | None
+    other_inf: dict | None
+
+
 class InterfaceEC:
 
     def __init__(self, m: int, interface_prob: Problem, llm_client: BaseClient):
@@ -16,36 +26,34 @@ class InterfaceEC:
         self.interface_eval = interface_prob
         self.evol = Evolution(llm_client, interface_prob.prompts)
 
-    def check_duplicate_obj(self, population, obj):
+    def check_duplicate_obj(self, population: list[Heuristic], obj: float) -> bool:
         for ind in population:
-            if obj == ind["objective"]:
+            if obj == ind.objective:
                 return True
         return False
 
-    def check_duplicate(self, population, code):
+    def check_duplicate(self, population: list[Heuristic], code: str) -> bool:
         for ind in population:
-            if code == ind["code"]:
+            if code == ind.code:
                 return True
         return False
 
-    def _get_alg(self, pop: list[dict], operator: MCTSOperator, father=None):
-        offspring = {
-            "algorithm": None,
-            "thought": None,
-            "code": None,
-            "objective": None,
-            "other_inf": None,
-        }
+    def _get_alg(
+        self,
+        pop: list[Heuristic],
+        operator: MCTSOperator,
+        father: Heuristic | None = None,
+    ) -> tuple[list[Heuristic], Heuristic]:
 
         match operator:
             case MCTSOperator.I1:
                 parents = None
-                [offspring["code"], offspring["algorithm"]] = self.evol.i1()
+                code, algorithm = self.evol.i1()
             case MCTSOperator.E1:
                 real_m = random.randint(2, self.m)
                 real_m = min(real_m, len(pop))
                 parents = select_parents_e1(pop, real_m)
-                [offspring["code"], offspring["thought"]] = self.evol.e1(parents)
+                code, thought = self.evol.e1(parents)
             case MCTSOperator.E2:
                 other = copy.deepcopy(pop)
                 if father in pop:
@@ -55,35 +63,46 @@ class InterfaceEC:
                 # real_m = min(real_m, len(other))
                 parents = select_parents(other, real_m)
                 parents.append(father)
-                [offspring["code"], offspring["thought"]] = self.evol.e2(parents)
+                code, thought = self.evol.e2(parents)
             case MCTSOperator.M1:
                 parents = [father]
-                [offspring["code"], offspring["thought"]] = self.evol.m1(parents[0])
+                code, thought = self.evol.m1(parents[0])
             case MCTSOperator.M2:
                 parents = [father]
-                [offspring["code"], offspring["thought"]] = self.evol.m2(parents[0])
+                code, thought = self.evol.m2(parents[0])
             case MCTSOperator.S1:
                 parents = pop
-                [offspring["code"], offspring["thought"]] = self.evol.s1(pop)
+                code, thought = self.evol.s1(pop)
             case _:
                 print(f"Evolution operator [{operator}] has not been implemented ! \n")
 
-        offspring["algorithm"] = self.evol.post_thought(
-            offspring["code"], offspring["thought"]
+        if thought is not None:
+            algorithm = self.evol.post_thought(code, thought)
+
+        offspring = Heuristic(
+            algorithm=algorithm,
+            thought=thought,
+            code=code,
+            objective=None,
+            other_inf={},
         )
+
         return parents, offspring
 
-    def get_offspring(self, pop, operator: MCTSOperator, father=None):
+    def get_offspring(
+        self,
+        pop: list[Heuristic],
+        operator: MCTSOperator,
+        father: Heuristic | None = None,
+    ) -> tuple[list[Heuristic], Heuristic]:
         while True:
             try:
                 p, offspring = self._get_alg(pop, operator, father=father)
-                code = offspring["code"]
                 n_retry = 1
-                while self.check_duplicate(pop, offspring["code"]):
+                while self.check_duplicate(pop, offspring.code):
                     n_retry += 1
                     print("duplicated code, wait 1 second and retrying ... ")
                     p, offspring = self._get_alg(pop, operator, father=father)
-                    code = offspring["code"]
                     if n_retry > 1:
                         break
                 break
@@ -91,21 +110,23 @@ class InterfaceEC:
                 print(e)
         return p, offspring
 
-    def get_algorithm(self, eval_times, pop, operator: MCTSOperator):
+    def get_algorithm(
+        self, pop: list[Heuristic], operator: MCTSOperator
+    ) -> tuple[int, list[Heuristic], Heuristic]:
+        n_evals = 0
         while True:
-            eval_times += 1
-            parents, offspring = self.get_offspring(pop, operator)
-            objs = self.interface_eval.batch_evaluate([offspring["code"]], 0)
+            n_evals += 1
+            _, offspring = self.get_offspring(pop, operator)
+            obj = self.interface_eval.batch_evaluate([offspring.code], 0)[0]
             if (
-                objs == "timeout"
-                or objs[0] == float("inf")
-                or self.check_duplicate_obj(pop, np.round(objs[0], 5))
+                obj == "timeout"
+                or obj == float("inf")
+                or self.check_duplicate_obj(pop, np.round(obj, 5))
             ):
                 continue
-            offspring["objective"] = np.round(objs[0], 5)
 
-            return eval_times, pop, offspring
-        return eval_times, None, None
+            offspring.objective = float(np.round(obj, 5))
+            return n_evals, pop, offspring
 
     def evolve_algorithm(
         self, eval_times, pop, node, brother_node, operator: MCTSOperator

@@ -1,52 +1,49 @@
 from __future__ import annotations
-import random
-import copy
 import math
-from collections import deque
-from enum import Enum
-import tqdm
-import numpy as np
+from typing import Any
 
 
 class MCTSNode:
+
     def __init__(
         self,
-        algorithm,
-        code,
-        obj,
-        depth=0,
-        is_root=False,
-        parent=None,
-        visit=0,
-        raw_info=None,
-        Q=0,
-    ):
+        algorithm: str,
+        code: str,
+        obj: float,
+        depth: int = 0,
+        parent: MCTSNode | None = None,
+        visit: int = 0,
+        raw_info: Any | None = None,
+        Q: float = 0,
+        is_root: bool = False,
+    ) -> None:
         self.algorithm = algorithm
         self.code = code
         self.parent = parent
         self.depth = depth
-        self.children = []
-        self.children_info = []
+        self.children: list[MCTSNode] = []
+        self.children_info: list[Any] = []
         self.visits = visit
-        self.subtree = []
+        self.subtree: list[MCTSNode] = []
         self.raw_info = raw_info
         self.Q = Q
         self.reward = -1 * obj
+        self.is_root = is_root
 
-    def add_child(self, child_node: MCTSNode):
+    def add_child(self, child_node: MCTSNode) -> None:
         self.children.append(child_node)
 
-    def __repr__(self):
-        return f"MCTSNode(answer={self.answer}, Q={self.Q:.2f}, visits={self.visits})"
+    def __repr__(self) -> str:
+        return f"MCTSNode(algorithm={self.algorithm}, Q={self.Q:.2f}, visits={self.visits})"
 
 
 class MCTS:
-    def __init__(self, root_answer):
-        self.exploration_constant_0 = 0.1  # Paramter \lambda_0
-        self.alpha = 0.5  # Paramter \alpha
+    def __init__(self, root_answer: str) -> None:
+        self.exploration_constant_0 = 0.1
+        self.alpha = 0.5
         self.max_depth = 10
         self.epsilon = 1e-10
-        self.discount_factor = 1  # constant as 1
+        self.discount_factor = 1
         self.q_min = 0
         self.q_max = -10000
         self.rank_list = []
@@ -61,7 +58,7 @@ class MCTS:
         self.rewards = []
         self.selected_nodes = []
 
-    def backpropagate(self, node: MCTSNode):
+    def backpropagate(self, node: MCTSNode) -> None:
         if node.Q not in self.rank_list:
             self.rank_list.append(node.Q)
             self.rank_list.sort()
@@ -79,7 +76,7 @@ class MCTS:
                 parent.subtree.append(node)
             parent = parent.parent
 
-    def uct(self, node: MCTSNode, eval_remain):
+    def uct(self, node: MCTSNode, eval_remain: float) -> float:
         self.exploration_constant = (self.exploration_constant_0) * eval_remain
         return (node.Q - self.q_min) / (
             self.q_max - self.q_min
@@ -87,7 +84,7 @@ class MCTS:
             math.log(node.parent.visits + 1) / node.visits
         )
 
-    def is_fully_expanded(self, node: MCTSNode):
+    def is_fully_expanded(self, node: MCTSNode) -> bool:
         return (
             len(node.children) >= self.max_children
             or any(child.Q > node.Q for child in node.children)
