@@ -46,10 +46,76 @@ class EOH:
         for off in offspring:
             for ind in population:
                 if ind["objective"] == off["objective"]:
+                    # TODO: No retry logic is actually happening here
                     print("duplicated result, retrying ... ")
             population.append(off)
 
-    # run eoh
+    def _load_seed_population(
+        self, interface_ec: InterfaceEC
+    ) -> tuple[list[dict], int]:
+        with open(self.seed_path) as file:
+            data = json.load(file)
+        population = interface_ec.population_generation_seed(data)
+        filename = self.output_path + "population_generation_0.json"
+        with open(filename, "w") as f:
+            json.dump(population, f, indent=5)
+        n_start = 0
+        return population, n_start
+
+    def _load_population(self) -> tuple[list[dict], int]:
+        population = []
+        with open(self.load_pop_path) as file:
+            data = json.load(file)
+        for individual in data:
+            population.append(individual)
+        print("initial population has been loaded!")
+        n_start = self.load_pop_id
+        return population, n_start
+
+    def _create_new_population(
+        self, interface_ec: InterfaceEC
+    ) -> tuple[list[dict], int]:
+        population = interface_ec.population_generation()
+        population = manage_population(population, self.pop_size)
+
+        print("Pop initial: ")
+        for off in population:
+            print(" Obj: ", off["objective"], end="|")
+        print()
+        print("initial population has been created!")
+        # Save population to a file
+        filename = self.output_path + "population_generation_0.json"
+        with open(filename, "w") as f:
+            json.dump(population, f, indent=5)
+        n_start = 0
+
+        return population, n_start
+
+    def _initialize_population(
+        self, interface_ec: InterfaceEC
+    ) -> tuple[list[dict], int]:
+        if self.use_seed:
+            return self._load_seed_population(interface_ec)
+        if self.load_pop:
+            return self._load_population()
+        return self._create_new_population(interface_ec)
+
+    def _population_checkpoint(self, n: int, population: list[dict]) -> str:
+
+        # Save population to a file
+        filename = self.output_path + "population_generation_" + str(n + 1) + ".json"
+        with open(filename, "w") as f:
+            json.dump(population, f, indent=5)
+
+        # Save the best one to a file
+        filename = (
+            self.output_path + "best_population_generation_" + str(n + 1) + ".json"
+        )
+        with open(filename, "w") as f:
+            json.dump(population[0], f, indent=5)
+
+        return filename
+
     def run(self):
 
         print("- Evolution Start -")
@@ -63,99 +129,30 @@ class EOH:
             interface_prob=self.prob,
         )
 
-        # initialization
-        population = []
-        if self.use_seed:
-            with open(self.seed_path) as file:
-                data = json.load(file)
-            population = interface_ec.population_generation_seed(data)
-            filename = self.output_path + "population_generation_0.json"
-            with open(filename, "w") as f:
-                json.dump(population, f, indent=5)
-            n_start = 0
-        else:
-            if self.load_pop:  # load population from files
-                print("load initial population from " + self.load_pop_path)
-                with open(self.load_pop_path) as file:
-                    data = json.load(file)
-                for individual in data:
-                    population.append(individual)
-                print("initial population has been loaded!")
-                n_start = self.load_pop_id
-            else:  # create new population
-                print("creating initial population:")
-                population = interface_ec.population_generation()
-                population = manage_population(population, self.pop_size)
-
-                # print(len(population))
-                # if len(population)<self.pop_size:
-                #     for op in [self.operators[0],self.operators[2]]:
-                #         _,new_ind = interface_ec.get_algorithm(population, op)
-                #         self.add2pop(population, new_ind)
-                #         population = self.manage.population_management(population, self.pop_size)
-                #         if len(population) >= self.pop_size:
-                #             break
-                #         print(len(population))
-
-                print(f"Pop initial: ")
-                for off in population:
-                    print(" Obj: ", off["objective"], end="|")
-                print()
-                print("initial population has been created!")
-                # Save population to a file
-                filename = self.output_path + "population_generation_0.json"
-                with open(filename, "w") as f:
-                    json.dump(population, f, indent=5)
-                n_start = 0
-
-        # main loop
-        n_op = len(self.operators)
+        population, n_start = self._initialize_population(interface_ec)
 
         for pop in range(n_start, self.n_pop):
             # print(f" [{na + 1} / {self.pop_size}] ", end="|")
-            for i in range(n_op):
-                op = self.operators[i]
-                print(f" OP: {op}, [{i + 1} / {n_op}] ", end="|")
+            for i, op in enumerate(self.operators):
+                print(f" OP: {op}, [{i + 1} / {len(self.operators)}] ", end="|")
+                # TODO: These operator weights aren't being used as expected
                 op_w = self.operator_weights[i]
                 if np.random.rand() < op_w:
-                    parents, offsprings = interface_ec.get_algorithm(
+                    _, offsprings = interface_ec.get_algorithm(
                         population, EOHOperator(op)
                     )
-                self.add2pop(
-                    population, offsprings
-                )  # Check duplication, and add the new offspring
+                # Check duplication, and add the new offspring
+                self.add2pop(population, offsprings)
                 for off in offsprings:
                     print(" Obj: ", off["objective"], end="|")
-                # if is_add:
-                #     data = {}
-                #     for i in range(len(parents)):
-                #         data[f"parent{i + 1}"] = parents[i]
-                #     data["offspring"] = offspring
-                #     with open(self.output_path + "/results/history/pop_" + str(pop + 1) + "_" + str(
-                #             na) + "_" + op + ".json", "w") as file:
-                #         json.dump(data, file, indent=5)
-                # populatin management
+                # Population management
                 size_act = min(len(population), self.pop_size)
                 population = manage_population(population, size_act)
-                print()
 
-            # Save population to a file
-            filename = (
-                self.output_path + "population_generation_" + str(pop + 1) + ".json"
-            )
-            with open(filename, "w") as f:
-                json.dump(population, f, indent=5)
+            # Save checkpoint
+            filename = self._population_checkpoint(n=pop, population=population)
 
-            # Save the best one to a file
-            filename = (
-                self.output_path
-                + "best_population_generation_"
-                + str(pop + 1)
-                + ".json"
-            )
-            with open(filename, "w") as f:
-                json.dump(population[0], f, indent=5)
-
+            # Logging
             print(
                 f"--- {pop + 1} of {self.n_pop} populations finished. Time Cost:  {((time.time()-time_start)/60):.1f} m"
             )
