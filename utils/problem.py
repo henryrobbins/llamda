@@ -167,13 +167,9 @@ class Problem:
         """
         Convert response to individual
         """
-        outdir = "./evaluations/"
-        if not os.path.isdir(outdir):
-            os.mkdir(outdir)
-        runid = hash(code)
         # Write response to file
         file_name = (
-            outdir + f"problem_eval{runid}.txt"
+            f"problem_iter{self.iteration}_response{response_id}.txt"
             if file_name is None
             else file_name + ".txt"
         )
@@ -182,14 +178,14 @@ class Problem:
 
         # Extract code and description from response
         std_out_filepath = (
-            outdir + f"problem_eval{runid}_stdout.txt"
+            f"problem_iter{self.iteration}_stdout{response_id}.txt"
             if file_name is None
             else file_name.rstrip(".txt") + "_stdout.txt"
         )
 
         individual = {
             "stdout_filepath": std_out_filepath,
-            "code_path": outdir + f"problem_eval{runid}_code.py",
+            "code_path": f"problem_iter{self.iteration}_code{response_id}.py",
             "code": code,
             "response_id": response_id,
         }
@@ -228,34 +224,7 @@ class Problem:
             individual = population[response_id]
 
             try:
-                logging.debug(
-                    f"Iteration {self.iteration}: Processing Code Run {runid}"
-                )
-
-                with open(self.output_file, "w", encoding="utf-8") as file:
-                    file.writelines(individual["code"] + "\n")
-
-                # Execute the python file with flags
-                with open(individual["stdout_filepath"], "w") as f:
-                    file_path = (
-                        f"{self.root_dir}/problems/{self.problem_config.problem_name}/eval.py"
-                        if self.problem_config.problem_type != "black_box"
-                        else f"{self.root_dir}/problems/{self.problem_config.problem_name}/eval_black_box.py"
-                    )
-                    inner_run = process = subprocess.Popen(
-                        [
-                            "python",
-                            "-u",
-                            file_path,
-                            f"{self.problem_config.problem_size}",
-                            self.root_dir,
-                            "train",
-                        ],
-                        stdout=f,
-                        stderr=f,
-                    )
-
-                block_until_running(individual["stdout_filepath"], log_status=True)
+                process = self._run_code(population[response_id], response_id)
                 inner_runs.append(process)
             except Exception as e:  # If code execution fails
                 print(e)
@@ -265,6 +234,8 @@ class Problem:
                 )
                 inner_runs.append(None)
 
+        # Update population with objective values
+        for response_id, inner_run in enumerate(inner_runs):
             if inner_run is None:  # If code execution fails, skip
                 continue
             try:
@@ -312,3 +283,40 @@ class Problem:
                 f"Iteration {self.iteration}, response_id {response_id}: Objective value: {individual['obj']}"
             )
         return [indiv["obj"] for indiv in population]
+
+    def _run_code(self, individual: dict, response_id) -> subprocess.Popen:
+        """
+        Write code into a file and run eval script.
+        """
+        logging.debug(f"Iteration {self.iteration}: Processing Code Run {response_id}")
+
+        with open(self.output_file, "w") as file:
+            file.writelines(individual["code"] + "\n")
+
+        # Execute the python file with flags
+        with open(individual["stdout_filepath"], "w") as f:
+            eval_file_path = (
+                f"{self.root_dir}/problems/{self.prompts.problem_name}/eval.py"
+                if self.prompts.problem_type != "black_box"
+                else f"{self.root_dir}/problems/{self.prompts.problem_name}/eval_black_box.py"
+            )
+            process = subprocess.Popen(
+                [
+                    "python",
+                    "-u",
+                    eval_file_path,
+                    f"{self.prompts.problem_size}",
+                    self.root_dir,
+                    "train",
+                ],
+                stdout=f,
+                stderr=f,
+            )
+
+        block_until_running(
+            individual["stdout_filepath"],
+            log_status=True,
+            iter_num=self.iteration,
+            response_id=response_id,
+        )
+        return process
