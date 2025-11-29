@@ -271,7 +271,7 @@ def extract_to_hs(input_string: str):
     return parameter_ranges, function_block
 
 
-def format_messages(cfg, pre_messages):
+def format_messages(pre_messages):
     messages = [
         {"role": "system", "content": pre_messages["system"]},
         {"role": "user", "content": pre_messages["user"]},

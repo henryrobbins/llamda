@@ -20,7 +20,12 @@ def main(cfg) -> None:
     logging.info(f"Project Root: {ROOT_DIR}")
 
     # Main algorithm
-    lhh = LHH(problem_name=problem_name, root_dir=ROOT_DIR)
+    lhh = LHH(
+        problem_name=problem_name,
+        model="openai/gpt-4o-mini-2024-07-18",
+        temperature=1.0,
+        root_dir=ROOT_DIR,
+    )
     best_code_overall, best_code_path_overall = lhh.evolve()
     logging.info(f"Best Code Overall: {best_code_overall}")
     logging.info(f"Best Code Path Overall: {best_code_path_overall}")

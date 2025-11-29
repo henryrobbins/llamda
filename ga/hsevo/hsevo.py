@@ -35,8 +35,12 @@ class HSEvoConfig:
 
 
 class HSEvo:
-    def __init__(self, cfg, root_dir) -> None:
-        self.cfg = cfg
+    def __init__(self, problem_name, model, temperature, root_dir) -> None:
+
+        self.problem = problem_name
+        self.model = model
+        self.temperature = temperature
+
         self.config = HSEvoConfig()
         self.root_dir = root_dir
 
@@ -56,10 +60,10 @@ class HSEvo:
 
         self.hsevo_dir = f"{self.root_dir}/ga/hsevo"
         self.prompt_dir = f"{self.root_dir}/prompts"
-        self.output_file = f"{self.root_dir}/problems/{self.cfg.problem}/gpt.py"
+        self.output_file = f"{self.root_dir}/problems/{self.problem}/gpt.py"
 
         self.prompts = ProblemPrompts.load_problem_prompts(
-            path=f"{self.prompt_dir}/{self.cfg.problem}",
+            path=f"{self.prompt_dir}/{self.problem}",
         )
         self.evol = Evolution(prompts=self.prompts, root_dir=root_dir)
 
@@ -122,7 +126,7 @@ class HSEvo:
                 long_term_reflection_str=self.long_term_reflection_str,
                 scientist=scientist,
             )
-            messages = format_messages(self.cfg, pre_messages)
+            messages = format_messages(pre_messages)
             messages_lst.append(messages)
 
             # Write to file
@@ -131,7 +135,7 @@ class HSEvo:
                 file.writelines(json.dumps(pre_messages))
 
         responses = multi_chat_completion(
-            messages_lst, 1, self.cfg.model, self.cfg.temperature + 0.3
+            messages_lst, 1, self.model, self.temperature + 0.3
         )
         self.cal_usage_LLM(messages_lst, responses)
 
@@ -385,10 +389,10 @@ class HSEvo:
         pre_messages = self.evol.flash_reflection(
             lst_str_method=lst_str_method,
         )
-        messages = format_messages(self.cfg, pre_messages)
+        messages = format_messages(pre_messages)
 
         flash_reflection_res = multi_chat_completion(
-            [messages], 1, self.cfg.model, self.cfg.temperature
+            [messages], 1, self.model, self.temperature
         )[0]
         self.cal_usage_LLM([messages], flash_reflection_res)
         print(flash_reflection_res)
@@ -424,10 +428,10 @@ class HSEvo:
             lst_bad_reflection=self.lst_bad_reflection,
             str_flash_memory=self.str_flash_memory,
         )
-        messages = format_messages(self.cfg, pre_messages)
+        messages = format_messages(pre_messages)
 
         comprehensive_response = multi_chat_completion(
-            [messages], 1, self.cfg.model, self.cfg.temperature
+            [messages], 1, self.model, self.temperature
         )[0]
         self.cal_usage_LLM([messages], comprehensive_response)
         self.str_comprehensive_memory = (
@@ -461,7 +465,7 @@ class HSEvo:
                 str_flash_memory=self.str_flash_memory,
                 str_comprehensive_memory=self.str_comprehensive_memory,
             )
-            messages = format_messages(self.cfg, pre_messages)
+            messages = format_messages(pre_messages)
 
             # Write to file
             file_name = f"problem_iter{self.iteration}_response{num_choice}_prompt.txt"
@@ -473,7 +477,7 @@ class HSEvo:
 
         # Asynchronously generate responses
         response_lst = multi_chat_completion(
-            messages_lst, 1, self.cfg.model, self.cfg.temperature
+            messages_lst, 1, self.model, self.temperature
         )
         self.cal_usage_LLM(messages_lst, response_lst)
         crossed_population = [
@@ -492,7 +496,7 @@ class HSEvo:
             str_comprehensive_memory=self.str_comprehensive_memory,
             elitist=self.elitist,
         )
-        messages = format_messages(self.cfg, pre_messages)
+        messages = format_messages(pre_messages)
 
         # Write to file
         file_name = f"problem_iter{self.iteration}_prompt.txt"
@@ -502,8 +506,8 @@ class HSEvo:
         responses = multi_chat_completion(
             [messages],
             int(self.config.pop_size * self.mutation_rate),
-            self.cfg.model,
-            self.cfg.temperature,
+            self.model,
+            self.temperature,
         )
         self.cal_usage_LLM([messages], responses)
         population = [
@@ -611,16 +615,14 @@ class HSEvo:
         pre_messages = self.evol.harmony_search(
             sel_individual_hs=self.sel_individual_hs()
         )
-        messages = format_messages(self.cfg, pre_messages)
+        messages = format_messages(pre_messages)
 
         # Write to file
         file_name = f"problem_iter{self.iteration}_prompt.txt"
         with open(file_name, "w") as file:
             file.writelines(json.dumps(pre_messages))
 
-        responses = multi_chat_completion(
-            [messages], 1, self.cfg.model, self.cfg.temperature
-        )
+        responses = multi_chat_completion([messages], 1, self.model, self.temperature)
         self.cal_usage_LLM([messages], [str(responses[0])])
 
         logging.info("LLM Response for HS step: " + str(responses[0]))
