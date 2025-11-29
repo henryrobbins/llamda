@@ -80,17 +80,8 @@ class ReEvo:
 
     def init_population(self) -> None:
         # Evaluate the seed function, and set it as Elite
-        logging.info("Evaluating seed function...")
-        code = extract_code_from_generator(self.prompts.seed_func).replace("v1", "v2")
-        logging.info("Seed function code: \n" + code)
-        seed_ind = {
-            "stdout_filepath": f"problem_iter{self.iteration}_stdout0.txt",
-            "code_path": f"problem_iter{self.iteration}_code0.py",
-            "code": code,
-            "response_id": 0,
-        }
-        self.seed_ind = seed_ind
-        self.population = self.evaluate_population([seed_ind])
+        self.population = self.evaluate_population([self.prompts.seed_func])
+        self.seed_ind = self.population[0]
 
         # If seed function is invalid, stop
         if not self.seed_ind["exec_success"]:
@@ -103,13 +94,8 @@ class ReEvo:
         # Generate responses
         responses = self.evol.seed_population(self.long_term_reflection_str)
 
-        population = [
-            self.response_to_individual(response, response_id)
-            for response_id, response in enumerate(responses)
-        ]
-
         # Run code and evaluate population
-        population = self.evaluate_population(population)
+        population = self.evaluate_population(responses)
 
         # Update iteration
         self.population = population
@@ -156,10 +142,15 @@ class ReEvo:
         individual["traceback_msg"] = traceback_msg
         return individual
 
-    def evaluate_population(self, population: list[dict]) -> list[float]:
+    def evaluate_population(self, codes: list[str]) -> list[float]:
         """
         Evaluate population by running code in parallel and computing objective values.
         """
+
+        population = [
+            self.response_to_individual(resp, index) for index, resp in enumerate(codes)
+        ]
+
         inner_runs = []
         # Run code to evaluate
         for response_id in range(len(population)):
@@ -377,27 +368,6 @@ class ReEvo:
         with open(file_name, "w") as file:
             file.writelines(self.long_term_reflection_str + "\n")
 
-    def crossover(
-        self, short_term_reflection_tuple: tuple[list[list[dict]], list[str], list[str]]
-    ) -> list[dict]:
-        response_lst = self.evol.crossover(short_term_reflection_tuple)
-        crossed_population = [
-            self.response_to_individual(response, response_id)
-            for response_id, response in enumerate(response_lst)
-        ]
-
-        assert len(crossed_population) == self.config.pop_size
-        return crossed_population
-
-    def mutate(self) -> list[dict]:
-        """Elitist-based mutation. We only mutate the best individual to generate n_pop new individuals."""
-        responses = self.evol.mutate(self.long_term_reflection_str, self.elitist)
-        population = [
-            self.response_to_individual(response, response_id)
-            for response_id, response in enumerate(responses)
-        ]
-        return population
-
     def evolve(self):
         while self.function_evals < self.config.max_fe:
             # If all individuals are invalid, stop
@@ -419,9 +389,9 @@ class ReEvo:
                 selected_population
             )  # (response_lst, worse_code_lst, better_code_lst)
             # Crossover
-            crossed_population = self.crossover(short_term_reflection_tuple)
+            crossed_response_lst = self.evol.crossover(short_term_reflection_tuple)
             # Evaluate
-            self.population = self.evaluate_population(crossed_population)
+            self.population = self.evaluate_population(crossed_response_lst)
             # Update
             self.update_iter()
             # Long-term reflection
@@ -429,9 +399,11 @@ class ReEvo:
                 [response for response in short_term_reflection_tuple[0]]
             )
             # Mutate
-            mutated_population = self.mutate()
+            mutated_response_lst = self.evol.mutate(
+                self.long_term_reflection_str, self.elitist
+            )
             # Evaluate
-            self.population.extend(self.evaluate_population(mutated_population))
+            self.population.extend(self.evaluate_population(mutated_response_lst))
             # Update
             self.update_iter()
 
