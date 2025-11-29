@@ -7,7 +7,7 @@ from typing import List, Dict
 from ga.mcts.source.evolution import MCTSOperator
 from ga.mcts.source.mcts import MCTS, MCTSNode
 from ga.mcts.source.config import Config
-from ga.mcts.problem_adapter import Problem
+from utils.problem import Problem
 from ga.mcts.source.evolution_interface import Heuristic, InterfaceEC
 from utils.llm_client.base import BaseClient
 

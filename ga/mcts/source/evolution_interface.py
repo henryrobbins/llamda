@@ -5,7 +5,7 @@ from typing import List
 
 import numpy as np
 
-from ga.mcts.problem_adapter import Problem
+from utils.problem import Problem
 from ga.mcts.source.evolution import Evolution, MCTSOperator
 from utils.llm_client.base import BaseClient
 

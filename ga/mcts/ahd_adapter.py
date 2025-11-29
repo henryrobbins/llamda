@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from ga.mcts.source.mcts_ahd import MCTS_AHD
 from ga.mcts.source.config import Config
-from ga.mcts.problem_adapter import Problem
+from utils.problem import Problem
 
 
 @dataclass

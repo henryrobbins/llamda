@@ -6,7 +6,7 @@ import time
 
 from ga.eoh.original.eoh_evolution import EOHOperator
 from ga.eoh.original.config import Config
-from ga.eoh.problem_adapter import Problem
+from utils.problem import Problem
 from ga.eoh.original.eoh_interface_EC import Heuristic, InterfaceEC
 from utils.llm_client.base import BaseClient
 

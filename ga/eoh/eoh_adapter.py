@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from utils.llm_client.base import BaseClient
 from ga.eoh.original.eoh import EOH
 from ga.eoh.original.config import Config
-from ga.eoh.problem_adapter import Problem
+from utils.problem import Problem
 
 
 @dataclass

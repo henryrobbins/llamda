@@ -5,7 +5,7 @@ from typing import List
 import numpy as np
 
 from ga.eoh.original.eoh_evolution import EOHOperator, Evolution
-from ga.eoh.problem_adapter import Problem
+from utils.problem import Problem
 from utils.llm_client.base import BaseClient
 
 
