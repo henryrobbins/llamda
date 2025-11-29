@@ -3,8 +3,12 @@ import logging
 import os
 from pathlib import Path
 import subprocess
+
+from ga.mcts.config import Config
+from ga.mcts.mcts_ahd import MCTS_AHD, AHDConfig
+from utils.evaluate import Evaluator
 from utils.llm_client.openai import OpenAIClient, OpenAIClientConfig
-from ga.mcts.ahd_adapter import AHD as LHH
+from utils.problem import ProblemPrompts, adapt_prompt
 
 ROOT_DIR = os.getcwd()
 logging.basicConfig(level=logging.INFO)
@@ -26,14 +30,43 @@ def main(cfg) -> None:
     )
     client = OpenAIClient(config)
 
-    # Main algorithm
-    lhh = LHH(
-        problem_name=problem_name,
-        root_dir=ROOT_DIR,
-        workdir=workspace_dir,
-        client=client,
+    # ========================================================================
+
+    root_dir = ROOT_DIR
+
+    problem_config = ProblemPrompts.load_problem_prompts(
+        f"{root_dir}/prompts/{problem_name}"
     )
-    best_code_overall, best_code_path_overall = lhh.evolve()
+
+    if problem_config.problem_type == "constructive":
+        from utils.problem import TSP_CONSTRUCTIVE_PROMPTS
+
+        prompts = TSP_CONSTRUCTIVE_PROMPTS
+    elif problem_config.problem_type == "online":
+        from utils.problem import BPP_ONLINE_PROMPTS
+
+        prompts = BPP_ONLINE_PROMPTS
+    else:
+        prompts = adapt_prompt(problem_config)
+
+    evaluator = Evaluator(prompts, root_dir)
+
+    ahd_config = AHDConfig()
+
+    paras = Config(
+        init_size=ahd_config.init_pop_size,
+        pop_size=ahd_config.pop_size,
+        ec_fe_max=ahd_config.max_fe,
+        exp_output_path=f"{workspace_dir}/",
+    )
+
+    llm_client = client
+
+    # ========================================================================
+
+    # Main algorithm
+    lhh = MCTS_AHD(paras, prompts, evaluator, llm_client)
+    best_code_overall, best_code_path_overall = lhh.run()
     logging.info(f"Best Code Overall: {best_code_overall}")
     logging.info(f"Best Code Path Overall: {best_code_path_overall}")
 

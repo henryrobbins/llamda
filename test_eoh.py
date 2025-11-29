@@ -3,10 +3,13 @@ import logging
 import os
 from pathlib import Path
 import subprocess
+from ga.eoh.config import Config
+from utils.evaluate import Evaluator
 from utils.llm_client.openai import OpenAIClient, OpenAIClientConfig
+from utils.problem import ProblemPrompts, adapt_prompt
 from utils.utils import print_hyperlink
 
-from ga.eoh import EoH as LHH
+from ga.eoh.eoh import EOH, EoHConfig
 
 ROOT_DIR = os.getcwd()
 logging.basicConfig(level=logging.INFO)
@@ -28,10 +31,42 @@ def main(cfg) -> None:
     )
     client = OpenAIClient(config)
 
-    # Main algorithm
-    lhh = LHH(problem_name=problem_name, root_dir=ROOT_DIR, client=client)
+    # ========================================================================
+    root_dir = ROOT_DIR
 
-    best_code_overall, best_code_path_overall = lhh.evolve()
+    problem_config = ProblemPrompts.load_problem_prompts(
+        f"{root_dir}/prompts/{problem_name}"
+    )
+
+    if problem_config.problem_type == "constructive":
+        from utils.problem import TSP_CONSTRUCTIVE_PROMPTS
+
+        prompts = TSP_CONSTRUCTIVE_PROMPTS
+    elif problem_config.problem_type == "online":
+        from utils.problem import BPP_ONLINE_PROMPTS
+
+        prompts = BPP_ONLINE_PROMPTS
+    else:
+        prompts = adapt_prompt(problem_config)
+
+    evaluator = Evaluator(prompts, root_dir)
+
+    eoh_config = EoHConfig()
+
+    paras = Config(
+        ec_pop_size=eoh_config.pop_size,
+        ec_n_pop=(eoh_config.max_fe - 2 * eoh_config.pop_size)
+        // (4 * eoh_config.pop_size)
+        + 1,  # total evals = 2 * pop_size + n_pop * 4 * pop_size; for pop_size = 10, n_pop = 5, total evals = 2 * 10 + 4 * 5 * 10 = 220
+        exp_output_path="./",
+    )
+
+    # ========================================================================
+
+    # Main algorithm
+    llh = EOH(paras, prompts, evaluator, client)
+
+    best_code_overall, best_code_path_overall = llh.run()
     logging.info(f"Best Code Overall: {best_code_overall}")
     best_path = best_code_path_overall.replace(".py", ".txt").replace(
         "code", "response"

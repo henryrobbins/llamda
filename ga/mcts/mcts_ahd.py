@@ -3,6 +3,7 @@ import heapq
 import json
 import random
 from typing import List, Dict
+from dataclasses import dataclass
 
 from ga.mcts.evolution import MCTSOperator
 from ga.mcts.mcts import MCTS, MCTSNode
@@ -11,6 +12,14 @@ from utils.evaluate import Evaluator
 from ga.mcts.evolution_interface import MCTSIndividual, InterfaceEC
 from utils.llm_client.base import BaseClient
 from utils.problem import EOHProblemPrompts
+
+
+@dataclass
+class AHDConfig:
+    max_fe: int = 1000  # maximum number of function evaluations
+    pop_size: int = 10  # population size for GA
+    init_pop_size: int = 4  # initial population size for GA
+    timeout: int = 60  # timeout for evaluation of a single heuristic
 
 
 class MCTS_AHD:
