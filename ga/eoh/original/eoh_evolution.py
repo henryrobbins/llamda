@@ -2,7 +2,7 @@ from pathlib import Path
 from enum import StrEnum
 from typing import Dict, List
 
-from ga.eoh.original.prompts.problem import ProblemPrompts
+from utils.problem import EOHProblemPrompts
 from utils.llm_client.base import BaseClient
 from utils.utils import file_to_string, parse_response
 
@@ -17,7 +17,7 @@ class EOHOperator(StrEnum):
 
 class Evolution:
 
-    def __init__(self, llm_client, prompts: ProblemPrompts):
+    def __init__(self, llm_client, prompts: EOHProblemPrompts):
 
         self.prompts_dir = Path(__file__).parent / "prompts"
         self.prompts = prompts

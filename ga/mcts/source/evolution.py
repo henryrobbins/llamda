@@ -1,7 +1,7 @@
 from enum import StrEnum
 from pathlib import Path
 
-from ga.mcts.source.prompts.problem import ProblemPrompts
+from utils.problem import EOHProblemPrompts
 from utils.llm_client.base import BaseClient
 from utils.utils import file_to_string, parse_response
 
@@ -17,7 +17,7 @@ class MCTSOperator(StrEnum):
 
 class Evolution:
 
-    def __init__(self, llm_client: BaseClient, prompts: ProblemPrompts):
+    def __init__(self, llm_client: BaseClient, prompts: EOHProblemPrompts):
 
         self.prompts_dir = Path(__file__).parent / "prompts"
         self.prompts = prompts

@@ -6,7 +6,7 @@ import re
 import yaml
 
 from utils.utils import block_until_running, file_to_string, filter_traceback
-from ga.eoh.original.prompts.problem import ProblemPrompts
+from utils.problem import EOHProblemPrompts
 
 
 def adapt_prompt(problem_cfg: dict, root_dir: str):
@@ -44,7 +44,7 @@ def adapt_prompt(problem_cfg: dict, root_dir: str):
     else:
         prompt_func_outputs = ["result"]
 
-    return ProblemPrompts(
+    return EOHProblemPrompts(
         prompt_task=cfg["description"],
         prompt_func_name=prompt_func_name,
         prompt_func_inputs=prompt_func_inputs,
@@ -70,11 +70,11 @@ class Problem:
         self.output_file = f"{self.root_dir}/problems/{self.problem}/gpt.py"
 
         if self.problem_type == "tsp_constructive":
-            from ga.eoh.original.prompts.problem import TSP_CONSTRUCTIVE_PROMPTS
+            from utils.problem import TSP_CONSTRUCTIVE_PROMPTS
 
             self.prompts = TSP_CONSTRUCTIVE_PROMPTS
         elif self.problem_type == "bpp_online":
-            from ga.eoh.original.prompts.problem import BPP_ONLINE_PROMPTS
+            from utils.problem import BPP_ONLINE_PROMPTS
 
             self.prompts = BPP_ONLINE_PROMPTS
         else:
