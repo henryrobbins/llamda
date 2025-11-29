@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import subprocess
 from utils.llm_client.openai import OpenAIClient, OpenAIClientConfig
+from utils.problem import ProblemPrompts
 from utils.utils import print_hyperlink
 
 from ga.reevo.reevo import ReEvo as LHH
@@ -12,22 +13,28 @@ ROOT_DIR = os.getcwd()
 logging.basicConfig(level=logging.INFO)
 
 
-@hydra.main(version_base=None, config_path="cfg", config_name="reevo")
-def main(cfg):
+@hydra.main(version_base=None, config_path="hydra", config_name="config")
+def main(cfg) -> None:
+    problem_name = "tsp_aco"
+
     workspace_dir = Path.cwd()
     # Set logging level
     logging.info(f"Workspace: {print_hyperlink(workspace_dir)}")
     logging.info(f"Project Root: {print_hyperlink(ROOT_DIR)}")
-    logging.info(f"Using Algorithm: {cfg.algorithm}")
 
     config = OpenAIClientConfig(
-        model=cfg.model,
+        model="gpt-3.5-turbo",
         temperature=1.0,
         api_key=os.getenv("OPENAI_API_KEY"),
     )
     client = OpenAIClient(config)
 
-    lhh = LHH(cfg, ROOT_DIR, generator_llm=client)
+    prompt_dir = f"{ROOT_DIR}/prompts"
+    prompts = ProblemPrompts.load_problem_prompts(
+        path=f"{prompt_dir}/{problem_name}",
+    )
+
+    lhh = LHH(prompts, ROOT_DIR, generator_llm=client)
 
     best_code_overall, best_code_path_overall = lhh.evolve()
     logging.info(f"Best Code Overall: {best_code_overall}")
@@ -39,9 +46,9 @@ def main(cfg):
     )
 
     # Run validation and redirect stdout to a file "best_code_overall_stdout.txt"
-    with open(f"{ROOT_DIR}/problems/{cfg.problem.problem_name}/gpt.py", "w") as file:
+    with open(f"{ROOT_DIR}/problems/{problem_name}/gpt.py", "w") as file:
         file.writelines(best_code_overall + "\n")
-    test_script = f"{ROOT_DIR}/problems/{cfg.problem.problem_name}/eval.py"
+    test_script = f"{ROOT_DIR}/problems/{problem_name}/eval.py"
     test_script_stdout = "best_code_overall_val_stdout.txt"
     logging.info(f"Running validation script...: {print_hyperlink(test_script)}")
     with open(test_script_stdout, "w") as stdout:

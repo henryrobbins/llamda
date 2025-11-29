@@ -3,7 +3,6 @@ import logging
 import subprocess
 import numpy as np
 import os
-from omegaconf import DictConfig
 from dataclasses import dataclass
 
 from ga.reevo.evolution import Evolution, ReEvoLLMClients
@@ -31,7 +30,7 @@ class ReEvoConfig:
 class ReEvo:
     def __init__(
         self,
-        cfg: DictConfig,
+        prompts: ProblemPrompts,
         root_dir: str,
         generator_llm: BaseClient,
         reflector_llm: Optional[BaseClient] = None,
@@ -42,16 +41,10 @@ class ReEvo:
         crossover_llm: Optional[BaseClient] = None,
         mutation_llm: Optional[BaseClient] = None,
     ) -> None:
-        self.cfg = cfg
         self.config = ReEvoConfig()
+        self.prompts = prompts
 
         self.root_dir = root_dir
-        self.prompt_dir = f"{self.root_dir}/prompts"
-
-        self.prompts = ProblemPrompts.load_problem_prompts(
-            path=f"{self.prompt_dir}/{self.cfg.problem}",
-        )
-
         self.output_file = (
             f"{self.root_dir}/problems/{self.prompts.problem_name}/gpt.py"
         )
@@ -393,7 +386,7 @@ class ReEvo:
             for response_id, response in enumerate(response_lst)
         ]
 
-        assert len(crossed_population) == self.cfg.pop_size
+        assert len(crossed_population) == self.config.pop_size
         return crossed_population
 
     def mutate(self) -> list[dict]:

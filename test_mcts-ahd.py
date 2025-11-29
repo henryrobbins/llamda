@@ -10,31 +10,37 @@ ROOT_DIR = os.getcwd()
 logging.basicConfig(level=logging.INFO)
 
 
-@hydra.main(version_base=None, config_path="cfg", config_name="mcts-ahd")
-def main(cfg):
+@hydra.main(version_base=None, config_path="hydra", config_name="config")
+def main(cfg) -> None:
+    problem_name = "tsp_constructive"
+
     workspace_dir = Path.cwd()
     # Set logging level
     logging.info(f"Workspace: {workspace_dir}")
     logging.info(f"Project Root: {ROOT_DIR}")
-    logging.info(f"Using Algorithm: {cfg.algorithm}")
 
     config = OpenAIClientConfig(
-        model=cfg.model,
+        model="gpt-3.5-turbo",
         temperature=1.0,
         api_key=os.getenv("OPENAI_API_KEY"),
     )
     client = OpenAIClient(config)
 
     # Main algorithm
-    lhh = LHH(cfg, ROOT_DIR, workspace_dir, client)
+    lhh = LHH(
+        problem_name=problem_name,
+        root_dir=ROOT_DIR,
+        workdir=workspace_dir,
+        client=client,
+    )
     best_code_overall, best_code_path_overall = lhh.evolve()
     logging.info(f"Best Code Overall: {best_code_overall}")
     logging.info(f"Best Code Path Overall: {best_code_path_overall}")
 
     # Run validation and redirect stdout to a file "best_code_overall_stdout.txt"
-    with open(f"{ROOT_DIR}/problems/{cfg.problem.problem_name}/gpt.py", "w") as file:
+    with open(f"{ROOT_DIR}/problems/{problem_name}/gpt.py", "w") as file:
         file.writelines(best_code_overall + "\n")
-    test_script = f"{ROOT_DIR}/problems/{cfg.problem.problem_name}/eval.py"
+    test_script = f"{ROOT_DIR}/problems/{problem_name}/eval.py"
     test_script_stdout = "best_code_overall_val_stdout.txt"
     logging.info(f"Running validation script...: {test_script}")
     with open(test_script_stdout, "w") as stdout:

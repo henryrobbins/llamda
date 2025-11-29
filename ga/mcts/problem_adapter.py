@@ -2,7 +2,6 @@ import logging
 import os
 import subprocess
 import re
-from typing import Any
 
 import yaml
 
@@ -57,11 +56,10 @@ def adapt_prompt(problem_cfg: dict, root_dir: str):
 
 
 class Problem:
-    def __init__(self, cfg, root_dir):
-        self.config = cfg
+    def __init__(self, problem_name: str, root_dir: str):
         self.root_dir = root_dir
 
-        with open(f"{self.root_dir}/prompts/{cfg.problem}/problem.yaml", "r") as f:
+        with open(f"{self.root_dir}/prompts/{problem_name}/problem.yaml", "r") as f:
             problem_config = yaml.safe_load(f)
 
         self.problem = problem_config["problem_name"]

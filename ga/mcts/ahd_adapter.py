@@ -14,10 +14,10 @@ class AHDConfig:
 
 
 class AHD:
-    def __init__(self, cfg, root_dir, workdir, client) -> None:
-        self.cfg = cfg
+    def __init__(self, problem_name: str, root_dir, workdir, client) -> None:
+
         self.root_dir = root_dir
-        self.problem = Problem(cfg, root_dir)
+        self.problem = Problem(problem_name, root_dir)
 
         ahd_config = AHDConfig()
 

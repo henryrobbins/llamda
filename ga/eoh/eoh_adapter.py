@@ -17,10 +17,10 @@ class EoHConfig:
 
 
 class EoH:
-    def __init__(self, cfg, root_dir: str, client: BaseClient) -> None:
-        self.cfg = cfg
+    def __init__(self, problem_name: str, root_dir: str, client: BaseClient) -> None:
+
         self.root_dir = root_dir
-        self.problem = Problem(cfg, root_dir)
+        self.problem = Problem(problem_name, root_dir)
 
         eoh_config = EoHConfig()
 
