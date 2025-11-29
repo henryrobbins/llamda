@@ -250,7 +250,7 @@ class Problem:
                 )
 
             logging.info(
-                f"Iteration {self.iteration}, response_id {response_id}: Objective value: {individual['obj']}"
+                f"Iteration {self.iteration}, response_id {response_id}: Objective value: {individual.obj}"
             )
         return population
 
