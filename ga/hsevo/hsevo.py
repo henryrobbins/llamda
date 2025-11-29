@@ -1,16 +1,14 @@
 from dataclasses import dataclass
 import os
 import logging
-import subprocess
 import numpy as np
 import json
 import tiktoken
 from ga.hsevo.evolution import Evolution
+from utils.evaluate import Evaluator
 from utils.individual import Individual
 from utils.problem import ProblemPrompts
 from utils.utils import (
-    filter_traceback,
-    block_until_running,
     extract_code_from_generator,
     multi_chat_completion,
     format_messages,
@@ -73,6 +71,8 @@ class HSEvo:
         )
         self.evol = Evolution(prompts=self.prompts, root_dir=root_dir)
 
+        self.evaluator = Evaluator(self.prompts, self.root_dir)
+
         self.str_comprehensive_memory = self.prompts.external_knowledge
 
         self.local_sel_hs = None
@@ -112,7 +112,7 @@ class HSEvo:
             response_id=0,
             tryHS=False,
         )
-        self.population = self.batch_evaluate([seed_ind])
+        self.population = self.evaluator.batch_evaluate([seed_ind])
         self.seed_ind = self.population[0]
 
         # If seed function is invalid, stop
@@ -150,7 +150,7 @@ class HSEvo:
         ]
 
         # Run code and evaluate population
-        population = self.batch_evaluate(population)
+        population = self.evaluator.batch_evaluate(population)
 
         # Update iteration
         self.population = population
@@ -189,137 +189,6 @@ class HSEvo:
         )
 
         return individual
-
-    def mark_invalid_individual(
-        self, individual: HSEvoIndividual, traceback_msg: str
-    ) -> HSEvoIndividual:
-        """
-        Mark an individual as invalid.
-        """
-        individual.exec_success = False
-        individual.obj = float("inf")
-        individual.traceback_msg = traceback_msg
-        return individual
-
-    def batch_evaluate(
-        self, population: list[HSEvoIndividual]
-    ) -> list[HSEvoIndividual]:
-        """
-        Evaluate population by running code in parallel and computing objective values.
-        """
-
-        inner_runs = []
-        # Run code to evaluate
-        for response_id in range(len(population)):
-            self.function_evals += 1
-            # Skip if response is invalid
-            if population[response_id].code is None:
-                population[response_id] = self.mark_invalid_individual(
-                    population[response_id], "Invalid response!"
-                )
-                inner_runs.append(None)
-                continue
-
-            logging.info(f"Iteration {self.iteration}: Running Code {response_id}")
-
-            try:
-                # Use default code execution for other problems
-                process = self._run_code(population[response_id], response_id)
-                inner_runs.append(process)
-            except Exception as e:  # If code execution fails
-                logging.info(f"Error for response_id {response_id}: {e}")
-                population[response_id] = self.mark_invalid_individual(
-                    population[response_id], str(e)
-                )
-                inner_runs.append(None)
-
-        # Update population with objective values
-        for response_id, inner_run in enumerate(inner_runs):
-            if inner_run is None:  # If code execution fails, skip
-                continue
-
-            individual = population[response_id]
-
-            try:
-                inner_run.communicate(
-                    timeout=self.config.timeout
-                )  # Wait for code execution to finish
-            except subprocess.TimeoutExpired as e:
-                logging.info(f"Error for response_id {response_id}: {e}")
-                population[response_id] = self.mark_invalid_individual(
-                    population[response_id], str(e)
-                )
-                inner_run.kill()
-                continue
-
-            stdout_filepath = individual.stdout_filepath
-            with open(stdout_filepath, "r") as f:  # read the stdout file
-                stdout_str = f.read()
-            traceback_msg = filter_traceback(stdout_str)
-
-            if traceback_msg == "":  # If execution has no error
-                try:
-                    individual.obj = (
-                        float(stdout_str.split("\n")[-2])
-                        if self.prompts.obj_type == "min"
-                        else -float(stdout_str.split("\n")[-2])
-                    )
-                    individual.exec_success = True
-                except:
-                    population[response_id] = self.mark_invalid_individual(
-                        population[response_id],
-                        "Invalid std out / objective value!",
-                    )
-            else:  # Otherwise, also provide execution traceback error feedback
-                population[response_id] = self.mark_invalid_individual(
-                    population[response_id], traceback_msg
-                )
-
-        # Log after all population is evaluated
-        valid_objs = [ind.obj for ind in population if ind.exec_success]
-        best_obj = min(valid_objs) if valid_objs else float("inf")
-        logging.info(
-            f"Eval={self.function_evals}, TokenIn={self.prompt_tokens}, TokenOut={self.completion_tokens}, MaxObj={best_obj}"
-        )
-
-        return population
-
-    def _run_code(self, individual: Individual, response_id) -> subprocess.Popen:
-        """
-        Write code into a file and run eval script.
-        """
-        logging.debug(f"Iteration {self.iteration}: Processing Code Run {response_id}")
-
-        with open(self.output_file, "w") as file:
-            file.writelines(individual.code + "\n")
-
-        # Execute the python file with flags
-        with open(individual.stdout_filepath, "w") as f:
-            eval_file_path = (
-                f"{self.root_dir}/problems/{self.prompts.problem_name}/eval.py"
-                if self.prompts.problem_type != "black_box"
-                else f"{self.root_dir}/problems/{self.prompts.problem_name}/eval_black_box.py"
-            )
-            process = subprocess.Popen(
-                [
-                    "python",
-                    "-u",
-                    eval_file_path,
-                    f"{self.prompts.problem_size}",
-                    self.root_dir,
-                    "train",
-                ],
-                stdout=f,
-                stderr=f,
-            )
-
-        block_until_running(
-            individual.stdout_filepath,
-            log_status=True,
-            iter_num=self.iteration,
-            response_id=response_id,
-        )
-        return process
 
     def update_iter(self) -> None:
         """
@@ -573,7 +442,7 @@ class HSEvo:
             str_create_pop.append(tmp_str)
 
         population_hs = self.responses_to_population(str_create_pop, try_hs_idx)
-        return self.batch_evaluate(population_hs)
+        return self.evaluator.batch_evaluate(population_hs)
 
     def find_best_obj(self, population_hs):
         objs = [individual["obj"] for individual in population_hs]
@@ -709,14 +578,14 @@ class HSEvo:
             # Crossover
             crossed_population = self.crossover(selected_population)
             # Evaluate
-            self.population = self.batch_evaluate(crossed_population)
+            self.population = self.evaluator.batch_evaluate(crossed_population)
             # Update
             self.update_iter()
 
             # Mutate
             mutated_population = self.mutate()
             # Evaluate
-            self.population.extend(self.batch_evaluate(mutated_population))
+            self.population.extend(self.evaluator.batch_evaluate(mutated_population))
             # Update
             self.update_iter()
 

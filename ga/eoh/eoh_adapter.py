@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 
+from utils.evaluate import Evaluator
 from utils.llm_client.base import BaseClient
 from ga.eoh.original.eoh import EOH
 from ga.eoh.original.config import Config
-from utils.problem import Problem
+from utils.problem import ProblemPrompts, adapt_prompt
 
 
 @dataclass
@@ -20,7 +21,27 @@ class EoH:
     def __init__(self, problem_name: str, root_dir: str, client: BaseClient) -> None:
 
         self.root_dir = root_dir
-        self.problem = Problem(problem_name, root_dir)
+
+        self.problem_config = ProblemPrompts.load_problem_prompts(
+            f"{self.root_dir}/prompts/{problem_name}"
+        )
+
+        self.output_file = (
+            f"{self.root_dir}/problems/{self.problem_config.problem_name}/gpt.py"
+        )
+
+        if self.problem_config.problem_type == "constructive":
+            from utils.problem import TSP_CONSTRUCTIVE_PROMPTS
+
+            self.prompts = TSP_CONSTRUCTIVE_PROMPTS
+        elif self.problem_config.problem_type == "online":
+            from utils.problem import BPP_ONLINE_PROMPTS
+
+            self.prompts = BPP_ONLINE_PROMPTS
+        else:
+            self.prompts = adapt_prompt(self.problem_config)
+
+        self.evaluator = Evaluator(self.prompts, self.root_dir)
 
         eoh_config = EoHConfig()
 
@@ -37,7 +58,7 @@ class EoH:
     def evolve(self):
         print("- Evolution Start -")
 
-        method = EOH(self.paras, self.problem, self.llm_client)
+        method = EOH(self.paras, self.prompts, self.evaluator, self.llm_client)
 
         results = method.run()
 

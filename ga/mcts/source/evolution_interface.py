@@ -5,8 +5,9 @@ from typing import List
 
 import numpy as np
 
+from utils.evaluate import Evaluator
 from utils.individual import Individual
-from utils.problem import Problem, hydrate_individual
+from utils.problem import EOHProblemPrompts, hydrate_individual
 from ga.mcts.source.evolution import Evolution, MCTSOperator
 from utils.llm_client.base import BaseClient
 
@@ -19,10 +20,16 @@ class MCTSIndividual(Individual):
 
 class InterfaceEC:
 
-    def __init__(self, m: int, interface_prob: Problem, llm_client: BaseClient):
+    def __init__(
+        self,
+        m: int,
+        prompts: EOHProblemPrompts,
+        evaluator: Evaluator,
+        llm_client: BaseClient,
+    ):
         self.m = m
-        self.interface_eval = interface_prob
-        self.evol = Evolution(llm_client, interface_prob.prompts)
+        self.interface_eval = evaluator
+        self.evol = Evolution(llm_client, prompts)
 
     def check_duplicate_obj(self, population: list[MCTSIndividual], obj: float) -> bool:
         for ind in population:

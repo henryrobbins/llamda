@@ -6,18 +6,24 @@ import time
 
 from ga.eoh.original.eoh_evolution import EOHOperator
 from ga.eoh.original.config import Config
-from utils.problem import Problem
+from utils.evaluate import Evaluator
 from ga.eoh.original.eoh_interface_EC import EOHIndividual, InterfaceEC
 from utils.llm_client.base import BaseClient
+from utils.problem import EOHProblemPrompts
 
 
 class EOH:
 
     def __init__(
-        self, config: Config, problem: Problem, llm_client: BaseClient
+        self,
+        config: Config,
+        problem: EOHProblemPrompts,
+        evaluator: Evaluator,
+        llm_client: BaseClient,
     ) -> None:
 
         self.prob = problem
+        self.evaluator = evaluator
         self.llm_client = llm_client
 
         # EOH Configuration
@@ -126,6 +132,7 @@ class EOH:
             m=self.m,
             llm_client=self.llm_client,
             interface_prob=self.prob,
+            evaluator=self.evaluator,
         )
 
         population, n_start = self._initialize_population(interface_ec)

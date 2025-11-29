@@ -5,8 +5,9 @@ from typing import List
 import numpy as np
 
 from ga.eoh.original.eoh_evolution import EOHOperator, Evolution
+from utils.evaluate import Evaluator
 from utils.individual import Individual
-from utils.problem import Problem, hydrate_individual
+from utils.problem import EOHProblemPrompts, hydrate_individual
 from utils.llm_client.base import BaseClient
 
 
@@ -17,12 +18,17 @@ class EOHIndividual(Individual):
 
 class InterfaceEC:
     def __init__(
-        self, pop_size: int, m: int, interface_prob: Problem, llm_client: BaseClient
+        self,
+        pop_size: int,
+        m: int,
+        interface_prob: EOHProblemPrompts,
+        evaluator: Evaluator,
+        llm_client: BaseClient,
     ):
         self.pop_size = pop_size
         self.m = m
-        self.interface_eval = interface_prob
-        self.evol = Evolution(llm_client=llm_client, prompts=interface_prob.prompts)
+        self.interface_eval = evaluator
+        self.evol = Evolution(llm_client=llm_client, prompts=interface_prob)
 
     def check_duplicate(self, population: list[EOHIndividual], code: str) -> bool:
         for ind in population:

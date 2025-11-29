@@ -1,20 +1,15 @@
 from typing import Optional
 import logging
-import subprocess
 import numpy as np
 import os
 from dataclasses import dataclass
 
 from ga.reevo.evolution import Evolution, ReEvoLLMClients
+from utils.evaluate import Evaluator
 from utils.individual import Individual
 from utils.llm_client.base import BaseClient
 from utils.problem import ProblemPrompts
-from utils.utils import (
-    extract_code_from_generator,
-    filter_traceback,
-    block_until_running,
-    print_hyperlink,
-)
+from utils.utils import extract_code_from_generator, print_hyperlink
 
 
 @dataclass
@@ -68,6 +63,8 @@ class ReEvo:
 
         self.root_dir = root_dir
 
+        self.evaluator = Evaluator(self.prompts, self.root_dir)
+
         self.mutation_rate = self.config.mutation_rate
         self.iteration = 0
         self.function_evals = 0
@@ -88,7 +85,7 @@ class ReEvo:
             code=code,
             response_id=0,
         )
-        self.population = self.batch_evaluate([seed_ind])
+        self.population = self.evaluator.batch_evaluate([seed_ind])
         self.seed_ind = self.population[0]
 
         # If seed function is invalid, stop
@@ -108,7 +105,7 @@ class ReEvo:
         ]
 
         # Run code and evaluate population
-        population = self.batch_evaluate(population)
+        population = self.evaluator.batch_evaluate(population)
         # Update iteration
         self.population = population
         self.update_iter()
@@ -145,130 +142,6 @@ class ReEvo:
         )
 
         return individual
-
-    def mark_invalid_individual(
-        self, individual: Individual, traceback_msg: str
-    ) -> Individual:
-        """
-        Mark an individual as invalid.
-        """
-        individual.exec_success = False
-        individual.obj = float("inf")
-        individual.traceback_msg = traceback_msg
-        return individual
-
-    def batch_evaluate(self, population: list[Individual]) -> list[Individual]:
-        """
-        Evaluate population by running code in parallel and computing objective values.
-        """
-
-        inner_runs = []
-        # Run code to evaluate
-        for response_id in range(len(population)):
-            self.function_evals += 1
-            # Skip if response is invalid
-            if population[response_id].code is None:
-                population[response_id] = self.mark_invalid_individual(
-                    population[response_id], "Invalid response!"
-                )
-                inner_runs.append(None)
-                continue
-
-            logging.info(f"Iteration {self.iteration}: Running Code {response_id}")
-
-            try:
-                process = self._run_code(population[response_id], response_id)
-                inner_runs.append(process)
-            except Exception as e:  # If code execution fails
-                logging.info(f"Error for response_id {response_id}: {e}")
-                population[response_id] = self.mark_invalid_individual(
-                    population[response_id], str(e)
-                )
-                inner_runs.append(None)
-
-        # Update population with objective values
-        for response_id, inner_run in enumerate(inner_runs):
-            if inner_run is None:  # If code execution fails, skip
-                continue
-            try:
-                inner_run.communicate(
-                    timeout=self.config.timeout
-                )  # Wait for code execution to finish
-            except subprocess.TimeoutExpired as e:
-                logging.info(f"Error for response_id {response_id}: {e}")
-                population[response_id] = self.mark_invalid_individual(
-                    population[response_id], str(e)
-                )
-                inner_run.kill()
-                continue
-
-            individual = population[response_id]
-            stdout_filepath = individual.stdout_filepath
-            with open(stdout_filepath, "r") as f:  # read the stdout file
-                stdout_str = f.read()
-            traceback_msg = filter_traceback(stdout_str)
-
-            # Store objective value for each individual
-            if traceback_msg == "":  # If execution has no error
-                try:
-                    individual.obj = float(stdout_str.split("\n")[-2])
-                    assert individual.obj > 0, "Objective value <= 0 is not supported."
-                    individual.obj = (
-                        -individual.obj
-                        if self.prompts.obj_type == "max"
-                        else individual.obj
-                    )
-                    individual.exec_success = True
-                except:
-                    population[response_id] = self.mark_invalid_individual(
-                        population[response_id], "Invalid std out / objective value!"
-                    )
-            else:  # Otherwise, also provide execution traceback error feedback
-                population[response_id] = self.mark_invalid_individual(
-                    population[response_id], traceback_msg
-                )
-
-            logging.info(
-                f"Iteration {self.iteration}, response_id {response_id}: Objective value: {individual.obj}"
-            )
-        return population
-
-    def _run_code(self, individual: Individual, response_id) -> subprocess.Popen:
-        """
-        Write code into a file and run eval script.
-        """
-        logging.debug(f"Iteration {self.iteration}: Processing Code Run {response_id}")
-
-        with open(self.output_file, "w") as file:
-            file.writelines(individual.code + "\n")
-
-        # Execute the python file with flags
-        with open(individual.stdout_filepath, "w") as f:
-            eval_file_path = (
-                f"{self.root_dir}/problems/{self.prompts.problem_name}/eval.py"
-                if self.prompts.problem_type != "black_box"
-                else f"{self.root_dir}/problems/{self.prompts.problem_name}/eval_black_box.py"
-            )
-            process = subprocess.Popen(
-                [
-                    "python",
-                    "-u",
-                    eval_file_path,
-                    f"{self.prompts.problem_size}",
-                    self.root_dir,
-                    "train",
-                ],
-                stdout=f,
-                stderr=f,
-            )
-
-        block_until_running(
-            individual.stdout_filepath,
-            log_status=True,
-            iter_num=self.iteration,
-            response_id=response_id,
-        )
-        return process
 
     def update_iter(self) -> None:
         """
@@ -405,7 +278,7 @@ class ReEvo:
                 for response_id, response in enumerate(crossed_response_lst)
             ]
             # Evaluate
-            self.population = self.batch_evaluate(crossed_population)
+            self.population = self.evaluator.batch_evaluate(crossed_population)
             # Update
             self.update_iter()
             # Long-term reflection
@@ -421,7 +294,7 @@ class ReEvo:
                 for response_id, response in enumerate(mutated_response_lst)
             ]
             # Evaluate
-            self.population.extend(self.batch_evaluate(mutated_population))
+            self.population.extend(self.evaluator.batch_evaluate(mutated_population))
             # Update
             self.update_iter()
 

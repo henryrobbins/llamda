@@ -7,16 +7,24 @@ from typing import List, Dict
 from ga.mcts.source.evolution import MCTSOperator
 from ga.mcts.source.mcts import MCTS, MCTSNode
 from ga.mcts.source.config import Config
-from utils.problem import Problem
+from utils.evaluate import Evaluator
 from ga.mcts.source.evolution_interface import MCTSIndividual, InterfaceEC
 from utils.llm_client.base import BaseClient
+from utils.problem import EOHProblemPrompts
 
 
 class MCTS_AHD:
 
-    def __init__(self, paras: Config, problem: Problem, llm_client: BaseClient) -> None:
+    def __init__(
+        self,
+        paras: Config,
+        prompts: EOHProblemPrompts,
+        evaluator: Evaluator,
+        llm_client: BaseClient,
+    ) -> None:
 
-        self.prob = problem
+        self.prompts = prompts
+        self.evaluator = evaluator
         self.llm_client = llm_client
 
         # MCTS Configuration
@@ -139,7 +147,8 @@ class MCTS_AHD:
 
         self.interface_ec = InterfaceEC(
             m=self.m,
-            interface_prob=self.prob,
+            prompts=self.prompts,
+            evaluator=self.evaluator,
             llm_client=self.llm_client,
         )
 
