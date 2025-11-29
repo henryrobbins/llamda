@@ -4,18 +4,15 @@ import subprocess
 import numpy as np
 import json
 import tiktoken
-from datetime import datetime
+from ga.hsevo.evolution import Evolution
+from utils.problem import ProblemPrompts
 from utils.utils import (
-    file_to_string,
     filter_traceback,
-    filter_code,
     block_until_running,
     extract_code_from_generator,
     multi_chat_completion,
     format_messages,
 )
-
-# from baselines.reevo.gls_tsp_adapt.gls_tsp_eval import Sandbox
 
 
 class HSEvo:
@@ -38,75 +35,23 @@ class HSEvo:
         self.lst_bad_reflection = []
 
         self.problem = self.cfg.problem.problem_name
-        self.problem_desc = self.cfg.problem.description
         self.problem_size = self.cfg.problem.problem_size
-        self.func_name = self.cfg.problem.func_name
         self.obj_type = self.cfg.problem.obj_type
         self.problem_type = self.cfg.problem.problem_type
-
-        logging.info("Problem: " + self.problem)
-        logging.info("Problem description: " + self.problem_desc)
-        logging.info("Function name: " + self.func_name)
 
         self.hsevo_dir = f"{self.root_dir}/ga/hsevo"
         self.prompt_dir = f"{self.root_dir}/prompts"
         self.output_file = f"{self.root_dir}/problems/{self.problem}/gpt.py"
 
-        # Loading all text prompts
-        # Problem-specific prompt components
-        prompt_path_suffix = "_black_box" if self.problem_type == "black_box" else ""
-        problem_prompt_path = f"{self.prompt_dir}/{self.problem}{prompt_path_suffix}"
-        self.seed_func = file_to_string(f"{problem_prompt_path}/seed_func.txt")
-        self.func_signature = file_to_string(
-            f"{problem_prompt_path}/func_signature.txt"
+        self.prompts = ProblemPrompts.load_problem_prompts(
+            func_name=self.cfg.problem.func_name,
+            problem_desc=self.cfg.problem.description,
+            path=f"{self.prompt_dir}/{self.problem}",
         )
-        self.func_desc = file_to_string(f"{problem_prompt_path}/func_desc.txt")
-        if os.path.exists(f"{problem_prompt_path}/external_knowledge.txt"):
-            self.external_knowledge = file_to_string(
-                f"{problem_prompt_path}/external_knowledge.txt"
-            )
-        else:
-            self.external_knowledge = ""
-        self.str_comprehensive_memory = self.external_knowledge
+        self.evol = Evolution(prompts=self.prompts, root_dir=root_dir)
 
-        # Common prompts
-        self.user_flash_reflection_prompt = file_to_string(
-            f"{self.hsevo_dir}/prompts/user_flash_reflection.txt"
-        )
-        self.user_comprehensive_reflection_prompt = file_to_string(
-            f"{self.hsevo_dir}/prompts/user_comprehensive_reflection.txt"
-        )
-        self.system_generator_prompt = file_to_string(
-            f"{self.hsevo_dir}/prompts/system_generator.txt"
-        )
-        self.system_reflector_prompt = file_to_string(
-            f"{self.hsevo_dir}/prompts/system_reflector.txt"
-        )
-        self.crossover_prompt = file_to_string(
-            f"{self.hsevo_dir}/prompts/crossover.txt"
-        )
-        self.mutation_prompt = file_to_string(f"{self.hsevo_dir}/prompts/mutation.txt")
-        self.user_generator_prompt = file_to_string(
-            f"{self.hsevo_dir}/prompts/user_generator.txt"
-        )
-        self.seed_prompt = file_to_string(f"{self.hsevo_dir}/prompts/seed.txt").format(
-            seed_func=self.seed_func,
-            func_name=self.func_name,
-        )
+        self.str_comprehensive_memory = self.prompts.external_knowledge
 
-        self.system_hs_prompt = file_to_string(
-            f"{self.hsevo_dir}/prompts/system_harmony_search.txt"
-        )
-        self.hs_prompt = file_to_string(f"{self.hsevo_dir}/prompts/harmony_search.txt")
-
-        # Flag to print prompts
-        self.print_crossover_prompt = (
-            True  # Print crossover prompt for the first iteration
-        )
-        self.print_mutate_prompt = True  # Print mutate prompt for the first iteration
-        self.print_flash_reflection_prompt = True
-        self.print_comprehensive_reflection_prompt = True
-        self.print_hs_prompt = True
         self.local_sel_hs = None
 
         self.scientists = [
@@ -121,9 +66,6 @@ class HSEvo:
             "You are Rosalind Franklin, DNA structure revealer.",
             "You are Ada Lovelace, computer programming pioneer.",
         ]
-
-        _cur_file_ = os.path.dirname(__file__)
-        _cur_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         self.init_population()
 
@@ -140,7 +82,7 @@ class HSEvo:
     def init_population(self) -> None:
         # Evaluate the seed function, and set it as Elite
         logging.info("Evaluating seed function...")
-        code = extract_code_from_generator(self.seed_func).replace("v1", "v2")
+        code = extract_code_from_generator(self.prompts.seed_func).replace("v1", "v2")
         logging.info("Seed function code: \n" + code)
         seed_ind = {
             "stdout_filepath": f"problem_iter{self.iteration}_stdout0.txt",
@@ -162,37 +104,13 @@ class HSEvo:
         messages_lst = []
 
         for i in range(self.cfg.init_pop_size):
-            user_generator_prompt_full = self.user_generator_prompt.format(
-                seed=self.scientists[i % len(self.scientists)],
-                func_name=self.func_name,
-                problem_desc=self.problem_desc,
-                func_desc=self.func_desc,
+            scientist = self.scientists[i % len(self.scientists)]
+            pre_messages = self.evol.init_population(
+                long_term_reflection_str=self.long_term_reflection_str,
+                scientist=scientist,
             )
-
-            system_generator_prompt_full = self.system_generator_prompt.format(
-                seed=self.scientists[i % len(self.scientists)]
-            )
-
-            # Generate responses
-            system = system_generator_prompt_full
-            user = (
-                user_generator_prompt_full
-                + "\n"
-                + self.seed_prompt
-                + "\n"
-                + self.long_term_reflection_str
-            )
-
-            pre_messages = {"system": system, "user": user}
             messages = format_messages(self.cfg, pre_messages)
             messages_lst.append(messages)
-
-            logging.info(
-                "Initial Population Prompt: \nSystem Prompt: \n"
-                + system
-                + "\nUser Prompt: \n"
-                + user
-            )
 
             # Write to file
             file_name = f"problem_iter{self.iteration}_prompt{i}.txt"
@@ -203,8 +121,7 @@ class HSEvo:
             messages_lst, 1, self.cfg.model, self.cfg.temperature + 0.3
         )
         self.cal_usage_LLM(messages_lst, responses)
-        """responses = multi_chat_completion([messages], self.cfg.init_pop_size, self.cfg.model,
-                                          self.cfg.temperature + 0.3)  # Increase the temperature for diverse initial population"""
+
         population = [
             self.response_to_individual(response, response_id)
             for response_id, response in enumerate(responses)
@@ -493,24 +410,10 @@ class HSEvo:
                 seen_elements.add(temp_str)
                 lst_str_method.append(temp_str)
 
-        system = self.system_reflector_prompt
-        user = self.user_flash_reflection_prompt.format(
-            problem_desc=self.problem_desc,
-            lst_method="\n".join(lst_str_method),
-            schema_reflection={"analyze": "str", "exp": "str"},
+        pre_messages = self.evol.flash_reflection(
+            lst_str_method=lst_str_method,
         )
-
-        pre_messages = {"system": system, "user": user}
         messages = format_messages(self.cfg, pre_messages)
-
-        if self.print_flash_reflection_prompt:
-            logging.info(
-                "Flash reflection Prompt: \nSystem Prompt: \n"
-                + system
-                + "\nUser Prompt: \n"
-                + user
-            )
-            self.print_flash_reflection_prompt = False
 
         flash_reflection_res = multi_chat_completion(
             [messages], 1, self.cfg.model, self.cfg.temperature
@@ -542,44 +445,21 @@ class HSEvo:
         with open(file_name, "w") as file:
             file.writelines(flash_reflection_res)
 
-    def comprehensive_reflection(self):
-        system = self.system_reflector_prompt
+    def comprehensive_reflection(self) -> None:
 
-        good_reflection = (
-            "\n\n".join(self.lst_good_reflection)
-            if len(self.lst_good_reflection) > 0
-            else "None"
+        pre_messages = self.evol.comprehensive_reflection(
+            lst_good_reflection=self.lst_good_reflection,
+            lst_bad_reflection=self.lst_bad_reflection,
+            str_flash_memory=self.str_flash_memory,
         )
-        bad_reflection = (
-            "\n\n".join(self.lst_bad_reflection)
-            if len(self.lst_bad_reflection) > 0
-            else "None"
-        )
-
-        user = self.user_comprehensive_reflection_prompt.format(
-            bad_reflection=bad_reflection,
-            good_reflection=good_reflection,
-            curr_reflection=self.str_flash_memory["exp"],
-        )
-
-        pre_messages = {"system": system, "user": user}
         messages = format_messages(self.cfg, pre_messages)
-
-        if self.print_comprehensive_reflection_prompt:
-            logging.info(
-                "Comprehensive reflection Prompt: \nSystem Prompt: \n"
-                + system
-                + "\nUser Prompt: \n"
-                + user
-            )
-            self.print_comprehensive_reflection_prompt = False
 
         comprehensive_response = multi_chat_completion(
             [messages], 1, self.cfg.model, self.cfg.temperature
         )[0]
         self.cal_usage_LLM([messages], comprehensive_response)
         self.str_comprehensive_memory = (
-            self.external_knowledge + "\n" + comprehensive_response
+            self.prompts.external_knowledge + "\n" + comprehensive_response
         )
 
         file_name = f"problem_iter{self.iteration}_comprehensive_reflection_prompt.txt"
@@ -602,27 +482,13 @@ class HSEvo:
                 parent_1 = population[i + 1]
                 parent_2 = population[i]
 
-            # Crossover
-            system = self.system_generator_prompt.format(seed=self.scientists[0])
-            func_signature_m1 = self.func_signature.format(version=0)
-            func_signature_m2 = self.func_signature.format(version=1)
-            user_generator_prompt_full = self.user_generator_prompt.format(
-                seed=self.scientists[0],
-                func_name=self.func_name,
-                problem_desc=self.problem_desc,
-                func_desc=self.func_desc,
+            pre_messages = self.evol.crossover(
+                parent_1,
+                parent_2,
+                scientist=self.scientists[0],
+                str_flash_memory=self.str_flash_memory,
+                str_comprehensive_memory=self.str_comprehensive_memory,
             )
-            user = self.crossover_prompt.format(
-                user_generator=user_generator_prompt_full,
-                func_signature_m1=func_signature_m1,
-                func_signature_m2=func_signature_m2,
-                code_method1=filter_code(parent_1["code"]),
-                code_method2=filter_code(parent_2["code"]),
-                analyze=self.str_flash_memory["analyze"],
-                exp=self.str_comprehensive_memory,
-                func_name=self.func_name,
-            )
-            pre_messages = {"system": system, "user": user}
             messages = format_messages(self.cfg, pre_messages)
 
             # Write to file
@@ -632,16 +498,6 @@ class HSEvo:
             num_choice += 1
 
             messages_lst.append(messages)
-
-            # Print crossover prompt for the first iteration
-            if self.print_crossover_prompt:
-                logging.info(
-                    "Crossover Prompt: \nSystem Prompt: \n"
-                    + system
-                    + "\nUser Prompt: \n"
-                    + user
-                )
-                self.print_crossover_prompt = False
 
         # Asynchronously generate responses
         response_lst = multi_chat_completion(
@@ -658,39 +514,18 @@ class HSEvo:
 
     def mutate(self) -> list[dict]:
         """Elitist-based mutation. We only mutate the best individual to generate n_pop new individuals."""
-        system = self.system_generator_prompt.format(seed=self.scientists[0])
-        func_signature1 = self.func_signature.format(version=1)
-        user_generator_prompt_full = self.user_generator_prompt.format(
-            seed=self.scientists[0],
-            func_name=self.func_name,
-            problem_desc=self.problem_desc,
-            func_desc=self.func_desc,
-        )
 
-        user = self.mutation_prompt.format(
-            user_generator=user_generator_prompt_full,
-            reflection=self.str_comprehensive_memory,
-            func_signature1=func_signature1,
-            elitist_code=filter_code(self.elitist["code"]),
-            func_name=self.func_name,
+        pre_messages = self.evol.mutate(
+            scientist=self.scientists[0],
+            str_comprehensive_memory=self.str_comprehensive_memory,
+            elitist=self.elitist,
         )
-
-        pre_messages = {"system": system, "user": user}
         messages = format_messages(self.cfg, pre_messages)
 
         # Write to file
         file_name = f"problem_iter{self.iteration}_prompt.txt"
         with open(file_name, "w") as file:
             file.writelines(json.dumps(pre_messages))
-
-        if self.print_mutate_prompt:
-            logging.info(
-                "Mutation Prompt: \nSystem Prompt: \n"
-                + system
-                + "\nUser Prompt: \n"
-                + user
-            )
-            self.print_mutate_prompt = False
 
         responses = multi_chat_completion(
             [messages],
@@ -801,19 +636,10 @@ class HSEvo:
         return population_hs, harmony_memory
 
     def harmony_search(self):
-        system = self.system_hs_prompt
-        user = self.hs_prompt.format(code_extract=self.sel_individual_hs())
-        pre_messages = {"system": system, "user": user}
+        pre_messages = self.evol.harmony_search(
+            sel_individual_hs=self.sel_individual_hs()
+        )
         messages = format_messages(self.cfg, pre_messages)
-        # Print get hs prompt for the first iteration
-        if self.print_hs_prompt:
-            logging.info(
-                "Harmony Search Prompt: \nSystem Prompt: \n"
-                + system
-                + "\nUser Prompt: \n"
-                + user
-            )
-            self.print_hs_prompt = False
 
         # Write to file
         file_name = f"problem_iter{self.iteration}_prompt.txt"
