@@ -85,8 +85,8 @@ class ReEvo(GeneticAlgorithm[ReEvoConfig, ProblemPrompts]):
         # Evaluate the seed function, and set it as Elite
         code = extract_code_from_generator(self.problem.seed_func).replace("v1", "v2")
         seed_ind = Individual(
-            stdout_filepath=f"problem_iter{self.iteration}_stdout0.txt",
-            code_path=f"problem_iter{self.iteration}_code0.py",
+            stdout_filepath=f"{self.output_dir}/problem_iter{self.iteration}_stdout0.txt",
+            code_path=f"{self.output_dir}/problem_iter{self.iteration}_code0.py",
             code=code,
             response_id=0,
         )
