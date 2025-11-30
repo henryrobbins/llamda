@@ -1,6 +1,5 @@
 from pathlib import Path
 from enum import StrEnum
-from typing import Dict, List
 
 from utils.problem import EOHProblemPrompts
 from utils.llm_client.base import BaseClient
@@ -17,7 +16,7 @@ class EOHOperator(StrEnum):
 
 class Evolution:
 
-    def __init__(self, llm_client, prompts: EOHProblemPrompts):
+    def __init__(self, llm_client: BaseClient, prompts: EOHProblemPrompts) -> None:
 
         self.prompts_dir = Path(__file__).parent / "prompts"
         self.prompts = prompts
@@ -37,7 +36,7 @@ class Evolution:
 
         self.llm_client = llm_client
 
-    def get_prompt_i1(self):
+    def get_prompt_i1(self) -> str:
         i1 = file_to_string(self.prompts_dir / f"{EOHOperator.I1.value}.txt")
         return i1.format(
             prompt_task=self.prompts.problem_desc,
@@ -50,7 +49,7 @@ class Evolution:
             prompt_other_inf=self.prompts.other_inf,
         )
 
-    def get_prompt_e1(self, indivs):
+    def get_prompt_e1(self, indivs: list[dict]) -> str:
         prompt_indiv = ""
         for i in range(len(indivs)):
             prompt_indiv = (
@@ -78,7 +77,7 @@ class Evolution:
             prompt_indiv=prompt_indiv,
         )
 
-    def get_prompt_e2(self, indivs):
+    def get_prompt_e2(self, indivs: list[dict]) -> str:
         prompt_indiv = ""
         for i in range(len(indivs)):
             prompt_indiv = (
@@ -106,7 +105,7 @@ class Evolution:
             prompt_indiv=prompt_indiv,
         )
 
-    def get_prompt_m1(self, indiv1):
+    def get_prompt_m1(self, indiv1: dict) -> str:
         m1 = file_to_string(self.prompts_dir / f"{EOHOperator.M1.value}.txt")
         return m1.format(
             prompt_task=self.prompts.problem_desc,
@@ -121,7 +120,7 @@ class Evolution:
             indiv_code=indiv1["code"],
         )
 
-    def get_prompt_m2(self, indiv1):
+    def get_prompt_m2(self, indiv1: dict) -> str:
         m2 = file_to_string(self.prompts_dir / f"{EOHOperator.M2.value}.txt")
         return m2.format(
             prompt_task=self.prompts.problem_desc,
@@ -157,9 +156,7 @@ class Evolution:
             n_retry += 1
 
         algorithm = algorithms[0]
-        code = code[0]
-
-        code_all = code + " " + ", ".join(s for s in self.prompts.func_outputs)
+        code_all = code[0] + " " + ", ".join(s for s in self.prompts.func_outputs)
 
         return code_all, algorithm
 
@@ -167,23 +164,23 @@ class Evolution:
         prompt_content = self.get_prompt_i1()
         return self._get_alg(prompt_content)
 
-    def e1(self, parents) -> tuple[str, str]:
+    def e1(self, parents: list[dict]) -> tuple[str, str]:
         prompt_content = self.get_prompt_e1(parents)
         return self._get_alg(prompt_content)
 
-    def e2(self, parents) -> tuple[str, str]:
+    def e2(self, parents: list[dict]) -> tuple[str, str]:
         prompt_content = self.get_prompt_e2(parents)
         return self._get_alg(prompt_content)
 
-    def m1(self, parents) -> tuple[str, str]:
+    def m1(self, parents: dict) -> tuple[str, str]:
         prompt_content = self.get_prompt_m1(parents)
         return self._get_alg(prompt_content)
 
-    def m2(self, parents) -> tuple[str, str]:
+    def m2(self, parents: dict) -> tuple[str, str]:
         prompt_content = self.get_prompt_m2(parents)
         return self._get_alg(prompt_content)
 
 
-def chat_completion(client: BaseClient, prompt_content: str) -> List[Dict]:
+def chat_completion(client: BaseClient, prompt_content: str) -> str:
     response = client.chat_completion(1, [{"role": "user", "content": prompt_content}])
     return response[0].message.content

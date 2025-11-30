@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 import random
-from typing import List
 
 import numpy as np
 
@@ -60,7 +59,7 @@ class InterfaceEC:
 
         match operator:
             case EOHOperator.I1:
-                parents = None
+                parents = []
                 code, algorithm = self.evol.i1()
             case EOHOperator.E1:
                 parents = select_parents(pop, self.m)
@@ -93,10 +92,12 @@ class InterfaceEC:
 
         try:
             p, offspring = self._get_alg(pop, operator)
+            code = offspring.code
             n_retry = 1
-            while self.check_duplicate(pop, offspring.code):
+            while code is None or self.check_duplicate(pop, code):
                 n_retry += 1
                 p, offspring = self._get_alg(pop, operator)
+                code = offspring.code
                 if n_retry > 1:
                     break
 
@@ -131,7 +132,7 @@ class InterfaceEC:
         return out_p, out_off
 
 
-def select_parents(pop: List, m: int) -> List:
+def select_parents(pop: list[EOHIndividual], m: int) -> list[EOHIndividual]:
     ranks = [i for i in range(len(pop))]
     probs = [1 / (rank + 1 + len(pop)) for rank in ranks]
     parents = random.choices(pop, weights=probs, k=m)

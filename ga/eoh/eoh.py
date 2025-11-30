@@ -58,10 +58,12 @@ class EOH:
         random.seed(2024)
 
     # add new individual to population
-    def add2pop(self, population, offspring):
+    def add2pop(
+        self, population: list[EOHIndividual], offspring: list[EOHIndividual]
+    ) -> None:
         for off in offspring:
             for ind in population:
-                if ind["objective"] == off["objective"]:
+                if ind.obj == off.obj:
                     # TODO: No retry logic is actually happening here
                     print("duplicated result, retrying ... ")
             population.append(off)
@@ -96,7 +98,7 @@ class EOH:
 
         print("Pop initial: ")
         for off in population:
-            print(" Obj: ", off["objective"], end="|")
+            print(" Obj: ", off.obj, end="|")
         print()
         print("initial population has been created!")
         # Save population to a file
@@ -116,7 +118,7 @@ class EOH:
             return self._load_population()
         return self._create_new_population(interface_ec)
 
-    def _population_checkpoint(self, n: int, population: list[dict]) -> str:
+    def _population_checkpoint(self, n: int, population: list[EOHIndividual]) -> str:
 
         # Save population to a file
         filename = self.output_path + "population_generation_" + str(n + 1) + ".json"
@@ -132,7 +134,7 @@ class EOH:
 
         return filename
 
-    def run(self):
+    def run(self) -> tuple[str, str]:
 
         print("- Evolution Start -")
 
@@ -161,7 +163,7 @@ class EOH:
                 # Check duplication, and add the new offspring
                 self.add2pop(population, offsprings)
                 for off in offsprings:
-                    print(" Obj: ", off["objective"], end="|")
+                    print(" Obj: ", off.obj, end="|")
                 # Population management
                 size_act = min(len(population), self.pop_size)
                 population = manage_population(population, size_act)
@@ -171,21 +173,25 @@ class EOH:
 
             # Logging
             print(
-                f"--- {pop + 1} of {self.n_pop} populations finished. Time Cost:  {((time.time()-time_start)/60):.1f} m"
+                f"--- {pop + 1} of {self.n_pop} populations finished. "
+                f"Time Cost:  {((time.time()-time_start)/60):.1f} m"
             )
             print("Pop Objs: ", end=" ")
             for i in range(len(population)):
-                print(str(population[i]["objective"]) + " ", end="")
+                print(str(population[i].obj) + " ", end="")
             print()
 
-        return population[0]["code"], filename
+        code = population[0].code
+        assert code is not None
+
+        return code, filename
 
 
 def manage_population(pop: list[EOHIndividual], size: int) -> list[EOHIndividual]:
     pop = [individual for individual in pop if individual.obj is not None]
     if size > len(pop):
         size = len(pop)
-    unique_pop = []
+    unique_pop: list[EOHIndividual] = []
     unique_objectives = []
     for individual in pop:
         if individual.obj not in unique_objectives:
