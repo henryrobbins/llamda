@@ -106,7 +106,7 @@ class Evaluator:
             )
         return population
 
-    def _run_code(self, individual: T, response_id) -> subprocess.Popen:
+    def _run_code(self, individual: T, response_id: int) -> subprocess.Popen:
         """
         Write code into a file and run eval script.
         """
@@ -130,7 +130,7 @@ class Evaluator:
                 [
                     "python",
                     "-u",
-                    eval_file_path,
+                    str(eval_file_path),
                     f"{self.problem_prompts.problem_size}",
                     str(problems_dir),
                     "train",
