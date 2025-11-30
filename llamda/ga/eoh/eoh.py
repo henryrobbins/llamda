@@ -41,7 +41,6 @@ class EoHConfig:
     )  # weights for operators
 
     # Exp settings
-    exp_output_path: str = "./"  # default folder for ael outputs
     exp_use_seed: bool = False
     exp_seed_path: str = "./seeds/seeds.json"
     exp_use_continue: bool = False
@@ -83,8 +82,6 @@ class EOH(GeneticAlgorithm[EoHConfig, EOHProblemPrompts]):
         self.load_pop_path = config.exp_continue_path
         self.load_pop_id = config.exp_continue_id
 
-        self.output_path = config.exp_output_path
-
         # Set a random seed
         random.seed(2024)
 
@@ -105,7 +102,7 @@ class EOH(GeneticAlgorithm[EoHConfig, EOHProblemPrompts]):
         with open(self.seed_path) as file:
             data = json.load(file)
         population = interface_ec.population_generation_seed(data)
-        filename = self.output_path + "population_generation_0.json"
+        filename = self.output_dir + "population_generation_0.json"
         with open(filename, "w") as f:
             json.dump(population, f, indent=5)
         n_start = 0
@@ -133,7 +130,7 @@ class EOH(GeneticAlgorithm[EoHConfig, EOHProblemPrompts]):
         print()
         print("initial population has been created!")
         # Save population to a file
-        filename = self.output_path + "population_generation_0.json"
+        filename = self.output_dir + "population_generation_0.json"
         with open(filename, "w") as f:
             json.dump(population, f, indent=5)
         n_start = 0
@@ -152,13 +149,13 @@ class EOH(GeneticAlgorithm[EoHConfig, EOHProblemPrompts]):
     def _population_checkpoint(self, n: int, population: list[EOHIndividual]) -> str:
 
         # Save population to a file
-        filename = self.output_path + "population_generation_" + str(n + 1) + ".json"
+        filename = self.output_dir + "population_generation_" + str(n + 1) + ".json"
         with open(filename, "w") as f:
             json.dump(population, f, indent=5)
 
         # Save the best one to a file
         filename = (
-            self.output_path + "best_population_generation_" + str(n + 1) + ".json"
+            self.output_dir + "best_population_generation_" + str(n + 1) + ".json"
         )
         with open(filename, "w") as f:
             json.dump(population[0], f, indent=5)
