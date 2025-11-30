@@ -79,7 +79,8 @@ class Evolution:
                 prompt_indiv
                 + "No."
                 + str(i + 1)
-                + " algorithm's description, its corresponding code and its objective value are: \n"
+                + " algorithm's description, its corresponding code and "
+                + " its objective value are: \n"
                 + indivs[i]["algorithm"]
                 + "\n"
                 + indivs[i]["code"]
@@ -110,7 +111,8 @@ class Evolution:
                 prompt_indiv
                 + "No."
                 + str(i + 1)
-                + " algorithm's description, its corresponding code and its objective value are: \n"
+                + " algorithm's description, its corresponding code "
+                + "and its objective value are: \n"
                 + indivs[i]["algorithm"]
                 + "\n"
                 + indivs[i]["code"]
@@ -170,7 +172,8 @@ class Evolution:
                 prompt_indiv
                 + "No."
                 + str(i + 1)
-                + " algorithm's description, its corresponding code and its objective value are: \n"
+                + " algorithm's description, its corresponding code "
+                + "and its objective value are: \n"
                 + indivs[i]["algorithm"]
                 + "\n"
                 + indivs[i]["code"]
@@ -212,7 +215,8 @@ class Evolution:
         n_retry = 1
         while len(algorithms) == 0 or len(code) == 0:
             print(
-                "Error: algorithm or code not identified, wait 1 seconds and retrying ... "
+                "Error: algorithm or code not identified, "
+                "wait 1 seconds and retrying ... "
             )
 
             response = chat_completion(
@@ -227,8 +231,7 @@ class Evolution:
 
         # TODO: I believe this resolves a bug in original implementation
         algorithm = algorithms[0]
-        code = code[0]
-        code_all = code + " " + ", ".join(s for s in self.prompts.func_outputs)
+        code_all = code[0] + " " + ", ".join(s for s in self.prompts.func_outputs)
 
         return code_all, algorithm
 

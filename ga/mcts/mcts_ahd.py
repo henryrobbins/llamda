@@ -2,7 +2,6 @@ import copy
 import heapq
 import json
 import random
-from typing import List, Dict
 from dataclasses import dataclass
 
 from ga.mcts.evolution import MCTSOperator
@@ -68,7 +67,7 @@ class MCTS_AHD:
         option: str,
     ) -> list[MCTSIndividual]:
         if option == "s1":
-            path_set = []
+            path_set: list[MCTSIndividual] = []
             now = copy.deepcopy(cur_node)
             while now.code != "Root":
                 path_set.append(now.raw_info)
@@ -77,11 +76,10 @@ class MCTS_AHD:
             if len(path_set) == 1:
                 return nodes_set
             self.eval_times, offsprings = self.interface_ec.evolve_algorithm(
-                self.eval_times,
-                path_set,
-                cur_node.raw_info,
-                cur_node.children_info,
-                MCTSOperator.S1,
+                eval_times=self.eval_times,
+                pop=path_set,
+                node=cur_node.raw_info,
+                operator=MCTSOperator.S1,
             )
         elif option == "e1":
             e1_set = [
@@ -93,19 +91,17 @@ class MCTS_AHD:
                 for children in mcts.root.children
             ]
             self.eval_times, offsprings = self.interface_ec.evolve_algorithm(
-                self.eval_times,
-                e1_set,
-                cur_node.raw_info,
-                cur_node.children_info,
-                MCTSOperator.E1,
+                eval_times=self.eval_times,
+                pop=e1_set,
+                node=cur_node.raw_info,
+                operator=MCTSOperator.E1,
             )
         else:
             self.eval_times, offsprings = self.interface_ec.evolve_algorithm(
-                self.eval_times,
-                nodes_set,
-                cur_node.raw_info,
-                cur_node.children_info,
-                MCTSOperator(option),
+                eval_times=self.eval_times,
+                pop=e1_set,
+                node=cur_node.raw_info,
+                operator=MCTSOperator(option),
             )
         if offsprings == None:
             print(f"Timeout emerge, no expanding with action {option}.")
@@ -113,34 +109,32 @@ class MCTS_AHD:
 
         if option != "e1":
             print(
-                f"Action: {option}, Father Obj: {cur_node.raw_info['objective']}, Now Obj: {offsprings['objective']}, Depth: {cur_node.depth + 1}"
+                f"Action: {option}, Father Obj: {cur_node.raw_info.obj}, Now Obj: {offsprings.obj}, Depth: {cur_node.depth + 1}"
             )
         else:
             if self.interface_ec.check_duplicate_obj(
-                mcts.root.children_info, offsprings["objective"]
+                mcts.root.children_info, offsprings.obj
             ):
                 print(
-                    f"Duplicated e1, no action, Father is Root, Abandon Obj: {offsprings['objective']}"
+                    f"Duplicated e1, no action, Father is Root, Abandon Obj: {offsprings.obj}"
                 )
                 return nodes_set
             else:
-                print(
-                    f"Action: {option}, Father is Root, Now Obj: {offsprings['objective']}"
-                )
-        if offsprings["objective"] != float("inf"):
+                print(f"Action: {option}, Father is Root, Now Obj: {offsprings.obj}")
+        if offsprings.obj != float("inf"):
             self.add2pop(
                 nodes_set, offsprings
             )  # Check duplication, and add the new offspring
             size_act = min(len(nodes_set), self.pop_size)
             nodes_set = manage_population(nodes_set, size_act)
             nownode = MCTSNode(
-                offsprings["algorithm"],
-                offsprings["code"],
-                offsprings["objective"],
+                offsprings.algorithm,
+                offsprings.code,
+                offsprings.obj,
                 parent=cur_node,
                 depth=cur_node.depth + 1,
                 visit=1,
-                Q=-1 * offsprings["objective"],
+                Q=-1 * offsprings.obj,
                 raw_info=offsprings,
             )
             if option == "e1":
@@ -255,38 +249,38 @@ class MCTS_AHD:
             with open(filename, "w") as f:
                 json.dump(nodes_set[0], f, indent=5)
 
-        return nodes_set[0]["code"], filename
+        return nodes_set[0].code, filename
 
 
-def manage_population(pop_input: List[Dict], size: int) -> List[Dict]:
-    pop = [
-        individual for individual in pop_input if individual["objective"] is not None
-    ]
+def manage_population(
+    pop_input: list[MCTSIndividual], size: int
+) -> list[MCTSIndividual]:
+    pop = [individual for individual in pop_input if individual.obj is not None]
     if size > len(pop):
         size = len(pop)
-    unique_pop = []
+    unique_pop: list[MCTSIndividual] = []
     unique_objectives = []
     for individual in pop:
-        if individual["objective"] not in unique_objectives:
+        if individual.obj not in unique_objectives:
             unique_pop.append(individual)
-            unique_objectives.append(individual["objective"])
+            unique_objectives.append(individual.obj)
     # Delete the worst individual
-    pop_new = heapq.nsmallest(size, unique_pop, key=lambda x: x["objective"])
+    pop_new = heapq.nsmallest(size, unique_pop, key=lambda x: x.obj)
     return pop_new
 
 
-def manage_population_s1(pop_input: List[Dict], size: int) -> List[Dict]:
-    pop = [
-        individual for individual in pop_input if individual["objective"] is not None
-    ]
+def manage_population_s1(
+    pop_input: list[MCTSIndividual], size: int
+) -> list[MCTSIndividual]:
+    pop = [individual for individual in pop_input if individual.obj is not None]
     if size > len(pop):
         size = len(pop)
-    unique_pop = []
+    unique_pop: list[MCTSIndividual] = []
     unique_algorithms = []
     for individual in pop:
-        if individual["algorithm"] not in unique_algorithms:
+        if individual.algorithm not in unique_algorithms:
             unique_pop.append(individual)
-            unique_algorithms.append(individual["algorithm"])
+            unique_algorithms.append(individual.algorithm)
     # Delete the worst individual
-    pop_new = heapq.nlargest(size, unique_pop, key=lambda x: x["objective"])
+    pop_new = heapq.nlargest(size, unique_pop, key=lambda x: x.obj)
     return pop_new

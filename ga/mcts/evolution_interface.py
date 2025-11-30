@@ -52,7 +52,7 @@ class InterfaceEC:
 
         match operator:
             case MCTSOperator.I1:
-                parents = None
+                parents = []
                 code, thought = self.evol.i1()
             case MCTSOperator.E1:
                 real_m = random.randint(2, self.m)
@@ -101,11 +101,13 @@ class InterfaceEC:
         while True:
             try:
                 p, offspring = self._get_alg(pop, operator, father=father)
+                code = offspring.code
                 n_retry = 1
-                while self.check_duplicate(pop, offspring.code):
+                while code is None or self.check_duplicate(pop, code):
                     n_retry += 1
                     print("duplicated code, wait 1 second and retrying ... ")
                     p, offspring = self._get_alg(pop, operator, father=father)
+                    code = offspring.code
                     if n_retry > 1:
                         break
                 break
@@ -133,8 +135,12 @@ class InterfaceEC:
             return n_evals, pop, offspring
 
     def evolve_algorithm(
-        self, eval_times, pop, node, brother_node, operator: MCTSOperator
-    ):
+        self,
+        eval_times: int,
+        pop: list[MCTSIndividual],
+        node: MCTSIndividual,
+        operator: MCTSOperator,
+    ) -> tuple[int, MCTSIndividual | None]:
         for i in range(3):
             eval_times += 1
             _, offspring = self.get_offspring(pop, operator, father=node)
