@@ -91,7 +91,8 @@ class ReEvo:
         # If seed function is invalid, stop
         if not self.seed_ind.exec_success:
             raise RuntimeError(
-                f"Seed function is invalid. Please check the stdout file in {os.getcwd()}."
+                "Seed function is invalid. "
+                f"Please check the stdout file in {os.getcwd()}."
             )
 
         self.update_iter()
@@ -172,9 +173,9 @@ class ReEvo:
         logging.info(f"Function Evals: {self.function_evals}")
         self.iteration += 1
 
-    def rank_select(self, population: list[Individual]) -> list[Individual]:
+    def rank_select(self, population: list[Individual]) -> list[Individual] | None:
         """
-        Rank-based selection, select individuals with probability proportional to their rank.
+        Rank-based selection, select individuals with probability proportional to rank.
         """
         if self.prompts.problem_type == "black_box":
             population = [
@@ -205,7 +206,7 @@ class ReEvo:
                 return None
         return selected_population
 
-    def random_select(self, population: list[Individual]) -> list[Individual]:
+    def random_select(self, population: list[Individual]) -> list[Individual] | None:
         """
         Random selection, select individuals with equal probability.
         """
@@ -251,7 +252,7 @@ class ReEvo:
         with open(file_name, "w") as file:
             file.writelines(self.long_term_reflection_str + "\n")
 
-    def evolve(self):
+    def evolve(self) -> tuple[str, str]:
         while self.function_evals < self.config.max_fe:
             # If all individuals are invalid, stop
             if all([not individual.exec_success for individual in self.population]):

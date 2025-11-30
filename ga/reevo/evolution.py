@@ -1,5 +1,6 @@
 import logging
 
+from utils.individual import Individual
 from utils.llm_client.base import BaseClient
 from utils.problem import ProblemPrompts
 from utils.utils import file_to_string, filter_code
@@ -60,7 +61,7 @@ class Evolution:
             func_desc=self.prompts.func_desc,
         )
 
-    def seed_population(self, long_term_reflection_str: str) -> list[dict]:
+    def seed_population(self, long_term_reflection_str: str) -> list[str]:
 
         seed_prompt = file_to_string(f"{self.reevo_dir}/prompts/seed.txt").format(
             seed_func=self.prompts.seed_func,
@@ -95,7 +96,7 @@ class Evolution:
         return responses
 
     def _gen_short_term_reflection_prompt(
-        self, ind1: dict, ind2: dict
+        self, ind1: Individual, ind2: Individual
     ) -> tuple[list[dict], str, str]:
         """
         Short-term reflection before crossovering two individuals.
@@ -105,19 +106,19 @@ class Evolution:
             f"{self.reevo_dir}/prompts/user_reflector_st.txt"
         )
 
-        if ind1["obj"] == ind2["obj"]:
-            print(ind1["code"], ind2["code"])
+        if ind1.obj == ind2.obj:
+            print(ind1.code, ind2.code)
             raise ValueError(
                 "Two individuals to crossover have the same objective value!"
             )
         # Determine which individual is better or worse
-        if ind1["obj"] < ind2["obj"]:
+        if ind1.obj < ind2.obj:
             better_ind, worse_ind = ind1, ind2
-        else:  # robust in rare cases where two individuals have the same objective value
+        else:  # robust in rare cases where two individuals have the same objective
             better_ind, worse_ind = ind2, ind1
 
-        worse_code = filter_code(worse_ind["code"])
-        better_code = filter_code(better_ind["code"])
+        worse_code = filter_code(worse_ind.code)
+        better_code = filter_code(better_ind.code)
 
         system = self.system_reflector_prompt
         user = user_reflector_st_prompt.format(
@@ -143,8 +144,8 @@ class Evolution:
         return message, worse_code, better_code
 
     def short_term_reflection(
-        self, population: list[dict]
-    ) -> tuple[list[list[dict]], list[str], list[str]]:
+        self, population: list[Individual]
+    ) -> tuple[list[str], list[str], list[str]]:
         """
         Short-term reflection before crossovering two individuals.
         """
@@ -250,7 +251,9 @@ class Evolution:
         return responses
 
     def mutate(self, long_term_reflection_str: str, elitist: dict) -> list[str]:
-        """Elitist-based mutation. We only mutate the best individual to generate n_pop new individuals."""
+        """
+        Elitist-based mutation. We mutate the best to generate n_pop new individuals.
+        """
 
         mutation_prompt = file_to_string(f"{self.reevo_dir}/prompts/mutation.txt")
 
