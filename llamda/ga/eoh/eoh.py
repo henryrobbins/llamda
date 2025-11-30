@@ -6,12 +6,12 @@ import heapq
 import time
 import os
 
-from ga.eoh.eoh_evolution import EOHOperator
-from ga.eoh.config import Config
-from utils.evaluate import Evaluator
-from ga.eoh.eoh_interface_EC import EOHIndividual, InterfaceEC
-from utils.llm_client.base import BaseClient
-from utils.problem import EOHProblemPrompts
+from llamda.ga.eoh.eoh_evolution import EOHOperator
+from llamda.ga.eoh.config import Config
+from llamda.utils.evaluate import Evaluator
+from llamda.ga.eoh.eoh_interface_EC import EOHIndividual, InterfaceEC
+from llamda.utils.llm_client.base import BaseClient
+from llamda.utils.problem import EOHProblemPrompts
 
 
 @dataclass

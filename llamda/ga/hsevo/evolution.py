@@ -1,7 +1,7 @@
 import logging
 
-from utils.problem import ProblemPrompts
-from utils.utils import file_to_string, filter_code
+from llamda.utils.problem import ProblemPrompts
+from llamda.utils.utils import file_to_string, filter_code
 
 
 class Evolution:

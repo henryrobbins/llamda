@@ -1,6 +1,6 @@
 outputs
-problems/*/dataset
-problems/*/gpt.py
+llamda/problems/*/dataset
+llamda/problems/*/gpt.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

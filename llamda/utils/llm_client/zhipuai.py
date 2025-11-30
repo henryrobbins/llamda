@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from utils.llm_client.openai import OpenAIClient, OpenAIClientConfig
+from llamda.utils.llm_client.openai import OpenAIClient, OpenAIClientConfig
 
 try:
     from zhipuai import ZhipuAI

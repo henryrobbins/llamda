@@ -4,12 +4,12 @@ import numpy as np
 import os
 from dataclasses import dataclass
 
-from ga.reevo.evolution import Evolution, ReEvoLLMClients
-from utils.evaluate import Evaluator
-from utils.individual import Individual
-from utils.llm_client.base import BaseClient
-from utils.problem import ProblemPrompts
-from utils.utils import extract_code_from_generator, print_hyperlink
+from llamda.ga.reevo.evolution import Evolution, ReEvoLLMClients
+from llamda.utils.evaluate import Evaluator
+from llamda.utils.individual import Individual
+from llamda.utils.llm_client.base import BaseClient
+from llamda.utils.problem import ProblemPrompts
+from llamda.utils.utils import extract_code_from_generator, print_hyperlink
 
 
 @dataclass

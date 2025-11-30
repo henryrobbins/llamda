@@ -1,2 +1,2 @@
-# LNS with LLM-AHD for TSP
+# llamda: LLm AutoMatically Designed Algorithms
 

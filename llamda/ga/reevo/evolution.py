@@ -1,9 +1,9 @@
 import logging
 
-from utils.individual import Individual
-from utils.llm_client.base import BaseClient
-from utils.problem import ProblemPrompts
-from utils.utils import file_to_string, filter_code
+from llamda.utils.individual import Individual
+from llamda.utils.llm_client.base import BaseClient
+from llamda.utils.problem import ProblemPrompts
+from llamda.utils.utils import file_to_string, filter_code
 
 
 class ReEvoLLMClients:

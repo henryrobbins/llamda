@@ -1,9 +1,9 @@
 from enum import StrEnum
 from pathlib import Path
 
-from utils.problem import EOHProblemPrompts
-from utils.llm_client.base import BaseClient
-from utils.utils import file_to_string, parse_response
+from llamda.utils.problem import EOHProblemPrompts
+from llamda.utils.llm_client.base import BaseClient
+from llamda.utils.utils import file_to_string, parse_response
 
 
 class MCTSOperator(StrEnum):

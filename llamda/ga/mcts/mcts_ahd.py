@@ -5,13 +5,13 @@ import json
 import random
 from dataclasses import dataclass
 
-from ga.mcts.evolution import MCTSOperator
-from ga.mcts.mcts import MCTS, MCTSNode
-from ga.mcts.config import Config
-from utils.evaluate import Evaluator
-from ga.mcts.evolution_interface import MCTSIndividual, InterfaceEC
-from utils.llm_client.base import BaseClient
-from utils.problem import EOHProblemPrompts
+from llamda.ga.mcts.evolution import MCTSOperator
+from llamda.ga.mcts.mcts import MCTS, MCTSNode
+from llamda.ga.mcts.config import Config
+from llamda.utils.evaluate import Evaluator
+from llamda.ga.mcts.evolution_interface import MCTSIndividual, InterfaceEC
+from llamda.utils.llm_client.base import BaseClient
+from llamda.utils.problem import EOHProblemPrompts
 
 
 @dataclass

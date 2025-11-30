@@ -4,8 +4,8 @@ from typing import TypeVar
 import yaml
 from dataclasses import dataclass
 
-from utils.individual import Individual
-from utils.utils import file_to_string
+from llamda.utils.individual import Individual
+from llamda.utils.utils import file_to_string
 
 
 T = TypeVar("T", bound=Individual)

@@ -5,11 +5,11 @@ from typing import List
 
 import numpy as np
 
-from utils.evaluate import Evaluator
-from utils.individual import Individual
-from utils.problem import EOHProblemPrompts, hydrate_individual
-from ga.mcts.evolution import Evolution, MCTSOperator
-from utils.llm_client.base import BaseClient
+from llamda.utils.evaluate import Evaluator
+from llamda.utils.individual import Individual
+from llamda.utils.problem import EOHProblemPrompts, hydrate_individual
+from llamda.ga.mcts.evolution import Evolution, MCTSOperator
+from llamda.utils.llm_client.base import BaseClient
 
 
 @dataclass

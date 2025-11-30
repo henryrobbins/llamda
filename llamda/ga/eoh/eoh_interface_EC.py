@@ -3,11 +3,11 @@ import random
 
 import numpy as np
 
-from ga.eoh.eoh_evolution import EOHOperator, Evolution
-from utils.evaluate import Evaluator
-from utils.individual import Individual
-from utils.problem import EOHProblemPrompts, hydrate_individual
-from utils.llm_client.base import BaseClient
+from llamda.ga.eoh.eoh_evolution import EOHOperator, Evolution
+from llamda.utils.evaluate import Evaluator
+from llamda.utils.individual import Individual
+from llamda.utils.problem import EOHProblemPrompts, hydrate_individual
+from llamda.utils.llm_client.base import BaseClient
 
 
 @dataclass

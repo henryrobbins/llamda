@@ -2,8 +2,8 @@ import logging
 import os
 from pathlib import Path
 
-from ga.hsevo.hsevo import HSEvo as LHH
-from utils.utils import get_output_dir
+from llamda.ga.hsevo.hsevo import HSEvo as LHH
+from llamda.utils.utils import get_output_dir
 
 ROOT_DIR = os.getcwd()
 output_dir = get_output_dir("test_hsevo", ROOT_DIR)

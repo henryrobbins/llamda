@@ -2,9 +2,9 @@ import logging
 import subprocess
 from typing import TypeVar
 
-from utils.individual import Individual
-from utils.problem import BaseProblemPrompts
-from utils.utils import block_until_running, filter_traceback
+from llamda.utils.individual import Individual
+from llamda.utils.problem import BaseProblemPrompts
+from llamda.utils.utils import block_until_running, filter_traceback
 
 T = TypeVar("T", bound=Individual)
 

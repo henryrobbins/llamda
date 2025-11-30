@@ -1,11 +1,11 @@
 import logging
 import os
 from pathlib import Path
-from utils.llm_client.openai import OpenAIClient, OpenAIClientConfig
-from utils.problem import ProblemPrompts
-from utils.utils import get_output_dir, print_hyperlink
 
-from ga.reevo.reevo import ReEvo as LHH
+from llamda.utils.llm_client.openai import OpenAIClient, OpenAIClientConfig
+from llamda.utils.problem import ProblemPrompts
+from llamda.utils.utils import get_output_dir, print_hyperlink
+from llamda.ga.reevo.reevo import ReEvo as LHH
 
 ROOT_DIR = os.getcwd()
 output_dir = get_output_dir("test_reevo", ROOT_DIR)

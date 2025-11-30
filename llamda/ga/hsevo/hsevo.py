@@ -4,11 +4,12 @@ import logging
 import numpy as np
 import json
 import tiktoken
-from ga.hsevo.evolution import Evolution
-from utils.evaluate import Evaluator
-from utils.individual import Individual
-from utils.problem import ProblemPrompts
-from utils.utils import (
+
+from llamda.ga.hsevo.evolution import Evolution
+from llamda.utils.evaluate import Evaluator
+from llamda.utils.individual import Individual
+from llamda.utils.problem import ProblemPrompts
+from llamda.utils.utils import (
     extract_code_from_generator,
     extract_to_hs,
     multi_chat_completion,

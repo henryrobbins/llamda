@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import logging
-from utils.llm_client.base import BaseClient, BaseLLMClientConfig
+from llamda.utils.llm_client.base import BaseClient, BaseLLMClientConfig
 
 try:
     from litellm import completion
