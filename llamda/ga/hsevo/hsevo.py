@@ -73,9 +73,9 @@ class HSEvo:
         self.lst_good_reflection = []
         self.lst_bad_reflection = []
 
-        self.hsevo_dir = f"{self.root_dir}/ga/hsevo"
-        self.prompt_dir = f"{self.root_dir}/prompts"
-        self.output_file = f"{self.root_dir}/problems/{self.problem}/gpt.py"
+        self.hsevo_dir = f"{self.root_dir}/llamda/ga/hsevo"
+        self.prompt_dir = f"{self.root_dir}/llamda/prompts"
+        self.output_file = f"{self.root_dir}/llamda/problems/{self.problem}/gpt.py"
 
         self.prompts = ProblemPrompts.load_problem_prompts(
             path=f"{self.prompt_dir}/{self.problem}",

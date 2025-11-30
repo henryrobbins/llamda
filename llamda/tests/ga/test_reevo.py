@@ -12,7 +12,7 @@ output_dir = get_output_dir("test_reevo", ROOT_DIR)
 logging.basicConfig(level=logging.INFO)
 
 
-def main() -> None:
+def test_reevo() -> None:
     problem_name = "tsp_aco"
 
     workspace_dir = Path.cwd()
@@ -27,7 +27,7 @@ def main() -> None:
     )
     client = OpenAIClient(config)
 
-    prompt_dir = f"{ROOT_DIR}/prompts"
+    prompt_dir = f"{ROOT_DIR}/llamda/prompts"
     prompts = ProblemPrompts.load_problem_prompts(
         path=f"{prompt_dir}/{problem_name}",
     )
@@ -42,7 +42,3 @@ def main() -> None:
     logging.info(
         f"Best Code Path Overall: {print_hyperlink(best_path, best_code_path_overall)}"
     )
-
-
-if __name__ == "__main__":
-    main()

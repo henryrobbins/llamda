@@ -14,7 +14,7 @@ output_dir = get_output_dir("test_mcts-ahd", ROOT_DIR)
 logging.basicConfig(level=logging.INFO)
 
 
-def main() -> None:
+def test_mcts() -> None:
     problem_name = "tsp_constructive"
 
     workspace_dir = Path.cwd()
@@ -34,15 +34,15 @@ def main() -> None:
     root_dir = ROOT_DIR
 
     problem_config = ProblemPrompts.load_problem_prompts(
-        f"{root_dir}/prompts/{problem_name}"
+        f"{root_dir}/llamda/prompts/{problem_name}"
     )
 
     if problem_config.problem_type == "constructive":
-        from utils.problem import TSP_CONSTRUCTIVE_PROMPTS
+        from llamda.utils.problem import TSP_CONSTRUCTIVE_PROMPTS
 
         prompts = TSP_CONSTRUCTIVE_PROMPTS
     elif problem_config.problem_type == "online":
-        from utils.problem import BPP_ONLINE_PROMPTS
+        from llamda.utils.problem import BPP_ONLINE_PROMPTS
 
         prompts = BPP_ONLINE_PROMPTS
     else:
@@ -68,7 +68,3 @@ def main() -> None:
     best_code_overall, best_code_path_overall = lhh.run()
     logging.info(f"Best Code Overall: {best_code_overall}")
     logging.info(f"Best Code Path Overall: {best_code_path_overall}")
-
-
-if __name__ == "__main__":
-    main()

@@ -44,7 +44,7 @@ class Evolution:
         self.prompts = prompts
 
         self.root_dir = root_dir
-        self.reevo_dir = f"{self.root_dir}/ga/reevo"
+        self.reevo_dir = f"{self.root_dir}/llamda/ga/reevo"
 
         # Common prompts
         self.system_generator_prompt = file_to_string(

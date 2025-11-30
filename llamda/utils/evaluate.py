@@ -14,7 +14,7 @@ class Evaluator:
         self.root_dir = root_dir
         self.problem_prompts = problem_prompts
         self.output_file = (
-            f"{self.root_dir}/problems/{self.problem_prompts.problem_name}/gpt.py"
+            f"{self.root_dir}/llamda/problems/{self.problem_prompts.problem_name}/gpt.py"
         )
         self.function_evals = 0
 
@@ -116,9 +116,9 @@ class Evaluator:
         # Execute the python file with flags
         with open(individual.stdout_filepath, "w") as f:
             eval_file_path = (
-                f"{self.root_dir}/problems/{self.problem_prompts.problem_name}/eval.py"
+                f"{self.root_dir}/llamda/problems/{self.problem_prompts.problem_name}/eval.py"
                 if self.problem_prompts.problem_type != "black_box"
-                else f"{self.root_dir}/problems/{self.problem_prompts.problem_name}/eval_black_box.py"
+                else f"{self.root_dir}/llamda/problems/{self.problem_prompts.problem_name}/eval_black_box.py"
             )
             process = subprocess.Popen(
                 [

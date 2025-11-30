@@ -10,7 +10,7 @@ output_dir = get_output_dir("test_hsevo", ROOT_DIR)
 logging.basicConfig(level=logging.INFO)
 
 
-def main() -> None:
+def test_hsevo() -> None:
     problem_name = "tsp_aco"
 
     workspace_dir = Path.cwd()
@@ -29,7 +29,3 @@ def main() -> None:
     best_code_overall, best_code_path_overall = lhh.evolve()
     logging.info(f"Best Code Overall: {best_code_overall}")
     logging.info(f"Best Code Path Overall: {best_code_path_overall}")
-
-
-if __name__ == "__main__":
-    main()

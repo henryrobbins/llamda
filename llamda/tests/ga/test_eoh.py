@@ -1,19 +1,19 @@
 import logging
 import os
 from pathlib import Path
+
 from llamda.ga.eoh.config import Config
 from llamda.utils.evaluate import Evaluator
 from llamda.utils.llm_client.openai import OpenAIClient, OpenAIClientConfig
 from llamda.utils.problem import ProblemPrompts, adapt_prompt
 from llamda.utils.utils import get_output_dir, print_hyperlink
-
-from ga.eoh.eoh import EOH, EoHConfig
+from llamda.ga.eoh.eoh import EOH, EoHConfig
 
 ROOT_DIR = os.getcwd()
 logging.basicConfig(level=logging.INFO)
 
 
-def main() -> None:
+def test_eoh() -> None:
     problem_name = "tsp_aco"
 
     workspace_dir = Path.cwd()
@@ -33,7 +33,7 @@ def main() -> None:
     ouput_dir = get_output_dir("test_eoh", root_dir)
 
     problem_config = ProblemPrompts.load_problem_prompts(
-        f"{root_dir}/prompts/{problem_name}"
+        f"{root_dir}/llamda/prompts/{problem_name}"
     )
 
     if problem_config.problem_type == "constructive":
@@ -66,7 +66,3 @@ def main() -> None:
 
     best_code_overall, best_code_path_overall = llh.run()
     logging.info(f"Best Code Overall: {best_code_overall}")
-
-
-if __name__ == "__main__":
-    main()

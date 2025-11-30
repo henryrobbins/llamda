@@ -45,7 +45,7 @@ class ReEvo:
         self.output_dir = output_dir
         os.makedirs(self.output_dir, exist_ok=True)
         self.output_file = (
-            f"{self.root_dir}/problems/{self.prompts.problem_name}/gpt.py"
+            f"{self.root_dir}/llamda/problems/{self.prompts.problem_name}/gpt.py"
         )
 
         self.evol = Evolution(
