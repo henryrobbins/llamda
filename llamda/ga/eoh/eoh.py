@@ -104,7 +104,7 @@ class EOH(GeneticAlgorithm[EoHConfig, EOHProblemPrompts]):
         population = interface_ec.population_generation_seed(data)
         filename = self.output_dir + "population_generation_0.json"
         with open(filename, "w") as f:
-            json.dump(population, f, indent=5)
+            json.dump([individual.to_dict() for individual in population], f, indent=5)
         n_start = 0
         return population, n_start
 
@@ -132,7 +132,7 @@ class EOH(GeneticAlgorithm[EoHConfig, EOHProblemPrompts]):
         # Save population to a file
         filename = self.output_dir + "population_generation_0.json"
         with open(filename, "w") as f:
-            json.dump(population, f, indent=5)
+            json.dump([individual.to_dict() for individual in population], f, indent=5)
         n_start = 0
 
         return population, n_start
@@ -151,14 +151,14 @@ class EOH(GeneticAlgorithm[EoHConfig, EOHProblemPrompts]):
         # Save population to a file
         filename = self.output_dir + "population_generation_" + str(n + 1) + ".json"
         with open(filename, "w") as f:
-            json.dump(population, f, indent=5)
+            json.dump([individual.to_dict() for individual in population], f, indent=5)
 
         # Save the best one to a file
         filename = (
             self.output_dir + "best_population_generation_" + str(n + 1) + ".json"
         )
         with open(filename, "w") as f:
-            json.dump(population[0], f, indent=5)
+            json.dump(population[0].to_dict(), f, indent=5)
 
         return filename
 

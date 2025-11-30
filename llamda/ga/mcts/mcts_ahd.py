@@ -254,7 +254,9 @@ class MCTS_AHD(GeneticAlgorithm[AHDConfig, EOHProblemPrompts]):
                 + ".json"
             )
             with open(filename, "w") as f:
-                json.dump(nodes_set, f, indent=5)
+                json.dump(
+                    [individual.to_dict() for individual in nodes_set], f, indent=5
+                )
 
             # Save the best one to a file
             filename = (
@@ -264,7 +266,7 @@ class MCTS_AHD(GeneticAlgorithm[AHDConfig, EOHProblemPrompts]):
                 + ".json"
             )
             with open(filename, "w") as f:
-                json.dump(nodes_set[0], f, indent=5)
+                json.dump(nodes_set[0].to_dict(), f, indent=5)
 
         return nodes_set[0].code, filename
 
