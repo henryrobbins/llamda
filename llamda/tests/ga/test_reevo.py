@@ -31,10 +31,10 @@ def test_reevo(problem_name: str) -> None:
 
     reevo = ReEvo(
         config=ReEvoConfig(),
-        prompts=prompts,
+        problem=prompts,
         evaluator=Evaluator(prompts),
         output_dir=output_dir,
-        generator_llm=client,
+        llm_client=client,
     )
 
     best_code_overall, _ = reevo.evolve()

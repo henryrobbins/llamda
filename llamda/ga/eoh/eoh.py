@@ -4,8 +4,8 @@ import json
 import random
 import heapq
 import time
-import os
 
+from llamda.ga.base import GeneticAlgorithm
 from llamda.ga.eoh.eoh_evolution import EOHOperator
 from llamda.utils.evaluate import Evaluator
 from llamda.ga.eoh.eoh_interface_EC import EOHIndividual, InterfaceEC
@@ -24,6 +24,7 @@ from llamda.utils.problem import EOHProblemPrompts
 # total evals = 2 * pop_size + n_pop * 4 * pop_size
 # 100 = 2 * 10 + n_pop * 4 * 10
 # n_pop = (100 - 20) / 40 + 1 = 3
+
 
 @dataclass
 class EoHConfig:
@@ -47,7 +48,8 @@ class EoHConfig:
     exp_continue_id: int = 0
     exp_continue_path: str = "./results/pops/population_generation_0.json"
 
-class EOH:
+
+class EOH(GeneticAlgorithm[EoHConfig, EOHProblemPrompts]):
 
     def __init__(
         self,
@@ -58,11 +60,13 @@ class EOH:
         output_dir: str,
     ) -> None:
 
-        self.prob = problem
-        self.evaluator = evaluator
-        self.llm_client = llm_client
-        self.output_dir = output_dir
-        os.makedirs(self.output_dir, exist_ok=True)
+        super().__init__(
+            config=config,
+            problem=problem,
+            evaluator=evaluator,
+            llm_client=llm_client,
+            output_dir=output_dir,
+        )
 
         # EOH Configuration
         self.pop_size = config.ec_pop_size
@@ -171,7 +175,7 @@ class EOH:
             pop_size=self.pop_size,
             m=self.m,
             llm_client=self.llm_client,
-            interface_prob=self.prob,
+            interface_prob=self.problem,
             evaluator=self.evaluator,
             output_dir=self.output_dir,
         )

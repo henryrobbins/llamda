@@ -31,10 +31,9 @@ def test_hsevo(problem_name: str) -> None:
 
     hsevo = HSEvo(
         config=HSEvoConfig(),
-        problem_prompts=prompts,
+        problem=prompts,
         evaluator=Evaluator(prompts),
         llm_client=client,
-        temperature=1.0,
         output_dir=output_dir,
     )
 

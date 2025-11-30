@@ -1,10 +1,10 @@
-import os
 import copy
 import heapq
 import json
 import random
 from dataclasses import dataclass, field
 
+from llamda.ga.base import GeneticAlgorithm
 from llamda.ga.mcts.evolution import MCTSOperator
 from llamda.ga.mcts.mcts import MCTS, MCTSNode
 from llamda.utils.evaluate import Evaluator
@@ -32,33 +32,35 @@ class AHDConfig:
     exp_output_path: str = "/"  # default folder for ael outputs
 
 
-class MCTS_AHD:
+class MCTS_AHD(GeneticAlgorithm[AHDConfig, EOHProblemPrompts]):
 
     def __init__(
         self,
-        paras: AHDConfig,
-        prompts: EOHProblemPrompts,
+        config: AHDConfig,
+        problem: EOHProblemPrompts,
         evaluator: Evaluator,
         llm_client: BaseClient,
         output_dir: str,
     ) -> None:
 
-        self.prompts = prompts
-        self.evaluator = evaluator
-        self.llm_client = llm_client
-        self.output_dir = output_dir
-        os.makedirs(self.output_dir, exist_ok=True)
+        super().__init__(
+            config=config,
+            problem=problem,
+            evaluator=evaluator,
+            llm_client=llm_client,
+            output_dir=output_dir,
+        )
 
         # MCTS Configuration
-        self.init_size = paras.init_size
-        self.pop_size = paras.pop_size
-        self.fe_max = paras.ec_fe_max  # function evaluation times
-        self.operators = paras.ec_operators
-        self.operator_weights = paras.ec_operator_weights
-        paras.ec_m = 5
-        self.m = paras.ec_m
+        self.init_size = config.init_size
+        self.pop_size = config.pop_size
+        self.fe_max = config.ec_fe_max  # function evaluation times
+        self.operators = config.ec_operators
+        self.operator_weights = config.ec_operator_weights
+        config.ec_m = 5
+        self.m = config.ec_m
 
-        self.output_path = paras.exp_output_path
+        self.output_path = config.exp_output_path
 
         self.eval_times = 0  # number of populations
 
@@ -164,7 +166,7 @@ class MCTS_AHD:
 
         self.interface_ec = InterfaceEC(
             m=self.m,
-            prompts=self.prompts,
+            prompts=self.problem,
             evaluator=self.evaluator,
             llm_client=self.llm_client,
             output_dir=self.output_dir,

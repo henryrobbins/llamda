@@ -6,6 +6,7 @@ import numpy as np
 import json
 import tiktoken
 
+from llamda.ga.base import GeneticAlgorithm
 from llamda.ga.hsevo.evolution import Evolution
 from llamda.utils.evaluate import Evaluator
 from llamda.utils.individual import Individual
@@ -14,7 +15,7 @@ from llamda.utils.problem import ProblemPrompts
 from llamda.utils.utils import (
     extract_code_from_generator,
     extract_to_hs,
-    format_messages
+    format_messages,
 )
 
 
@@ -41,25 +42,25 @@ class HSEvoIndividual(Individual):
     tryHS: bool = False
 
 
-class HSEvo:
+class HSEvo(GeneticAlgorithm[HSEvoConfig, ProblemPrompts]):
     def __init__(
         self,
         config: HSEvoConfig,
-        problem_prompts: ProblemPrompts,
+        problem: ProblemPrompts,
         evaluator: Evaluator,
-        temperature: float,
         llm_client: BaseClient,
         output_dir: str,
     ) -> None:
 
-        self.problem = problem_prompts.problem_name
-        self.temperature = temperature
-        self.config = config
-        self.output_dir = output_dir
-        self.llm_client = llm_client
-        os.makedirs(self.output_dir, exist_ok=True)
+        super().__init__(
+            config=config,
+            problem=problem,
+            evaluator=evaluator,
+            llm_client=llm_client,
+            output_dir=output_dir,
+        )
 
-        self.prompts = problem_prompts
+        self.temperature = self.llm_client.temperature
 
         self.mutation_rate = self.config.mutation_rate
         self.iteration = 0
@@ -75,17 +76,15 @@ class HSEvo:
         self.lst_good_reflection = []
         self.lst_bad_reflection = []
 
-
         problems_dir = files("llamda.problems")
 
-        self.output_file = problems_dir / f"{self.problem}/gpt.py"
+        self.output_file = problems_dir / f"{self.problem.problem_name}/gpt.py"
 
-        self.evol = Evolution(prompts=self.prompts)
+        self.evol = Evolution(prompts=self.problem)
 
         self.evaluator = evaluator
 
-        self.str_comprehensive_memory = self.prompts.external_knowledge
-
+        self.str_comprehensive_memory = self.problem.external_knowledge
         self.local_sel_hs = None
 
         self.scientists = [
@@ -120,7 +119,7 @@ class HSEvo:
 
     def init_population(self) -> None:
         # Evaluate the seed function, and set it as Elite
-        code = extract_code_from_generator(self.prompts.seed_func).replace("v1", "v2")
+        code = extract_code_from_generator(self.problem.seed_func).replace("v1", "v2")
         seed_ind = HSEvoIndividual(
             stdout_filepath=f"problem_iter{self.iteration}_stdout0.txt",
             code_path=f"problem_iter{self.iteration}_code0.py",
@@ -235,7 +234,7 @@ class HSEvo:
         """
         selected_population = []
         # Eliminate invalid individuals
-        if self.prompts.problem_type == "black_box":
+        if self.problem.problem_type == "black_box":
             population = [
                 individual
                 for individual in population
@@ -333,7 +332,7 @@ class HSEvo:
         )[0]
         self.cal_usage_LLM([messages], comprehensive_response)
         self.str_comprehensive_memory = (
-            self.prompts.external_knowledge + "\n" + comprehensive_response
+            self.problem.external_knowledge + "\n" + comprehensive_response
         )
 
         file_name = f"{self.output_dir}/problem_iter{self.iteration}_comprehensive_reflection_prompt.txt"
@@ -526,7 +525,9 @@ class HSEvo:
         with open(file_name, "w") as file:
             file.writelines(json.dumps(pre_messages))
 
-        responses = self.llm_client.multi_chat_completion([messages], 1, self.temperature)
+        responses = self.llm_client.multi_chat_completion(
+            [messages], 1, self.temperature
+        )
         self.cal_usage_LLM([messages], [str(responses[0])])
 
         logging.info("LLM Response for HS step: " + str(responses[0]))

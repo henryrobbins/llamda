@@ -5,6 +5,7 @@ import numpy as np
 import os
 from dataclasses import dataclass
 
+from llamda.ga.base import GeneticAlgorithm
 from llamda.ga.reevo.evolution import Evolution, ReEvoLLMClients
 from llamda.utils.evaluate import Evaluator
 from llamda.utils.individual import Individual
@@ -24,14 +25,14 @@ class ReEvoConfig:
     diversify_init_pop: bool = True  # whether to diversify the initial population
 
 
-class ReEvo:
+class ReEvo(GeneticAlgorithm[ReEvoConfig, ProblemPrompts]):
     def __init__(
         self,
         config: ReEvoConfig,
-        prompts: ProblemPrompts,
+        problem: ProblemPrompts,
         evaluator: Evaluator,
         output_dir: str,
-        generator_llm: BaseClient,
+        llm_client: BaseClient,
         reflector_llm: Optional[BaseClient] = None,
         # Support setting different LLMs for each of the four operators:
         # Short-term Reflection, Long-term Reflection, Crossover, Mutation
@@ -40,14 +41,17 @@ class ReEvo:
         crossover_llm: Optional[BaseClient] = None,
         mutation_llm: Optional[BaseClient] = None,
     ) -> None:
-        self.config = config
-        self.prompts = prompts
 
-        self.output_dir = output_dir
-        os.makedirs(self.output_dir, exist_ok=True)
+        super().__init__(
+            config=config,
+            problem=problem,
+            evaluator=evaluator,
+            llm_client=llm_client,
+            output_dir=output_dir,
+        )
 
         self.output_file = (
-            files('llamda.problems') / f"{self.prompts.problem_name}/gpt.py"
+            files("llamda.problems") / f"{self.problem.problem_name}/gpt.py"
         )
 
         self.evol = Evolution(
@@ -55,14 +59,14 @@ class ReEvo:
             pop_size=self.config.pop_size,
             mutation_rate=self.config.mutation_rate,
             llm_clients=ReEvoLLMClients(
-                generator_llm=generator_llm,
+                generator_llm=llm_client,
                 reflector_llm=reflector_llm,
                 short_reflector_llm=short_reflector_llm,
                 long_reflector_llm=long_reflector_llm,
                 crossover_llm=crossover_llm,
                 mutation_llm=mutation_llm,
             ),
-            prompts=self.prompts,
+            prompts=self.problem,
         )
 
         self.evaluator = evaluator
@@ -80,7 +84,7 @@ class ReEvo:
 
     def init_population(self) -> None:
         # Evaluate the seed function, and set it as Elite
-        code = extract_code_from_generator(self.prompts.seed_func).replace("v1", "v2")
+        code = extract_code_from_generator(self.problem.seed_func).replace("v1", "v2")
         seed_ind = Individual(
             stdout_filepath=f"problem_iter{self.iteration}_stdout0.txt",
             code_path=f"problem_iter{self.iteration}_code0.py",
@@ -180,7 +184,7 @@ class ReEvo:
         """
         Rank-based selection, select individuals with probability proportional to rank.
         """
-        if self.prompts.problem_type == "black_box":
+        if self.problem.problem_type == "black_box":
             population = [
                 individual
                 for individual in population
@@ -215,7 +219,7 @@ class ReEvo:
         """
         selected_population = []
         # Eliminate invalid individuals
-        if self.prompts.problem_type == "black_box":
+        if self.problem.problem_type == "black_box":
             population = [
                 individual
                 for individual in population

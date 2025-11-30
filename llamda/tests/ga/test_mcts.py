@@ -6,17 +6,18 @@ import pytest
 
 from llamda.utils.evaluate import Evaluator
 from llamda.utils.llm_client.openai import OpenAIClient, OpenAIClientConfig
-from llamda.utils.problem import ProblemPrompts
+from llamda.utils.problem import ProblemPrompts, adapt_prompt
 from llamda.utils.utils import get_output_dir
-from llamda.ga.reevo.reevo import ReEvo as LHH, ReEvoConfig
+from llamda.ga.mcts.mcts_ahd import AHDConfig
+from llamda.ga.mcts.mcts_ahd import MCTS_AHD as LHH
 
 ROOT_DIR = os.getcwd()
-output_dir = get_output_dir("test_reevo", ROOT_DIR)
+output_dir = get_output_dir("test_mcts", ROOT_DIR)
 logging.basicConfig(level=logging.INFO)
 
 
 @pytest.mark.parametrize("problem_name", ["tsp_aco"])
-def test_reevo(problem_name: str) -> None:
+def test_mcts(problem_name: str) -> None:
 
     config = OpenAIClientConfig(
         model="gpt-3.5-turbo",
@@ -26,20 +27,21 @@ def test_reevo(problem_name: str) -> None:
     client = OpenAIClient(config)
 
     problems_dir = files("llamda.prompts.problems")
-    prompts = ProblemPrompts.load_problem_prompts(
+    problem_prompts = ProblemPrompts.load_problem_prompts(
         path=str(problems_dir / problem_name),
     )
+    eoh_problem_prompts = adapt_prompt(problem_prompts)
 
-    reevo_config = ReEvoConfig()
-    evaluator = Evaluator(prompts)
+    ahd_config = AHDConfig()
+    evaluator = Evaluator(eoh_problem_prompts)
 
     lhh = LHH(
-        reevo_config,
-        prompts,
+        config=ahd_config,
+        problem=eoh_problem_prompts,
         evaluator=evaluator,
         output_dir=output_dir,
-        generator_llm=client,
+        llm_client=client,
     )
 
-    best_code_overall, _ = lhh.evolve()
+    best_code_overall, _ = lhh.run()
     logging.info(f"Best Code Overall: {best_code_overall}")
