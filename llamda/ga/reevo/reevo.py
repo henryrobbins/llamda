@@ -26,7 +26,9 @@ class ReEvoConfig:
 class ReEvo:
     def __init__(
         self,
+        config: ReEvoConfig,
         prompts: ProblemPrompts,
+        evaluator: Evaluator,
         root_dir: str,
         output_dir: str,
         generator_llm: BaseClient,
@@ -38,7 +40,7 @@ class ReEvo:
         crossover_llm: Optional[BaseClient] = None,
         mutation_llm: Optional[BaseClient] = None,
     ) -> None:
-        self.config = ReEvoConfig()
+        self.config = config
         self.prompts = prompts
 
         self.root_dir = root_dir
@@ -66,7 +68,7 @@ class ReEvo:
 
         self.root_dir = root_dir
 
-        self.evaluator = Evaluator(self.prompts, self.root_dir)
+        self.evaluator = evaluator
 
         self.mutation_rate = self.config.mutation_rate
         self.iteration = 0

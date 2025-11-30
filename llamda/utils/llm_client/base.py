@@ -1,3 +1,4 @@
+import os
 import time
 import logging
 import concurrent
@@ -64,18 +65,24 @@ class BaseClient(object):
         # If messages_list is not a list of list (i.e., only one conversation),
         # convert it to a list of list
         assert isinstance(messages_list, list), "messages_list should be a list."
-        if not isinstance(messages_list[0], list):
-            messages_list = [messages_list]
+        try:
+            if not isinstance(messages_list[0], list):
+                messages_list = [messages_list]
+        except:
+            print(messages_list)
+            raise IndexError("Something is wrong.")
 
         if len(messages_list) > 1:
             assert n == 1, "Currently, only n=1 is supported for multi-chat completion."
 
+        num_workers = os.cpu_count()
         if "gpt" not in self.model:
             # Transform messages if n > 1
             messages_list *= n
             n = 1
+            num_workers = 2
 
-        with concurrent.futures.ThreadPoolExecutor() as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
             args = [
                 dict(n=n, messages=messages, temperature=temperature)
                 for messages in messages_list

@@ -2,7 +2,10 @@ import logging
 import os
 from pathlib import Path
 
-from llamda.ga.hsevo.hsevo import HSEvo as LHH
+from llamda.ga.hsevo.hsevo import HSEvo as LHH, HSEvoConfig
+from llamda.utils.evaluate import Evaluator
+from llamda.utils.llm_client.openai import OpenAIClient, OpenAIClientConfig
+from llamda.utils.problem import ProblemPrompts
 from llamda.utils.utils import get_output_dir
 
 ROOT_DIR = os.getcwd()
@@ -18,10 +21,28 @@ def test_hsevo() -> None:
     logging.info(f"Workspace: {workspace_dir}")
     logging.info(f"Project Root: {ROOT_DIR}")
 
+    llm_config = OpenAIClientConfig(
+        model="gpt-4o-mini-2024-07-18",
+        temperature=1.0,
+        api_key=os.getenv("OPENAI_API_KEY"),
+    )
+    client = OpenAIClient(llm_config)
+
+    prompt_dir = f"{ROOT_DIR}/llamda/prompts"
+    prompts = ProblemPrompts.load_problem_prompts(
+        path=f"{prompt_dir}/{problem_name}",
+    )
+
+    config = HSEvoConfig()
+
+    evaluator = Evaluator(prompts, ROOT_DIR)
+
     # Main algorithm
     lhh = LHH(
-        problem_name=problem_name,
-        model="openai/gpt-4o-mini-2024-07-18",
+        config=config,
+        problem_prompts=prompts,
+        evaluator=evaluator,
+        llm_client=client,
         temperature=1.0,
         root_dir=ROOT_DIR,
         output_dir=output_dir,

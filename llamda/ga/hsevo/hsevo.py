@@ -8,12 +8,12 @@ import tiktoken
 from llamda.ga.hsevo.evolution import Evolution
 from llamda.utils.evaluate import Evaluator
 from llamda.utils.individual import Individual
+from llamda.utils.llm_client.base import BaseClient
 from llamda.utils.problem import ProblemPrompts
 from llamda.utils.utils import (
     extract_code_from_generator,
     extract_to_hs,
-    multi_chat_completion,
-    format_messages,
+    format_messages
 )
 
 
@@ -43,21 +43,24 @@ class HSEvoIndividual(Individual):
 class HSEvo:
     def __init__(
         self,
-        problem_name: str,
-        model: str,
+        config: HSEvoConfig,
+        problem_prompts: ProblemPrompts,
+        evaluator: Evaluator,
         temperature: float,
+        llm_client: BaseClient,
         root_dir: str,
         output_dir: str,
     ) -> None:
 
-        self.problem = problem_name
-        self.model = model
+        self.problem = problem_prompts.problem_name
         self.temperature = temperature
-
-        self.config = HSEvoConfig()
+        self.config = config
         self.root_dir = root_dir
         self.output_dir = output_dir
+        self.llm_client = llm_client
         os.makedirs(self.output_dir, exist_ok=True)
+
+        self.prompts = problem_prompts
 
         self.mutation_rate = self.config.mutation_rate
         self.iteration = 0
@@ -73,16 +76,13 @@ class HSEvo:
         self.lst_good_reflection = []
         self.lst_bad_reflection = []
 
-        self.hsevo_dir = f"{self.root_dir}/llamda/ga/hsevo"
-        self.prompt_dir = f"{self.root_dir}/llamda/prompts"
+
         self.output_file = f"{self.root_dir}/llamda/problems/{self.problem}/gpt.py"
 
-        self.prompts = ProblemPrompts.load_problem_prompts(
-            path=f"{self.prompt_dir}/{self.problem}",
-        )
+
         self.evol = Evolution(prompts=self.prompts, root_dir=root_dir)
 
-        self.evaluator = Evaluator(self.prompts, self.root_dir)
+        self.evaluator = evaluator
 
         self.str_comprehensive_memory = self.prompts.external_knowledge
 
@@ -156,8 +156,8 @@ class HSEvo:
             with open(file_name, "w") as file:
                 file.writelines(json.dumps(pre_messages))
 
-        responses = multi_chat_completion(
-            messages_lst, 1, self.model, self.temperature + 0.3
+        responses = self.llm_client.multi_chat_completion(
+            messages_lst, 1, self.temperature + 0.3
         )
         self.cal_usage_LLM(messages_lst, responses)
 
@@ -285,8 +285,8 @@ class HSEvo:
         )
         messages = format_messages(pre_messages)
 
-        flash_reflection_res = multi_chat_completion(
-            [messages], 1, self.model, self.temperature
+        flash_reflection_res = self.llm_client.multi_chat_completion(
+            [messages], 1, self.temperature
         )[0]
         self.cal_usage_LLM([messages], flash_reflection_res)
         print(flash_reflection_res)
@@ -328,8 +328,8 @@ class HSEvo:
         )
         messages = format_messages(pre_messages)
 
-        comprehensive_response = multi_chat_completion(
-            [messages], 1, self.model, self.temperature
+        comprehensive_response = self.llm_client.multi_chat_completion(
+            [messages], 1, self.temperature
         )[0]
         self.cal_usage_LLM([messages], comprehensive_response)
         self.str_comprehensive_memory = (
@@ -374,8 +374,8 @@ class HSEvo:
             messages_lst.append(messages)
 
         # Asynchronously generate responses
-        response_lst = multi_chat_completion(
-            messages_lst, 1, self.model, self.temperature
+        response_lst = self.llm_client.multi_chat_completion(
+            messages_lst, 1, self.temperature
         )
         self.cal_usage_LLM(messages_lst, response_lst)
         population = [
@@ -399,10 +399,9 @@ class HSEvo:
         with open(file_name, "w") as file:
             file.writelines(json.dumps(pre_messages))
 
-        responses = multi_chat_completion(
+        responses = self.llm_client.multi_chat_completion(
             [messages],
             int(self.config.pop_size * self.mutation_rate),
-            self.model,
             self.temperature,
         )
         self.cal_usage_LLM([messages], responses)
@@ -527,7 +526,7 @@ class HSEvo:
         with open(file_name, "w") as file:
             file.writelines(json.dumps(pre_messages))
 
-        responses = multi_chat_completion([messages], 1, self.model, self.temperature)
+        responses = self.llm_client.multi_chat_completion([messages], 1, self.temperature)
         self.cal_usage_LLM([messages], [str(responses[0])])
 
         logging.info("LLM Response for HS step: " + str(responses[0]))

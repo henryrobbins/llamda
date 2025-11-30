@@ -2,10 +2,11 @@ import logging
 import os
 from pathlib import Path
 
+from llamda.utils.evaluate import Evaluator
 from llamda.utils.llm_client.openai import OpenAIClient, OpenAIClientConfig
 from llamda.utils.problem import ProblemPrompts
 from llamda.utils.utils import get_output_dir, print_hyperlink
-from llamda.ga.reevo.reevo import ReEvo as LHH
+from llamda.ga.reevo.reevo import ReEvo as LHH, ReEvoConfig
 
 ROOT_DIR = os.getcwd()
 output_dir = get_output_dir("test_reevo", ROOT_DIR)
@@ -32,7 +33,10 @@ def test_reevo() -> None:
         path=f"{prompt_dir}/{problem_name}",
     )
 
-    lhh = LHH(prompts, ROOT_DIR, output_dir=output_dir, generator_llm=client)
+    reevo_config = ReEvoConfig()
+    evaluator =Evaluator(prompts, ROOT_DIR)
+
+    lhh = LHH(reevo_config, prompts, evaluator=evaluator, root_dir=ROOT_DIR, output_dir=output_dir, generator_llm=client)
 
     best_code_overall, best_code_path_overall = lhh.evolve()
     logging.info(f"Best Code Overall: {best_code_overall}")
