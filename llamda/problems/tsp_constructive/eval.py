@@ -65,8 +65,7 @@ if __name__ == "__main__":
     print("[*] Running ...")
 
     problem_size = int(sys.argv[1])
-    root_dir = sys.argv[2]
-    mood = sys.argv[3]
+    mood = sys.argv[2]
     assert mood in ["train", "val"]
 
     basepath = path.join(path.dirname(__file__), "dataset")

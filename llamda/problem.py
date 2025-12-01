@@ -1,5 +1,6 @@
 from importlib.resources import files
 import os
+from pathlib import Path
 import re
 from typing import TypeVar
 import yaml
@@ -30,6 +31,15 @@ class BaseProblem:
     size: int
     description: str
     func_name: str
+    path: Path
+
+    @property
+    def eval_path(self) -> Path:
+        return self.path / "eval.py"
+
+    @property
+    def code_path(self) -> Path:
+        return self.path / "gpt.py"
 
 
 @dataclass
@@ -40,15 +50,16 @@ class Problem(BaseProblem):
     external_knowledge: str
 
     @classmethod
-    def load_problem(cls, path: str) -> "Problem":
+    def load_problem(cls, path: Path) -> "Problem":
 
-        with open(f"{path}/problem.yaml", "r") as f:
+        prompts_path = path / "prompts"
+        with open(prompts_path / "problem.yaml", "r") as f:
             config = yaml.safe_load(f)
-        seed_func = file_to_string(f"{path}/seed_func.txt")
-        func_signature = file_to_string(f"{path}/func_signature.txt")
-        func_desc = file_to_string(f"{path}/func_desc.txt")
-        if os.path.exists(f"{path}/external_knowledge.txt"):
-            external_knowledge = file_to_string(f"{path}/external_knowledge.txt")
+        seed_func = file_to_string(prompts_path / "seed_func.txt")
+        func_signature = file_to_string(prompts_path / "func_signature.txt")
+        func_desc = file_to_string(prompts_path / "func_desc.txt")
+        if os.path.exists(prompts_path / "external_knowledge.txt"):
+            external_knowledge = file_to_string(prompts_path / "external_knowledge.txt")
         else:
             external_knowledge = ""
 
@@ -59,6 +70,7 @@ class Problem(BaseProblem):
             size=config["problem_size"],
             func_name=config["func_name"],
             description=config["description"],
+            path=path,
             seed_func=seed_func,
             func_signature=func_signature,
             func_desc=func_desc,
@@ -68,8 +80,8 @@ class Problem(BaseProblem):
     @classmethod
     def load_builtin(cls, problem_name: ProblemName) -> "Problem":
 
-        problem_path = files("llamda.prompts.problems") / problem_name.value
-        return cls.load_problem(str(problem_path))
+        problem_path = files("llamda.problems") / problem_name.value
+        return cls.load_problem(problem_path)
 
 
 @dataclass
@@ -92,6 +104,7 @@ BPP_ONLINE_PROMPTS = EohProblem(
 of bins to assign an item. In each step, the item will be assigned to the bin with \
 the maximum score. If the rest capacity of a bin equals the maximum capacity, it \
 will not be used. The final goal is to minimize the number of used bins.",
+    path=files("llamda.problems") / ProblemName.BPP_ONLINE.value,
     func_name="score",
     func_inputs=["item", "bins"],
     func_outputs=["scores"],
@@ -116,6 +129,7 @@ shortest route that visits each node once and returns to the starting node. The 
 can be solved step-by-step by starting from the current node and iteratively choosing \
 the next node. Help me design a novel algorithm that is different from the algorithms \
 in literature to select the next node in each step.",
+    path=files("llamda.problems") / ProblemName.TSP_CONSTRUCTIVE.value,
     func_name="select_next_node",
     func_inputs=[
         "current_node",
@@ -132,37 +146,36 @@ in literature to select the next node in each step.",
 
 # Adapted from ReEvo: https://github.com/ai4co/reevo/blob/main/baselines/eoh/problem_adapter.py
 # Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
-def adapt_prompt(prompts: Problem) -> EohProblem:
+def adapt_prompt(problem: Problem) -> EohProblem:
 
-    match = re.match(r"^def +(.+?)\((.*)\) *-> *(.*?) *:", prompts.func_signature)
+    match = re.match(r"^def +(.+?)\((.*)\) *-> *(.*?) *:", problem.func_signature)
     assert match is not None
-    prompt_func_name = prompts.func_name
-    prompt_func_inputs = [
-        txt.split(":")[0].strip() for txt in match.group(2).split(",")
-    ]
-    if prompt_func_name.startswith("select_next_node"):
-        prompt_func_outputs = ["next_node"]
-    elif prompt_func_name.startswith("priority"):
-        prompt_func_outputs = ["priority"]
-    elif prompt_func_name.startswith("heuristics"):
-        prompt_func_outputs = ["heuristics_matrix"]
-    elif prompt_func_name.startswith("crossover"):
-        prompt_func_outputs = ["offsprings"]
-    elif prompt_func_name.startswith("utility"):
-        prompt_func_outputs = ["utility_value"]
+    func_name = problem.func_name
+    func_inputs = [txt.split(":")[0].strip() for txt in match.group(2).split(",")]
+    if func_name.startswith("select_next_node"):
+        func_outputs = ["next_node"]
+    elif func_name.startswith("priority"):
+        func_outputs = ["priority"]
+    elif func_name.startswith("heuristics"):
+        func_outputs = ["heuristics_matrix"]
+    elif func_name.startswith("crossover"):
+        func_outputs = ["offsprings"]
+    elif func_name.startswith("utility"):
+        func_outputs = ["utility_value"]
     else:
-        prompt_func_outputs = ["result"]
+        func_outputs = ["result"]
 
     return EohProblem(
-        name=prompts.name,
-        type=prompts.type,
-        obj_type=prompts.obj_type,
-        size=prompts.size,
-        description=prompts.description,
-        func_name=prompt_func_name,
-        func_inputs=prompt_func_inputs,
-        func_outputs=prompt_func_outputs,
-        inout_info=prompts.func_desc,
+        name=problem.name,
+        type=problem.type,
+        obj_type=problem.obj_type,
+        size=problem.size,
+        description=problem.description,
+        path=problem.path,
+        func_name=func_name,
+        func_inputs=func_inputs,
+        func_outputs=func_outputs,
+        inout_info=problem.func_desc,
         other_info="",
     )
 

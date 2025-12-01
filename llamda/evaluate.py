@@ -2,7 +2,6 @@
 # and https://github.com/ai4co/reevo/blob/main/reevo.py
 # Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
 
-from importlib.resources import files
 import logging
 import subprocess
 from typing import TypeVar
@@ -18,10 +17,6 @@ class Evaluator:
     def __init__(self, problem: BaseProblem, timeout: int = 30) -> None:
         self.problem = problem
         self.timeout = timeout
-
-        problems_dir = files("llamda.problems")
-
-        self.output_file = problems_dir / f"{self.problem.name}/gpt.py"
         self.function_evals = 0
 
     def mark_invalid_individual(self, individual: T, traceback_msg: str) -> T:
@@ -116,26 +111,18 @@ class Evaluator:
         """
         logging.debug(f"Iteration {self.iteration}: Processing Code Run {response_id}")
 
-        with open(self.output_file, "w") as file:
+        with open(self.problem.code_path, "w") as file:
             file.writelines(individual.code + "\n")
 
         # Execute the python file with flags
         with open(individual.stdout_filepath, "w") as f:
 
-            problems_dir = files("llamda.problems")
-
-            eval_file_path = (
-                problems_dir / f"{self.problem.name}/eval.py"
-                if self.problem.type != "black_box"
-                else problems_dir / f"{self.problem.name}/eval_black_box.py"
-            )
             process = subprocess.Popen(
                 [
                     "python",
                     "-u",
-                    str(eval_file_path),
+                    str(self.problem.eval_path),
                     f"{self.problem.size}",
-                    str(problems_dir),
                     "train",
                 ],
                 stdout=f,

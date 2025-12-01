@@ -2,7 +2,6 @@
 # Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
 
 from dataclasses import dataclass
-from importlib.resources import files
 import os
 import logging
 import numpy as np
@@ -76,10 +75,6 @@ class HSEvo(GeneticAlgorithm[HSEvoConfig, Problem]):
         self.best_code_path_overall = None
         self.lst_good_reflection = []
         self.lst_bad_reflection = []
-
-        problems_dir = files("llamda.problems")
-
-        self.output_file = problems_dir / f"{self.problem.name}/gpt.py"
 
         self.evol = Evolution(problem=self.problem)
 

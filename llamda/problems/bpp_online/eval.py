@@ -93,8 +93,7 @@ if __name__ == "__main__":
     print("[*] Running ...")
 
     problem_size = int(sys.argv[1])
-    root_dir = sys.argv[2]  # reserved for compatibility
-    mood = sys.argv[3]
+    mood = sys.argv[2]
     assert mood in ["train", "val"]
     assert problem_size in [5000, -1]
 

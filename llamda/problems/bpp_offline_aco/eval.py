@@ -51,9 +51,8 @@ if __name__ == "__main__":
     print("[*] Running ...")
 
     problem_size = int(sys.argv[1])
-    root_dir = sys.argv[2]
-    mood = sys.argv[3]
-    method = sys.argv[4] if len(sys.argv) >= 5 else "aco"
+    mood = sys.argv[2]
+    method = sys.argv[3] if len(sys.argv) >= 4 else "aco"
     assert mood in ["train", "val"]
     assert method in ["sample", "aco"]
 

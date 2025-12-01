@@ -1,7 +1,6 @@
 # Adapted from ReEvo: https://github.com/ai4co/reevo/blob/main/reevo.py
 # Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
 
-from importlib.resources import files
 from typing import Optional
 import logging
 import numpy as np
@@ -51,8 +50,6 @@ class ReEvo(GeneticAlgorithm[ReEvoConfig, Problem]):
             llm_client=llm_client,
             output_dir=output_dir,
         )
-
-        self.output_file = files("llamda.problems") / f"{self.problem.name}/gpt.py"
 
         self.evol = Evolution(
             init_pop_size=self.config.init_pop_size,
