@@ -56,7 +56,7 @@ class Evolution:
             self.reevo_prompts_dir / "user_generator.txt"
         ).format(
             func_name=self.problem.func_name,
-            problem_desc=self.problem.func_desc,
+            description=self.problem.description,
             func_desc=self.problem.func_desc,
         )
 
@@ -123,7 +123,7 @@ class Evolution:
         user = user_reflector_st_prompt.format(
             func_name=self.problem.func_name,
             func_desc=self.problem.func_desc,
-            problem_desc=self.problem.description,
+            description=self.problem.description,
             worse_code=worse_code,
             better_code=better_code,
         )
@@ -183,7 +183,7 @@ class Evolution:
 
         system = self.system_reflector_prompt
         user = user_reflector_lt_prompt.format(
-            problem_desc=self.problem.description,
+            description=self.problem.description,
             prior_reflection=long_term_reflection_str,
             new_reflection="\n".join(short_term_reflections),
         )

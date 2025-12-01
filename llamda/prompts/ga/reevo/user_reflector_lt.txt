@@ -1,4 +1,4 @@
-Below is your prior long-term reflection on designing heuristics for {problem_desc}
+Below is your prior long-term reflection on designing heuristics for {description}
 {prior_reflection}
 
 Below are some newly gained insights.

@@ -1,2 +1,2 @@
-{seed} Your task is to write a {func_name} function for {problem_desc}
+{seed} Your task is to write a {func_name} function for {description}
 {func_desc}

@@ -48,20 +48,20 @@ class Evolution:
     def get_prompt_post(self, code: str) -> str:
         post = file_to_string(self.prompts_dir / "post.txt")
         return post.format(
-            prompt_task=self.problem.description,
+            description=self.problem.description,
             func_name=self.problem.func_name,
-            inout_inf=self.problem.inout_info,
-            other_inf=self.problem.other_info,
+            inout_info=self.problem.inout_info,
+            other_info=self.problem.other_info,
             code=code,
         )
 
     def get_prompt_refine(self, code: str, algorithm: str) -> str:
         refine = file_to_string(self.prompts_dir / "refine.txt")
         return refine.format(
-            prompt_task=self.problem.description,
+            description=self.problem.description,
             func_name=self.problem.func_name,
-            inout_inf=self.problem.inout_info,
-            other_inf=self.problem.other_info,
+            inout_info=self.problem.inout_info,
+            other_info=self.problem.other_info,
             algorithm=algorithm,
             code=code,
         )
@@ -69,14 +69,14 @@ class Evolution:
     def get_prompt_i1(self) -> str:
         i1 = file_to_string(self.prompts_dir / "i1.txt")
         return i1.format(
-            prompt_task=self.problem.description,
+            description=self.problem.description,
             func_name=self.problem.func_name,
             n_inputs=len(self.problem.func_inputs),
-            joined_inputs=self.joined_inputs,
+            func_inputs=self.joined_inputs,
             n_outputs=len(self.problem.func_outputs),
-            joined_outputs=self.joined_outputs,
-            inout_inf=self.problem.inout_info,
-            other_inf=self.problem.other_info,
+            func_outputs=self.joined_outputs,
+            inout_info=self.problem.inout_info,
+            other_info=self.problem.other_info,
         )
 
     def get_prompt_e1(self, indivs: list[MCTSIndividual]) -> str:
@@ -99,16 +99,16 @@ class Evolution:
 
         e1 = file_to_string(self.prompts_dir / "e1.txt")
         return e1.format(
-            prompt_task=self.problem.description,
+            description=self.problem.description,
             func_name=self.problem.func_name,
             n_inputs=len(self.problem.func_inputs),
-            joined_inputs=self.joined_inputs,
+            func_inputs=self.joined_inputs,
             n_outputs=len(self.problem.func_outputs),
-            joined_outputs=self.joined_outputs,
-            inout_inf=self.problem.inout_info,
-            other_inf=self.problem.other_info,
+            func_outputs=self.joined_outputs,
+            inout_info=self.problem.inout_info,
+            other_info=self.problem.other_info,
             n_indivs=len(indivs),
-            prompt_indiv=prompt_indiv,
+            indivs=prompt_indiv,
         )
 
     def get_prompt_e2(self, indivs: list[MCTSIndividual]) -> str:
@@ -131,46 +131,46 @@ class Evolution:
 
         e2 = file_to_string(self.prompts_dir / "e2.txt")
         return e2.format(
-            prompt_task=self.problem.description,
+            description=self.problem.description,
             func_name=self.problem.func_name,
             n_inputs=len(self.problem.func_inputs),
-            joined_inputs=self.joined_inputs,
+            func_inputs=self.joined_inputs,
             n_outputs=len(self.problem.func_outputs),
-            joined_outputs=self.joined_outputs,
-            inout_inf=self.problem.inout_info,
-            other_inf=self.problem.other_info,
+            func_outputs=self.joined_outputs,
+            inout_info=self.problem.inout_info,
+            other_info=self.problem.other_info,
             n_indivs=len(indivs),
-            prompt_indiv=prompt_indiv,
+            indivs=prompt_indiv,
         )
 
     def get_prompt_m1(self, indiv1: MCTSIndividual) -> str:
         m1 = file_to_string(self.prompts_dir / "m1.txt")
         return m1.format(
-            prompt_task=self.problem.description,
+            description=self.problem.description,
             func_name=self.problem.func_name,
             n_inputs=len(self.problem.func_inputs),
-            joined_inputs=self.joined_inputs,
+            func_inputs=self.joined_inputs,
             n_outputs=len(self.problem.func_outputs),
-            joined_outputs=self.joined_outputs,
-            inout_inf=self.problem.inout_info,
-            other_inf=self.problem.other_info,
-            indiv_algorithm=indiv1.algorithm,
-            indiv_code=indiv1.code,
+            func_outputs=self.joined_outputs,
+            inout_info=self.problem.inout_info,
+            other_info=self.problem.other_info,
+            algorithm=indiv1.algorithm,
+            code=indiv1.code,
         )
 
     def get_prompt_m2(self, indiv1: MCTSIndividual) -> str:
         m2 = file_to_string(self.prompts_dir / "m2.txt")
         return m2.format(
-            prompt_task=self.problem.description,
+            description=self.problem.description,
             func_name=self.problem.func_name,
             n_inputs=len(self.problem.func_inputs),
-            joined_inputs=self.joined_inputs,
+            func_inputs=self.joined_inputs,
             n_outputs=len(self.problem.func_outputs),
-            joined_outputs=self.joined_outputs,
-            inout_inf=self.problem.inout_info,
-            other_inf=self.problem.other_info,
-            indiv_algorithm=indiv1.algorithm,
-            indiv_code=indiv1.code,
+            func_outputs=self.joined_outputs,
+            inout_info=self.problem.inout_info,
+            other_info=self.problem.other_info,
+            algorithm=indiv1.algorithm,
+            code=indiv1.code,
         )
 
     def get_prompt_s1(self, indivs: list[MCTSIndividual]) -> str:
@@ -192,16 +192,16 @@ class Evolution:
 
         s1 = file_to_string(self.prompts_dir / "s1.txt")
         return s1.format(
-            prompt_task=self.problem.description,
+            description=self.problem.description,
             func_name=self.problem.func_name,
             n_inputs=len(self.problem.func_inputs),
-            joined_inputs=self.joined_inputs,
+            func_inputs=self.joined_inputs,
             n_outputs=len(self.problem.func_outputs),
-            joined_outputs=self.joined_outputs,
-            inout_inf=self.problem.inout_info,
-            other_inf=self.problem.other_info,
+            func_outputs=self.joined_outputs,
+            inout_info=self.problem.inout_info,
+            other_info=self.problem.other_info,
             n_indivs=len(indivs),
-            prompt_indiv=prompt_indiv,
+            indivs=prompt_indiv,
         )
 
     def _get_thought(self, prompt_content: str) -> str:

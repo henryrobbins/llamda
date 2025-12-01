@@ -1,4 +1,4 @@
-Below are two {func_name} functions for {problem_desc}
+Below are two {func_name} functions for {description}
 {func_desc}
 
 You are provided with two code versions below, where the second version performs better than the first one.

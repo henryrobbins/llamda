@@ -1,6 +1,6 @@
-{prompt_task}
+{description}
 Following is the Design Idea of a heuristic algorithm for the problem and the code with function name '{func_name}' for implementing the heuristic algorithm.
-{inout_inf} {other_inf}
+{inout_info} {other_info}
 Design Idea:
 {algorithm}
 

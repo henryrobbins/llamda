@@ -46,14 +46,14 @@ class Evolution:
     def get_prompt_i1(self) -> str:
         i1 = file_to_string(self.prompts_dir / f"{EOHOperator.I1.value}.txt")
         return i1.format(
-            prompt_task=self.problem.description,
-            prompt_func_name=self.problem.func_name,
+            description=self.problem.description,
+            func_name=self.problem.func_name,
             n_inputs=len(self.problem.func_inputs),
-            prompt_func_inputs=self.joined_inputs,
+            func_inputs=self.joined_inputs,
             n_outputs=len(self.problem.func_outputs),
-            prompt_func_outputs=self.joined_outputs,
-            prompt_inout_inf=self.problem.inout_info,
-            prompt_other_inf=self.problem.other_info,
+            func_outputs=self.joined_outputs,
+            inout_info=self.problem.inout_info,
+            other_info=self.problem.other_info,
         )
 
     def get_prompt_e1(self, indivs: list[EOHIndividual]) -> str:
@@ -73,16 +73,16 @@ class Evolution:
         e1 = file_to_string(self.prompts_dir / f"{EOHOperator.E1.value}.txt")
         return e1.format(
             m=len(indivs),
-            prompt_task=self.problem.description,
-            prompt_func_name=self.problem.func_name,
+            description=self.problem.description,
+            func_name=self.problem.func_name,
             n_inputs=len(self.problem.func_inputs),
-            prompt_func_inputs=self.joined_inputs,
+            func_inputs=self.joined_inputs,
             n_outputs=len(self.problem.func_outputs),
-            prompt_func_outputs=self.joined_outputs,
-            prompt_inout_inf=self.problem.inout_info,
-            prompt_other_inf=self.problem.other_info,
+            func_outputs=self.joined_outputs,
+            inout_info=self.problem.inout_info,
+            other_info=self.problem.other_info,
             n_indivs=len(indivs),
-            prompt_indiv=prompt_indiv,
+            indivs=prompt_indiv,
         )
 
     def get_prompt_e2(self, indivs: list[EOHIndividual]) -> str:
@@ -102,29 +102,29 @@ class Evolution:
         e2 = file_to_string(self.prompts_dir / f"{EOHOperator.E2.value}.txt")
         return e2.format(
             m=len(indivs),
-            prompt_task=self.problem.description,
-            prompt_func_name=self.problem.func_name,
+            description=self.problem.description,
+            func_name=self.problem.func_name,
             n_inputs=len(self.problem.func_inputs),
-            prompt_func_inputs=self.joined_inputs,
+            func_inputs=self.joined_inputs,
             n_outputs=len(self.problem.func_outputs),
-            prompt_func_outputs=self.joined_outputs,
-            prompt_inout_inf=self.problem.inout_info,
-            prompt_other_inf=self.problem.other_info,
+            func_outputs=self.joined_outputs,
+            inout_info=self.problem.inout_info,
+            other_info=self.problem.other_info,
             n_indivs=len(indivs),
-            prompt_indiv=prompt_indiv,
+            indivs=prompt_indiv,
         )
 
     def get_prompt_m1(self, indiv1: EOHIndividual) -> str:
         m1 = file_to_string(self.prompts_dir / f"{EOHOperator.M1.value}.txt")
         return m1.format(
-            prompt_task=self.problem.description,
-            prompt_func_name=self.problem.func_name,
+            description=self.problem.description,
+            func_name=self.problem.func_name,
             n_inputs=len(self.problem.func_inputs),
-            prompt_func_inputs=self.joined_inputs,
+            func_inputs=self.joined_inputs,
             n_outputs=len(self.problem.func_outputs),
-            prompt_func_outputs=self.joined_outputs,
-            prompt_inout_inf=self.problem.inout_info,
-            prompt_other_inf=self.problem.other_info,
+            func_outputs=self.joined_outputs,
+            inout_info=self.problem.inout_info,
+            other_info=self.problem.other_info,
             algorithm=indiv1.algorithm,
             code=indiv1.code,
         )
@@ -132,14 +132,14 @@ class Evolution:
     def get_prompt_m2(self, indiv1: EOHIndividual) -> str:
         m2 = file_to_string(self.prompts_dir / f"{EOHOperator.M2.value}.txt")
         return m2.format(
-            prompt_task=self.problem.description,
-            prompt_func_name=self.problem.func_name,
+            description=self.problem.description,
+            func_name=self.problem.func_name,
             n_inputs=len(self.problem.func_inputs),
-            prompt_func_inputs=self.joined_inputs,
+            func_inputs=self.joined_inputs,
             n_outputs=len(self.problem.func_outputs),
-            prompt_func_outputs=self.joined_outputs,
-            prompt_inout_inf=self.problem.inout_info,
-            prompt_other_inf=self.problem.other_info,
+            func_outputs=self.joined_outputs,
+            inout_info=self.problem.inout_info,
+            other_info=self.problem.other_info,
             algorithm=indiv1.algorithm,
             code=indiv1.code,
         )

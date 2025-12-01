@@ -1,6 +1,6 @@
-{prompt_task}
+{description}
 Following is the a Code implementing a heuristic algorithm with function name {func_name} to solve the above mentioned problem.
-{inout_inf} {other_inf}
+{inout_info} {other_info}
 
 Code:
 {code}

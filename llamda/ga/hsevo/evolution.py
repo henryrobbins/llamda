@@ -38,7 +38,7 @@ class Evolution:
         user_generator_prompt_full = self.user_generator_prompt.format(
             seed=scientist,
             func_name=self.problem.func_name,
-            problem_desc=self.problem.description,
+            description=self.problem.description,
             func_desc=self.problem.func_desc,
         )
 
@@ -76,7 +76,7 @@ class Evolution:
         )
 
         user = user_flash_reflection_prompt.format(
-            problem_desc=self.problem.description,
+            description=self.problem.description,
             lst_method="\n".join(lst_str_method),
             schema_reflection={"analyze": "str", "exp": "str"},
         )
@@ -144,7 +144,7 @@ class Evolution:
         user_generator_prompt_full = self.user_generator_prompt.format(
             seed=scientist,
             func_name=self.problem.func_name,
-            problem_desc=self.problem.description,
+            description=self.problem.description,
             func_desc=self.problem.func_desc,
         )
 
@@ -181,7 +181,7 @@ class Evolution:
         user_generator_prompt_full = self.user_generator_prompt.format(
             seed=scientist,
             func_name=self.problem.func_name,
-            problem_desc=self.problem.description,
+            description=self.problem.description,
             func_desc=self.problem.func_desc,
         )
 

@@ -1,2 +1,2 @@
-Write a {func_name} function for {problem_desc}
+Write a {func_name} function for {description}
 {func_desc}

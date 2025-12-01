@@ -1,3 +1,3 @@
-{prompt_task}
-First, describe your new algorithm and main steps in one sentence. The description must be inside a brace. Next, implement it in Python as a function named {prompt_func_name}. This function should accept {n_inputs} input(s): {prompt_func_inputs}. The function should return {n_outputs} output(s): {prompt_func_outputs}.{prompt_inout_inf} {prompt_other_inf}
+{description}
+First, describe your new algorithm and main steps in one sentence. The description must be inside a brace. Next, implement it in Python as a function named {func_name}. This function should accept {n_inputs} input(s): {func_inputs}. The function should return {n_outputs} output(s): {func_outputs}.{inout_info} {other_info}
 Do not give additional explanations.

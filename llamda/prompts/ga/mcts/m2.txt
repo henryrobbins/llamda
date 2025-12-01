@@ -1,11 +1,11 @@
-{prompt_task}
+{description}
 I have one algorithm with its code as follows.
 
-Algorithm's description: {indiv_algorithm}
+Algorithm's description: {algorithm}
 Code:
-{indiv_code}
+{code}
 
 Please identify the main algorithm parameters and help me in creating a new algorithm that has different parameter settings to equations compared to the provided algorithm.
 First, describe the design idea based on the provided algorithm and main steps of the new algorithm in one sentence. The description must be inside a brace outside the code implementation. Next, implement it in Python as a function named '{func_name}'.
-This function should accept {n_inputs} input(s): {joined_inputs}. The function should return {n_outputs} output(s): {joined_outputs}. {inout_inf} {other_inf}
+This function should accept {n_inputs} input(s): {func_inputs}. The function should return {n_outputs} output(s): {func_outputs}. {inout_info} {other_info}
 Do not give additional explanations.
