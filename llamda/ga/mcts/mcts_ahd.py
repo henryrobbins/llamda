@@ -7,10 +7,10 @@ from dataclasses import dataclass, field
 from llamda.ga.base import GeneticAlgorithm
 from llamda.ga.mcts.evolution import MCTSOperator
 from llamda.ga.mcts.mcts import MCTS, MCTSNode
-from llamda.utils.evaluate import Evaluator
+from llamda.evaluate import Evaluator
 from llamda.ga.mcts.evolution_interface import MCTSIndividual, InterfaceEC
-from llamda.utils.llm_client.base import BaseClient
-from llamda.utils.problem import EOHProblemPrompts
+from llamda.llm_client.base import BaseClient
+from llamda.problem import EOHProblemPrompts
 
 
 @dataclass

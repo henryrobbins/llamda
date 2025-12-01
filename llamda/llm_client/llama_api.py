@@ -2,7 +2,7 @@ import logging
 import os
 
 from dataclasses import dataclass
-from llamda.utils.llm_client.openai import OpenAIClient, OpenAIClientConfig
+from llamda.llm_client.openai import OpenAIClient, OpenAIClientConfig
 
 logger = logging.getLogger(__name__)
 

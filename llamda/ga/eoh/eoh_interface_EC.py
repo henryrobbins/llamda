@@ -4,9 +4,9 @@ import random
 import numpy as np
 
 from llamda.ga.eoh.eoh_evolution import EOHIndividual, EOHOperator, Evolution
-from llamda.utils.evaluate import Evaluator
-from llamda.utils.problem import EOHProblemPrompts, hydrate_individual
-from llamda.utils.llm_client.base import BaseClient
+from llamda.evaluate import Evaluator
+from llamda.problem import EOHProblemPrompts, hydrate_individual
+from llamda.llm_client.base import BaseClient
 
 
 class InterfaceEC:

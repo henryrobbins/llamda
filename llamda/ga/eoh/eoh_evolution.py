@@ -2,10 +2,10 @@ from enum import StrEnum
 from dataclasses import dataclass
 from importlib.resources import files
 
-from llamda.utils.individual import Individual
-from llamda.utils.problem import EOHProblemPrompts
-from llamda.utils.llm_client.base import BaseClient
-from llamda.utils.utils import file_to_string, parse_response
+from llamda.individual import Individual
+from llamda.problem import EOHProblemPrompts
+from llamda.llm_client.base import BaseClient
+from llamda.utils import file_to_string, parse_response
 
 
 @dataclass

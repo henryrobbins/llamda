@@ -3,8 +3,8 @@ import logging
 from pathlib import Path
 import pytest
 
-from llamda.utils.llm_client.base import BaseLLMClientConfig
-from llamda.utils.problem import ProblemPrompts, adapt_prompt
+from llamda.llm_client.base import BaseLLMClientConfig
+from llamda.problem import ProblemPrompts, adapt_prompt
 from llamda.ga.mcts.mcts_ahd import AHDConfig
 from llamda.ga.mcts.mcts_ahd import MCTS_AHD as LHH
 

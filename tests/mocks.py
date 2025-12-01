@@ -4,10 +4,10 @@ import os
 from pathlib import Path
 from typing import Any, TypeVar
 
-from llamda.utils.evaluate import Evaluator
-from llamda.utils.individual import Individual
-from llamda.utils.llm_client.base import BaseClient, BaseLLMClientConfig
-from llamda.utils.problem import BaseProblemPrompts
+from llamda.evaluate import Evaluator
+from llamda.individual import Individual
+from llamda.llm_client.base import BaseClient, BaseLLMClientConfig
+from llamda.problem import BaseProblemPrompts
 
 
 class MockResponse:

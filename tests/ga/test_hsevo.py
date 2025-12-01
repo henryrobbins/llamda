@@ -5,8 +5,8 @@ from pathlib import Path
 import pytest
 
 from llamda.ga.hsevo.hsevo import HSEvo, HSEvoConfig
-from llamda.utils.llm_client.base import BaseLLMClientConfig
-from llamda.utils.problem import ProblemPrompts
+from llamda.llm_client.base import BaseLLMClientConfig
+from llamda.problem import ProblemPrompts
 
 from tests.common import EVALUATIONS_PATH, RESPONSES_PATH
 from tests.mocks import MockClient, MockEvaluator

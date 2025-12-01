@@ -2,8 +2,8 @@ import os
 from abc import ABC
 from typing import Generic, TypeVar
 
-from llamda.utils.evaluate import Evaluator
-from llamda.utils.llm_client.base import BaseClient
+from llamda.evaluate import Evaluator
+from llamda.llm_client.base import BaseClient
 
 
 T = TypeVar("T")

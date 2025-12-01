@@ -8,11 +8,11 @@ import tiktoken
 
 from llamda.ga.base import GeneticAlgorithm
 from llamda.ga.hsevo.evolution import Evolution
-from llamda.utils.evaluate import Evaluator
-from llamda.utils.individual import Individual
-from llamda.utils.llm_client.base import BaseClient
-from llamda.utils.problem import ProblemPrompts
-from llamda.utils.utils import (
+from llamda.evaluate import Evaluator
+from llamda.individual import Individual
+from llamda.llm_client.base import BaseClient
+from llamda.problem import ProblemPrompts
+from llamda.utils import (
     extract_code_from_generator,
     extract_to_hs,
     format_messages,

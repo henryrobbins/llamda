@@ -1,29 +1,32 @@
 from dataclasses import dataclass
 import logging
-from llamda.utils.llm_client.base import BaseClient, BaseLLMClientConfig
+from llamda.llm_client.base import BaseClient, BaseLLMClientConfig
 
 try:
-    from openai import OpenAI
+    from openai import AzureOpenAI
 except ImportError:
-    OpenAI = "openai"
+    AzureOpenAI = "openai"
 
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
-class OpenAIClientConfig(BaseLLMClientConfig):
-    base_url: str | None = None
+class AzureOpenAIClientConfig(BaseLLMClientConfig):
+    endpoint: str | None = None
+    deployment: str | None = None
     api_key: str | None = None
+    api_version: str = "2024-12-01-preview"
 
 
-class OpenAIClient(BaseClient):
+class AzureOpenAIClient(BaseClient):
 
-    ClientClass = OpenAI
+    ClientClass = AzureOpenAI
 
     def __init__(
         self,
-        config: OpenAIClientConfig,
+        config: AzureOpenAIClientConfig,
+        **kwargs: dict,
     ) -> None:
         super().__init__(config=config)
 
@@ -31,7 +34,13 @@ class OpenAIClient(BaseClient):
             logger.fatal(f"Package `{self.ClientClass}` is required")
             exit(-1)
 
-        self.client = self.ClientClass(api_key=config.api_key, base_url=config.base_url)
+        self.client = self.ClientClass(
+            azure_endpoint=config.endpoint,
+            azure_deployment=config.deployment,
+            api_key=config.api_key,
+            api_version=config.api_version,
+            **kwargs,
+        )
 
     def _chat_completion_api(
         self, messages: list[dict], temperature: float, n: int = 1

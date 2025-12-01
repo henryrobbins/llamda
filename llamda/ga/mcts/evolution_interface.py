@@ -3,10 +3,10 @@ import random
 
 import numpy as np
 
-from llamda.utils.evaluate import Evaluator
-from llamda.utils.problem import EOHProblemPrompts, hydrate_individual
+from llamda.evaluate import Evaluator
+from llamda.problem import EOHProblemPrompts, hydrate_individual
 from llamda.ga.mcts.evolution import Evolution, MCTSIndividual, MCTSOperator
-from llamda.utils.llm_client.base import BaseClient
+from llamda.llm_client.base import BaseClient
 
 
 class InterfaceEC:

@@ -7,11 +7,11 @@ from dataclasses import dataclass
 
 from llamda.ga.base import GeneticAlgorithm
 from llamda.ga.reevo.evolution import Evolution, ReEvoLLMClients
-from llamda.utils.evaluate import Evaluator
-from llamda.utils.individual import Individual
-from llamda.utils.llm_client.base import BaseClient
-from llamda.utils.problem import ProblemPrompts
-from llamda.utils.utils import extract_code_from_generator, print_hyperlink
+from llamda.evaluate import Evaluator
+from llamda.individual import Individual
+from llamda.llm_client.base import BaseClient
+from llamda.problem import ProblemPrompts
+from llamda.utils import extract_code_from_generator, print_hyperlink
 
 
 @dataclass

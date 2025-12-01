@@ -7,10 +7,10 @@ import time
 
 from llamda.ga.base import GeneticAlgorithm
 from llamda.ga.eoh.eoh_evolution import EOHOperator
-from llamda.utils.evaluate import Evaluator
+from llamda.evaluate import Evaluator
 from llamda.ga.eoh.eoh_interface_EC import EOHIndividual, InterfaceEC
-from llamda.utils.llm_client.base import BaseClient
-from llamda.utils.problem import EOHProblemPrompts
+from llamda.llm_client.base import BaseClient
+from llamda.problem import EOHProblemPrompts
 
 # See original EOH adapter implementation in the reevo repository:
 # https://github.com/ai4co/reevo/blob/main/baselines/eoh/eoh_adapter.py

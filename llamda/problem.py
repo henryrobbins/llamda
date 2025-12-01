@@ -4,8 +4,8 @@ from typing import TypeVar
 import yaml
 from dataclasses import dataclass
 
-from llamda.utils.individual import Individual
-from llamda.utils.utils import file_to_string
+from llamda.individual import Individual
+from llamda.utils import file_to_string
 
 
 T = TypeVar("T", bound=Individual)
@@ -60,6 +60,7 @@ class EOHProblemPrompts(BaseProblemPrompts):
     func_outputs: list[str]
     inout_inf: str
     other_inf: str
+
 
 # I believe these were the exact prompts used in the original EOH paper
 # See the reevo EoH baseline implementation for reference:
