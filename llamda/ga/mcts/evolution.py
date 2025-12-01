@@ -1,3 +1,6 @@
+# Adapted from MCTS-AHD: https://github.com/zz1358m/MCTS-AHD-master/blob/main/source/evolution.py
+# Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
+
 from enum import StrEnum
 from dataclasses import dataclass
 from importlib.resources import files

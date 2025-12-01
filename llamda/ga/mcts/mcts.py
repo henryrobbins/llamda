@@ -1,3 +1,6 @@
+# Adapted from MCTS-AHD: https://github.com/zz1358m/MCTS-AHD-master/blob/main/source/mcts.py
+# Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
+
 from __future__ import annotations
 import math
 from typing import Any

@@ -1,3 +1,6 @@
+# Adapted from ReEvo: https://github.com/ai4co/reevo/blob/main/problems/mkp_aco/eval.py
+# Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
+
 from aco import ACO
 import numpy as np
 import torch

@@ -1,3 +1,7 @@
+# Adapted from ReEvo: https://github.com/ai4co/reevo/blob/main/baselines/eoh/original/eoh_evolution.py
+# Originally from EoH: https://github.com/FeiLiu36/EoH/blob/main/eoh/src/eoh/methods/eoh/eoh_evolution.py
+# Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
+
 from enum import StrEnum
 from dataclasses import dataclass
 from importlib.resources import files

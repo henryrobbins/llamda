@@ -1,3 +1,6 @@
+# Adapted from ReEvo: https://github.com/ai4co/reevo/blob/main/reevo.py
+# Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
+
 from importlib.resources import files
 from typing import Optional
 import logging

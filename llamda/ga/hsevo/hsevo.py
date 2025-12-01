@@ -1,3 +1,6 @@
+# Adapted from HSEvo: https://github.com/datphamvn/HSEvo/blob/main/hsevo.py
+# Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
+
 from dataclasses import dataclass
 from importlib.resources import files
 import os

@@ -1,3 +1,6 @@
+# Adapted from DeepACO: https://github.com/henry-yeh/DeepACO/blob/main/bpp/aco.py
+# Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
+
 import numpy as np
 import numpy.typing as npt
 from typing import Tuple, List, Annotated

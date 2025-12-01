@@ -1,3 +1,6 @@
+# Adapted from ReEvo: https://github.com/ai4co/reevo/blob/main/utils/llm_client/zhipuai.py
+# Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
+
 from dataclasses import dataclass
 from llamda.llm_client.openai import OpenAIClient, OpenAIClientConfig
 

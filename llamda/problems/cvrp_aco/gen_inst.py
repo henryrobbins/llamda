@@ -1,3 +1,6 @@
+# Adapted from ReEvo: https://github.com/ai4co/reevo/blob/main/problems/cvrp/gen_inst.py
+# Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
+
 import os
 import numpy as np
 

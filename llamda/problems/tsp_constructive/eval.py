@@ -1,3 +1,6 @@
+# Adapted from ReEvo: https://github.com/ai4co/reevo/blob/main/problems/tsp_constructive/eval.py
+# Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
+
 import math
 from os import path
 import numpy as np

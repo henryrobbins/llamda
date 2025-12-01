@@ -62,9 +62,9 @@ class EohProblem(BaseProblem):
     other_info: str
 
 
-# I believe these were the exact prompts used in the original EOH paper
-# See the reevo EoH baseline implementation for reference:
-# https://github.com/ai4co/reevo/blob/main/baselines/eoh/original/prompts/bpp_online.py
+# Adapted from ReEvo: https://github.com/ai4co/reevo/blob/main/baselines/eoh/original/prompts/bpp_online.py
+# Originally from EoH: https://github.com/FeiLiu36/EoH/blob/main/eoh/src/eoh/problems/optimization/bp_online/prompts.py
+# Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
 BPP_ONLINE_PROMPTS = EohProblem(
     name="bpp_online",
     type="online",
@@ -85,9 +85,9 @@ are both Numpy arrays. The novel function should be sufficiently complex in orde
 to achieve better performance. It is important to ensure self-consistency.",
 )
 
-# I believe these were the exact prompts used in the original EOH paper
-# See the reevo EoH baseline implementation for reference:
-# https://github.com/ai4co/reevo/blob/main/baselines/eoh/original/prompts/tsp_greedy.py
+# Adapted from ReEvo: https://github.com/ai4co/reevo/blob/main/baselines/eoh/original/prompts/tsp_greedy.py
+# Originally from EoH: https://github.com/FeiLiu36/EoH/blob/main/eoh/src/eoh/problems/optimization/tsp_greedy/prompts.py
+# Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
 TSP_CONSTRUCTIVE_PROMPTS = EohProblem(
     name="tsp_constructive",
     type="constructive",
@@ -112,6 +112,8 @@ in literature to select the next node in each step.",
 )
 
 
+# Adapted from ReEvo: https://github.com/ai4co/reevo/blob/main/baselines/eoh/problem_adapter.py
+# Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
 def adapt_prompt(prompts: Problem) -> EohProblem:
 
     match = re.match(r"^def +(.+?)\((.*)\) *-> *(.*?) *:", prompts.func_signature)

@@ -1,6 +1,5 @@
-"""
-Adapted from https://github.com/google-deepmind/funsearch
-"""
+# Adapted from FunSearch: https://github.com/google-deepmind/funsearch/blob/main/bin_packing/bin_packing.ipynb
+# Licensed under Apache 2.0 (see THIRD-PARTY-LICENSES.txt)
 
 import numpy as np
 import pickle

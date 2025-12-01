@@ -1,3 +1,6 @@
+# Adapted from ReEvo: https://github.com/ai4co/reevo/blob/main/problems/tsp_constructive/gen_inst.py
+# Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
+
 import numpy as np
 import os
 

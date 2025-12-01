@@ -1,3 +1,6 @@
+# Adapted from MCTS-AHD: https://github.com/zz1358m/MCTS-AHD-master/blob/main/source/mcts_ahd.py
+# Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
+
 import copy
 import heapq
 import json

@@ -1,3 +1,6 @@
+# Adapted from MCTS-AHD: https://github.com/zz1358m/MCTS-AHD-master/blob/main/source/evolution_interface.py
+# Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
+
 import copy
 
 import numpy as np

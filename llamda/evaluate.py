@@ -1,3 +1,7 @@
+# Adapted from ReEvo: https://github.com/ai4co/reevo/blob/main/baselines/eoh/problem_adapter.py
+# and https://github.com/ai4co/reevo/blob/main/reevo.py
+# Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
+
 from importlib.resources import files
 import logging
 import subprocess

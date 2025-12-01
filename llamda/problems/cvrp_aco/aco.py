@@ -1,3 +1,6 @@
+# Adapted from DeepACO: https://github.com/henry-yeh/DeepACO/blob/main/cvrp/aco.py
+# Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
+
 import torch
 from torch.distributions import Categorical
 import random

@@ -1,3 +1,7 @@
+# Adapted from ReEvo: https://github.com/ai4co/reevo/blob/main/baselines/eoh/original/eoh_interface_EC.py
+# Originally from EoH: https://github.com/FeiLiu36/EoH/blob/main/eoh/src/eoh/methods/eoh/eoh_interface_EC.py
+# Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
+
 import numpy as np
 
 from llamda.ga.eoh.eoh_evolution import EOHIndividual, EOHOperator, Evolution

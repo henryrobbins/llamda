@@ -1,4 +1,5 @@
-# Adapted from `mkp_transformer` in [*DeepACO: Neural-enhanced Ant Systems for Combinatorial Optimization*](https://github.com/henry-yeh/DeepACO)
+# Adapted from DeepACO: https://github.com/henry-yeh/DeepACO/blob/main/mkp_transformer/aco.py
+# Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
 
 import torch
 from torch.distributions import Categorical
