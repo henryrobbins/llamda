@@ -1,0 +1,18 @@
+{
+New algorithm: Implement a stochastic solution sampling approach following heuristics to solve the Traveling Salesman Problem.
+}
+
+```python
+import numpy as np
+
+def heuristics(distance_matrix):
+    n = distance_matrix.shape[0]
+    heuristics_matrix = np.zeros((n, n))
+
+    for i in range(n):
+        for j in range(n):
+            if i != j:
+                heuristics_matrix[i][j] = np.random.rand()
+
+    return heuristics_matrix
+```

@@ -1,0 +1,11 @@
+**Analysis:**
+Comparing the best (1st) vs the worst (20th), we see that the best heuristic is simplistic, calculating the inverse of the distance matrix, effectively prioritizing smaller distances. In contrast, the worst heuristic introduces redundant complexity by normalizing distances and creating a non-linear transformation, which may obscure direct distance relationships and lead to less optimal results.
+
+Comparing the second best (2nd) vs the second worst (19th), both heuristics are identical. The 2nd focuses solely on inverses, while the 19th complicates the process through normalization, which adds unnecessary risk of losing valuable information.
+
+Examining the best (1st) vs the second best (2nd), we notice they yield the same results, underscoring that simplicity can often outperform complex transformations. In the case of the 3rd (and 4th) vs (18th and 20th), likewise simplistically calculating inverse returns high-quality results compared to convoluted normalizations that compromise direct insight.
+
+Overall, simpler heuristics that focus on core properties of the data often yield better performance than more complex, multi-layered approaches, which can convolute relationships and create noise.
+
+**Experience:**
+Simplicity and clarity in heuristic design yield the best results. By directly leveraging foundational properties of data—like distances—while avoiding unnecessary complexity, we can enhance decision-making and optimization outcomes significantly.

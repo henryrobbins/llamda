@@ -1,0 +1,25 @@
+{
+Design idea: The new algorithm will introduce a mechanism to gradually increase the probability of selecting less promising edges to explore new paths and prevent getting stuck in local optima, while still maintaining the balance with the greedy approach in the original algorithm.
+}
+
+import numpy as np
+
+def heuristics(distance_matrix):
+    n = len(distance_matrix)
+    heuristics_matrix = np.zeros((n, n))
+    
+    for _ in range(n):
+        available_nodes = list(range(n))
+        current_node = np.random.choice(available_nodes)
+        available_nodes.remove(current_node)
+        
+        while available_nodes:
+            distances = [distance_matrix[current_node][x] for x in available_nodes]
+            prob_weights = [1 / (1 + heuristics_matrix[current_node][x]) for x in available_nodes]
+            next_node = np.random.choice(available_nodes, p=prob_weights)
+            heuristics_matrix[current_node][next_node] += 1
+            heuristics_matrix[next_node][current_node] += 1
+            available_nodes.remove(next_node)
+            current_node = next_node
+    
+    return heuristics_matrix

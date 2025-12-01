@@ -1,0 +1,21 @@
+Common backbone idea in the provided algorithms: Calculating heuristics matrix based on the squared reciprocal of distances in the distance matrix and subtracting the minimum value.
+
+{Calculate heuristics matrix by taking the reciprocal of the square root of the distances in the distance matrix and subtracting the maximum value in the resulting matrix.}
+
+```python
+import numpy as np
+
+def heuristics(distance_matrix):
+    num_nodes = distance_matrix.shape[0]
+    heuristics_matrix = np.zeros((num_nodes, num_nodes))
+
+    for i in range(num_nodes):
+        for j in range(num_nodes):
+            if i != j:
+                heuristics_matrix[i, j] = 1 / (np.sqrt(distance_matrix[i, j])) 
+
+    max_val = np.max(heuristics_matrix)
+    heuristics_matrix -= max_val
+
+    return heuristics_matrix
+```

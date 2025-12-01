@@ -1,14 +1,16 @@
 from importlib.resources import files
 import logging
 import os
-
 import pytest
 
 from llamda.ga.hsevo.hsevo import HSEvo, HSEvoConfig
 from llamda.utils.evaluate import Evaluator
-from llamda.utils.llm_client.openai import OpenAIClient, OpenAIClientConfig
+from llamda.utils.llm_client.base import BaseLLMClientConfig
 from llamda.utils.problem import ProblemPrompts
 from llamda.utils.utils import get_output_dir
+
+from tests.common import RESPONSES_PATH
+from tests.mocks import MockClient
 
 ROOT_DIR = os.getcwd()
 output_dir = get_output_dir("test_hsevo", ROOT_DIR)
@@ -18,12 +20,9 @@ logging.basicConfig(level=logging.INFO)
 @pytest.mark.parametrize("problem_name", ["tsp_aco"])
 def test_hsevo(problem_name: str) -> None:
 
-    client = OpenAIClient(
-        config=OpenAIClientConfig(
-            model="gpt-4o-mini-2024-07-18",
-            temperature=1.0,
-            api_key=os.getenv("OPENAI_API_KEY"),
-        )
+    client = MockClient(
+        config=BaseLLMClientConfig(model="mock", temperature=1.0),
+        responses_dir=str(RESPONSES_PATH / "hsevo"),
     )
     prompts = ProblemPrompts.load_problem_prompts(
         str(files("llamda.prompts.problems") / problem_name)

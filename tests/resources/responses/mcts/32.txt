@@ -1,0 +1,30 @@
+{
+Design idea: The new algorithm will prioritize the selection of the next node based not only on the shortest distance but also on the attractiveness of the edge considering both the distance and the current heuristics information.
+Main steps:
+1. Initialize the heuristics matrix.
+2. Randomly select a starting node.
+3. Update the heuristics matrix based on the attractiveness of edges considering distance and current heuristics information.
+4. Iterate through the available nodes, selecting the next node with a combination of distance and heuristics information.
+5. Repeat until all nodes are visited.
+}
+
+import numpy as np
+
+def heuristics(distance_matrix):
+    n = len(distance_matrix)
+    heuristics_matrix = np.zeros((n, n))
+    
+    for _ in range(n):
+        available_nodes = list(range(n))
+        current_node = np.random.choice(available_nodes)
+        available_nodes.remove(current_node)
+        
+        while available_nodes:
+            attractiveness = [distance_matrix[current_node][x] / (1 + heuristics_matrix[current_node][x]) for x in available_nodes]
+            next_node = available_nodes[np.argmax(attractiveness)]
+            heuristics_matrix[current_node][next_node] += 1
+            heuristics_matrix[next_node][current_node] += 1
+            available_nodes.remove(next_node)
+            current_node = next_node
+    
+    return heuristics_matrix

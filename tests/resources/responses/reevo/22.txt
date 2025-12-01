@@ -1,0 +1,7 @@
+```python
+def heuristics_v2(distance_matrix: np.ndarray) -> np.ndarray:
+    n = distance_matrix.shape[0]
+    heuristics_matrix = 1 / (distance_matrix + 1)
+    np.fill_diagonal(heuristics_matrix, 0) # Set diagonal elements to 0
+    return heuristics_matrix
+```

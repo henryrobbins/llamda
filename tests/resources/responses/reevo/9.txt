@@ -1,0 +1,1 @@
+Encourage edges with shorter distances to improve heuristic effectiveness in solving TSP efficiently.

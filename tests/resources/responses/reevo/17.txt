@@ -1,0 +1,4 @@
+```python
+def heuristics_v2(distance_matrix: np.ndarray) -> np.ndarray:
+    return np.exp(-distance_matrix)
+```

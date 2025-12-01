@@ -1,0 +1,1 @@
+The algorithm iterates through each node and prioritizes the selection of the next node based on the heuristic indicators in the matrix. It aims to select nodes with higher indicators to improve the chances of finding a shorter path. The heuristics matrix is updated by incrementing the indicators between connected nodes.

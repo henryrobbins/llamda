@@ -1,0 +1,39 @@
+Common ideas in the No.1 algorithm:
+1. Utilizing a random initial solution.
+2. Refining the solution through local search.
+3. Balancing exploration and exploitation strategies.
+
+{Based on the common idea in No.1 algorithm, the design idea is to incorporate local search refinement to iteratively update the chosen edges, prioritizing more promising connections, resulting in a mixture of random and guided exploration strategies.}
+
+```python
+import numpy as np
+import random
+
+def heuristics(distance_matrix):
+    n = len(distance_matrix)
+    heuristics_matrix = np.zeros((n, n))
+    
+    for _ in range(n):
+        current_node = np.random.choice(range(n))
+        available_nodes = list(range(n))
+        available_nodes.remove(current_node)
+        
+        while available_nodes:
+            i, j = random.sample(range(n), 2)
+            new_solution = current_node
+            new_solution = current_node.copy()
+            new_solution[i], new_solution[j] = new_solution[j], new_solution[i]
+            
+            current_cost = sum(distance_matrix[current_solution[k]][current_solution[(k+1)%n]] for k in range(n))
+            new_cost = sum(distance_matrix[new_solution[k]][new_solution[(k+1)%n]] for k in range(n))
+            
+            if new_cost < current_cost:
+                heuristics_matrix[current_node][new_solution[i]] += 1
+                heuristics_matrix[new_solution[i]][current_node] += 1
+                current_node = new_solution[i]
+                available_nodes.remove(new_solution[i])
+            else:
+                break
+    
+    return heuristics_matrix
+```

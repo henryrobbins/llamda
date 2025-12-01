@@ -1,0 +1,11 @@
+{
+Create a function named heuristics that takes a distance matrix as input and returns a matrix of the same shape indicating the promise of including each edge in the solution based on a random sampling approach.
+}
+
+import numpy as np
+
+def heuristics(distance_matrix):
+    num_nodes = distance_matrix.shape[0]
+    heuristics_matrix = np.random.rand(num_nodes, num_nodes)
+    
+    return heuristics_matrix

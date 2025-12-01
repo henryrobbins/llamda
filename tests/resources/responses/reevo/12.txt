@@ -1,0 +1,1 @@
+Use exponential decay on the distance matrix for better TSP heuristic sampling accuracy.

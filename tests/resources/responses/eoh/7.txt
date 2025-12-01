@@ -1,0 +1,10 @@
+{
+New algorithm involves calculating the average distance from each node to all other nodes in the distance matrix and using the reciprocal of these averages as the heuristics values to guide the construction of the solution for the Traveling Salesman Problem.
+}
+
+import numpy as np
+
+def heuristics(distance_matrix):
+    avg_distances = np.mean(distance_matrix, axis=1)
+    heuristics_matrix = 1 / avg_distances
+    return heuristics_matrix

@@ -1,0 +1,20 @@
+```python
+import numpy as np
+
+def heuristics_v2(distance_matrix: np.ndarray) -> np.ndarray:
+    """
+    Calculate promising edge indicators for TSP by combining inverse distances 
+    and normalizing to emphasize proximity while avoiding zeros.
+    """
+    eps = 1e-6  # Small value to avoid division by zero
+    inverted_distances = 1 / (distance_matrix + eps)
+    
+    # Set unpromising elements (high distances) to zero
+    inverted_distances[distance_matrix > np.percentile(distance_matrix, 75)] = 0
+    
+    # Normalize the promising distances
+    row_sum = inverted_distances.sum(axis=1)
+    heuristics_matrix = inverted_distances / (row_sum[:, np.newaxis] + eps)
+    
+    return heuristics_matrix
+```

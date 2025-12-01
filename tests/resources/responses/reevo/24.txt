@@ -1,0 +1,4 @@
+```python
+def heuristics_v2(distance_matrix: np.ndarray) -> np.ndarray:
+    return 1 / (distance_matrix + 1e-6)
+```

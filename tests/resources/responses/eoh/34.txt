@@ -1,0 +1,19 @@
+{
+The new algorithm calculates the heuristics matrix by taking the exponential of the negative distances in the distance matrix and then subtracting the maximum value in the resulting matrix.
+}
+
+import numpy as np
+
+def heuristics(distance_matrix):
+    num_nodes = distance_matrix.shape[0]
+    heuristics_matrix = np.zeros((num_nodes, num_nodes))
+
+    for i in range(num_nodes):
+        for j in range(num_nodes):
+            if i != j:
+                heuristics_matrix[i, j] = np.exp(-distance_matrix[i, j])
+    
+    max_val = np.max(heuristics_matrix)
+    heuristics_matrix -= max_val
+
+    return heuristics_matrix

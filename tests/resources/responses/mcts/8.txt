@@ -1,0 +1,28 @@
+{The new algorithm uses a hybrid approach of generating random solutions and refining them through local search to optimize the TSP solution, incorporating both exploration and exploitation strategies.}
+
+import numpy as np
+import random
+
+def heuristics(distance_matrix):
+    n = len(distance_matrix)
+    heuristics_matrix = np.zeros((n, n))
+
+    # Generate a random initial solution
+    current_solution = list(range(n))
+    random.shuffle(current_solution)
+    current_cost = sum(distance_matrix[current_solution[i]][current_solution[(i+1)%n]] for i in range(n))
+
+    # Local search to refine the solution
+    for _ in range(n*n):
+        i, j = random.sample(range(n), 2)
+        new_solution = current_solution.copy()
+        new_solution[i], new_solution[j] = new_solution[j], new_solution[i]
+        new_cost = sum(distance_matrix[new_solution[k]][new_solution[(k+1)%n]] for k in range(n))
+
+        if new_cost < current_cost:
+            current_solution = new_solution
+            current_cost = new_cost
+            heuristics_matrix[current_solution[i]][current_solution[j]] += 1
+            heuristics_matrix[current_solution[j]][current_solution[i]] += 1
+
+    return heuristics_matrix

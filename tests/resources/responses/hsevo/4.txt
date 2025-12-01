@@ -1,0 +1,19 @@
+```python
+import numpy as np
+
+def heuristics_v2(distance_matrix: np.ndarray) -> np.ndarray:
+    # Calculate the maximum distance for normalization
+    max_distance = np.max(distance_matrix)
+    
+    # Create a heuristic by normalizing distance and taking inverse to prioritize shorter distances
+    with np.errstate(divide='ignore', invalid='ignore'):
+        normalized_distances = np.where(distance_matrix > 0, 1 - (distance_matrix / max_distance), 0)
+    
+    # Return the heuristics score by raising to a power to create non-linearity
+    heuristics_scores = normalized_distances ** 2
+    
+    # Ensure diagonal (self-loops) entries are zero
+    np.fill_diagonal(heuristics_scores, 0)
+    
+    return heuristics_scores
+```

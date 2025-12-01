@@ -1,0 +1,1 @@
+Hint: Transform distances using exponential function for efficient TSP heuristic design. Prioritize high-quality edges and leverage inverse relationships for improved diversification and path selection. Utilize problem-specific information and vectorized operations for enhanced effectiveness.

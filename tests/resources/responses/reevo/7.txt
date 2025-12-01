@@ -1,0 +1,1 @@
+Consider the nature of the problem and inverse operation for better heuristic design: prioritize information-rich transformations.

@@ -1,0 +1,12 @@
+```python
+import numpy as np
+
+def heuristics_v2(distance_matrix: np.ndarray) -> np.ndarray:
+    with np.errstate(divide='ignore', invalid='ignore'):
+        distances_inverse = 1 / np.where(distance_matrix != 0, distance_matrix, np.inf)
+    
+    min_distances = np.min(distances_inverse, axis=1, where=~np.isnan(distances_inverse))
+    score_matrix = min_distances[:, np.newaxis] * distances_inverse
+    
+    return score_matrix
+```
