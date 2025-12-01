@@ -1,0 +1,192 @@
+{
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n    \n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i][j] = 1 / distance_matrix[i][j]\n    \n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 6.460477659092722,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    n = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((n, n))\n\n    for i in range(n):\n        for j in range(n):\n            if i != j:\n                heuristics_matrix[i][j] = np.random.rand()\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 20.50953620560777,
+    "traceback_msg": null
+  },
+  "def heuristics(distance_matrix):\n    # Implement the heuristic algorithm here\n    return heuristics_matrix": {
+    "exec_success": false,
+    "obj": "inf",
+    "traceback_msg": "Traceback (most recent call last):\n  File \"/Users/hwr/projects/llamda/llamda/problems/tsp_aco/eval.py\", line 57, in <module>\n    obj = solve(node_pos)\n          ^^^^^^^^^^^^^^^\n  File \"/Users/hwr/projects/llamda/llamda/problems/tsp_aco/eval.py\", line 28, in solve\n    heu = heuristics(dist_mat.copy()) + 1e-9\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/hwr/projects/llamda/llamda/problems/tsp_aco/gpt.py\", line 3, in heuristics\n    return heuristics_matrix\n           ^^^^^^^^^^^^^^^^^\nNameError: name 'heuristics_matrix' is not defined\n"
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    heuristics_matrix = 1 / distance_matrix\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 6.763306667347432,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    n = len(distance_matrix)\n    heuristics_matrix = np.zeros_like(distance_matrix)\n    \n    for _ in range(n**2):\n        path = np.random.permutation(n)\n        total_distance = 0\n        \n        for i in range(n - 1):\n            total_distance += distance_matrix[path[i]][path[i + 1]]\n        \n        total_distance += distance_matrix[path[-1]][path[0]]\n        \n        for i in range(n - 1):\n            heuristics_matrix[path[i]][path[i + 1]] += 1/total_distance\n            heuristics_matrix[path[i + 1]][path[i]] += 1/total_distance\n        heuristics_matrix[path[-1]][path[0]] += 1/total_distance\n        heuristics_matrix[path[0]][path[-1]] += 1/total_distance\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 20.268412045468487,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = 1 / distance_matrix[i, j]\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 6.710119109311519,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = 1 / (distance_matrix[i, j] ** 2)\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 5.951751534881384,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    avg_distances = np.mean(distance_matrix, axis=1)\n    heuristics_matrix = 1 / avg_distances\n    return heuristics_matrix": {
+    "exec_success": false,
+    "obj": "inf",
+    "traceback_msg": "Traceback (most recent call last):\n  File \"/Users/hwr/projects/llamda/llamda/problems/tsp_aco/eval.py\", line 57, in <module>\n    obj = solve(node_pos)\n          ^^^^^^^^^^^^^^^\n  File \"/Users/hwr/projects/llamda/llamda/problems/tsp_aco/eval.py\", line 31, in solve\n    obj = aco.run(N_ITERATIONS)\n          ^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/hwr/projects/llamda/venv/lib/python3.11/site-packages/torch/utils/_contextlib.py\", line 120, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/hwr/projects/llamda/llamda/problems/tsp_aco/aco.py\", line 37, in run\n    paths = self.gen_path(require_prob=False)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/hwr/projects/llamda/llamda/problems/tsp_aco/aco.py\", line 99, in gen_path\n    actions, log_probs = self.pick_move(prev, mask, require_prob)\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/hwr/projects/llamda/llamda/problems/tsp_aco/aco.py\", line 121, in pick_move\n    (pheromone**self.alpha) * (heuristic**self.beta) * mask\n    ~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~\nRuntimeError: The size of tensor a (50) must match the size of tensor b (30) at non-singleton dimension 1\n"
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.random.rand(num_nodes, num_nodes)\n    \n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 21.124796125863814,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    heuristics_matrix = np.log(1 / distance_matrix)\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 7.5240804436351025,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    normalized_distance_matrix = distance_matrix / np.max(distance_matrix)\n    heuristics_matrix = 1 / (normalized_distance_matrix ** 2)\n    \n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 5.928333407160461,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = 1 / (np.sqrt(distance_matrix[i, j]) ** 2)\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 6.422214835656154,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = (1 / distance_matrix[i, j]) ** 2\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 5.976609376536764,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = np.sqrt(distance_matrix[i, j])\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 25.168707859132006,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = distance_matrix[i, j]\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 26.923052087043423,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = -np.log(distance_matrix[i, j])\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 7.393418130259204,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = np.exp(1 / distance_matrix[i, j])\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 5.904564570695866,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = 1 / np.sqrt(distance_matrix[i, j])\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 8.475276892793158,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = np.sqrt(distance_matrix[i, i] * distance_matrix[j, j])\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 20.247935813408326,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = np.sqrt(np.sum(1 / distance_matrix[i, j]))\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 8.67338428579377,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = np.sqrt((1 / distance_matrix[i, j]) + (1 / distance_matrix[i, j]) ** 2)\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 6.613559965448852,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = np.log(np.sum(distance_matrix[i, :] * distance_matrix[:, j]))\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 19.4370837422161,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = np.sqrt(1 / distance_matrix[i, j])\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 8.345354221720914,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = 1 / (distance_matrix[i, j] ** 2)\n\n    min_val = np.min(heuristics_matrix)\n    heuristics_matrix -= min_val\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 5.980754099525409,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n    \n    row_sum = np.sum(distance_matrix, axis=1)\n    col_sum = np.sum(distance_matrix, axis=0)\n    \n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = distance_matrix[i, j] / (row_sum[i] + col_sum[j])\n    \n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 26.763976623019925,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n    epsilon = 1e-6\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = 1 / (distance_matrix[i, j] + epsilon)\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 6.4591100287435825,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = np.exp(-distance_matrix[i, j])\n\n    max_val = np.max(heuristics_matrix)\n    heuristics_matrix += max_val\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 15.383354558997999,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = 1 / (distance_matrix[i, j] ** 0.5)\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 8.382247341030382,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = np.sqrt(distance_matrix[i, j] * distance_matrix[j, i])\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 27.2096247126136,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = np.exp(-distance_matrix[i, j])\n    \n    max_val = np.max(heuristics_matrix)\n    heuristics_matrix -= max_val\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 20.79229755367674,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = np.sin(1 / distance_matrix[i, j])\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 26.37684937268284,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = np.log(1 / distance_matrix[i, j])\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 26.639351546759105,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = 1 / (np.sqrt(distance_matrix[i, j])) \n\n    max_val = np.max(heuristics_matrix)\n    heuristics_matrix -= max_val\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 20.48858064086898,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n    \n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = distance_matrix[i, j] * (1 / distance_matrix[i, j])\n                \n    max_val = np.max(heuristics_matrix)\n    heuristics_matrix -= max_val\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 20.73810152426721,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = np.exp(-distance_matrix[i, j])\n\n    max_val = np.max(heuristics_matrix)\n    heuristics_matrix -= max_val\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 20.403056946124515,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = 1 / distance_matrix[i, j] * (1 / np.sqrt(np.sum(distance_matrix[i, :])))\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 6.46652304704903,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = np.exp(-distance_matrix[i, j] ** 2)\n\n    max_val = np.max(heuristics_matrix)\n    heuristics_matrix -= max_val\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 20.976781883034896,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics(distance_matrix):\n    num_nodes = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((num_nodes, num_nodes))\n\n    for i in range(num_nodes):\n        for j in range(num_nodes):\n            if i != j:\n                heuristics_matrix[i, j] = np.sqrt(np.exp(1 / distance_matrix[i, j]))\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 5.964696982758039,
+    "traceback_msg": null
+  }
+}

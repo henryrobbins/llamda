@@ -3,14 +3,13 @@ import logging
 import os
 import pytest
 
-from llamda.utils.evaluate import Evaluator
 from llamda.utils.llm_client.base import BaseLLMClientConfig
 from llamda.utils.problem import ProblemPrompts, adapt_prompt
 from llamda.utils.utils import get_output_dir
 from llamda.ga.eoh.eoh import EOH, EoHConfig
 
-from tests.common import RESPONSES_PATH
-from tests.mocks import MockClient
+from tests.common import EVALUATIONS_PATH, RESPONSES_PATH
+from tests.mocks import MockClient, MockEvaluator
 
 ROOT_DIR = os.getcwd()
 ouput_dir = get_output_dir("test_eoh", ROOT_DIR)
@@ -24,16 +23,18 @@ def test_eoh(problem_name: str) -> None:
         config=BaseLLMClientConfig(model="mock", temperature=1.0),
         responses_dir=str(RESPONSES_PATH / "eoh"),
     )
-
     problem_prompts = ProblemPrompts.load_problem_prompts(
         str(files("llamda.prompts.problems") / problem_name)
     )
     eoh_problem_prompts = adapt_prompt(problem_prompts)
+    evaluator = MockEvaluator(
+        eoh_problem_prompts, evaluation_path=str(EVALUATIONS_PATH / "eoh.json")
+    )
 
     llh = EOH(
         config=EoHConfig(ec_pop_size=3),
         problem=eoh_problem_prompts,
-        evaluator=Evaluator(eoh_problem_prompts, timeout=5),
+        evaluator=evaluator,
         llm_client=client,
         output_dir=ouput_dir,
     )

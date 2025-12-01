@@ -1,0 +1,67 @@
+{
+  "import numpy as np\nimport random\nimport math\nimport scipy\nimport torch\ndef heuristics_v2(distance_matrix: np.ndarray) -> np.ndarray:\n    return 1 / distance_matrix": {
+    "exec_success": true,
+    "obj": 6.486619482964244,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics_v2(distance_matrix: np.ndarray) -> np.ndarray:\n    return np.exp(-distance_matrix)": {
+    "exec_success": true,
+    "obj": 11.254653530207364,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics_v2(distance_matrix: np.ndarray) -> np.ndarray:\n    n = distance_matrix.shape[0]\n    heuristics_matrix = np.zeros((n, n))\n\n    for i in range(n):\n        for j in range(n):\n            if i == j:\n                continue\n            heuristics_matrix[i][j] = 1 / (distance_matrix[i][j] + 1)\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 12.508858725336674,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics_v2(distance_matrix: np.ndarray) -> np.ndarray:\n    n = len(distance_matrix)\n    heuristics_matrix = np.zeros((n, n))\n    \n    for i in range(n):\n        for j in range(n):\n            if i != j:\n                heuristics_matrix[i][j] = 1 / (distance_matrix[i][j] + 1)\n    \n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 12.470580569058283,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics_v2(distance_matrix: np.ndarray) -> np.ndarray:\n    return -np.log(distance_matrix + 1e-6)": {
+    "exec_success": true,
+    "obj": 7.488249700210835,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics_v2(distance_matrix: np.ndarray) -> np.ndarray:\n    heuristic_values = np.zeros_like(distance_matrix)\n    max_dist = np.max(distance_matrix)\n    \n   for i in range(distance_matrix.shape[0]):\n        for j in range(distance_matrix.shape[1]):\n            heuristic_values[i, j] = max_dist - distance_matrix[i, j]\n    \n    return heuristic_values": {
+    "exec_success": false,
+    "obj": "inf",
+    "traceback_msg": "Traceback (most recent call last):\n  File \"/Users/hwr/projects/llamda/llamda/problems/tsp_aco/eval.py\", line 12, in <module>\n    import gpt\n  File \"/Users/hwr/projects/llamda/llamda/problems/tsp_aco/gpt.py\", line 7\n    for i in range(distance_matrix.shape[0]):\n                                             ^\nIndentationError: unindent does not match any outer indentation level\n"
+  },
+  "import numpy as np\nimport random\nimport math\nimport scipy\nimport torch\ndef heuristics_v2(distance_matrix: np.ndarray) -> np.ndarray:\n    return 1 / (distance_matrix + 1)": {
+    "exec_success": true,
+    "obj": 12.643817770781428,
+    "traceback_msg": null
+  },
+  "import numpy as np\nimport random\nimport math\nimport scipy\nimport torch\ndef heuristics_v2(distance_matrix: np.ndarray) -> np.ndarray:\n    return np.exp(-distance_matrix)": {
+    "exec_success": true,
+    "obj": 11.319507369390058,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics_v2(distance_matrix: np.ndarray) -> np.ndarray:\n    return 1 / (distance_matrix + 1e-9)  # Adding a small value to avoid division by zero": {
+    "exec_success": true,
+    "obj": 6.444062829524666,
+    "traceback_msg": null
+  },
+  "import numpy as np\nimport random\nimport math\nimport scipy\nimport torch\ndef heuristics_v2(distance_matrix: np.ndarray) -> np.ndarray:\n    n = distance_matrix.shape[0]\n    heuristics_matrix = 1 / (distance_matrix + 1)\n    np.fill_diagonal(heuristics_matrix, 0) # Set diagonal elements to 0\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 12.549911728057968,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics_v2(distance_matrix: np.ndarray) -> np.ndarray:\n    return 1 / distance_matrix": {
+    "exec_success": true,
+    "obj": 6.37913100422418,
+    "traceback_msg": null
+  },
+  "import numpy as np\nimport random\nimport math\nimport scipy\nimport torch\ndef heuristics_v2(distance_matrix: np.ndarray) -> np.ndarray:\n    return 1 / (distance_matrix + 1e-6)": {
+    "exec_success": true,
+    "obj": 6.737102776793274,
+    "traceback_msg": null
+  },
+  "import numpy as np\n\ndef heuristics_v2(distance_matrix: np.ndarray) -> np.ndarray:\n    alpha = 0.5\n    beta = 2\n\n    heuristics_matrix = np.exp(-alpha * distance_matrix) * (1 / (1 + beta * distance_matrix))\n\n    return heuristics_matrix": {
+    "exec_success": true,
+    "obj": 9.157513574668904,
+    "traceback_msg": null
+  }
+}

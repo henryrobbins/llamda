@@ -1,7 +1,13 @@
+import json
+import logging
 import os
-from typing import Any
+from pathlib import Path
+from typing import Any, TypeVar
 
+from llamda.utils.evaluate import Evaluator
+from llamda.utils.individual import Individual
 from llamda.utils.llm_client.base import BaseClient, BaseLLMClientConfig
+from llamda.utils.problem import BaseProblemPrompts
 
 
 class MockResponse:
@@ -81,3 +87,92 @@ class MockClient(BaseClient):
         """Reset call counter and history for reuse."""
         self.call_count = 0
         self.call_history = []
+
+
+T = TypeVar("T", bound=Individual)
+
+
+class MockEvaluator(Evaluator):
+
+    def __init__(
+        self,
+        problem_prompts: BaseProblemPrompts,
+        evaluation_path: str | Path,
+        timeout: int = 30,
+    ) -> None:
+
+        self.problem_prompts = problem_prompts
+        self.timeout = timeout
+        self.evaluation_path = Path(evaluation_path)
+        self.function_evals = 0
+        self.iteration = 0
+
+        # Load cache
+        self._load_cache()
+
+    def _load_cache(self) -> None:
+        """Load the evaluation cache from JSON file."""
+        if not self.evaluation_path.exists():
+            raise FileNotFoundError(f"Cache file not found: {self.evaluation_path}")
+
+        with open(self.evaluation_path, "r") as f:
+            self.cache = json.load(f)
+
+    def mark_invalid_individual(self, individual: T, traceback_msg: str) -> T:
+        """Mark an individual as invalid."""
+        individual.exec_success = False
+        individual.obj = float("inf")
+        individual.traceback_msg = traceback_msg
+        return individual
+
+    def batch_evaluate(self, population: list[T], iteration: int = 0) -> list[T]:
+        """Evaluate population by looking up results in the cache."""
+        self.iteration = iteration
+
+        for response_id, individual in enumerate(population):
+            self.function_evals += 1
+
+            # Skip if response is invalid
+            if individual.code is None:
+                population[response_id] = self.mark_invalid_individual(
+                    individual, "Invalid response!"
+                )
+                continue
+
+            logging.info(
+                f"Iteration {self.iteration}: Evaluating Code {response_id} from cache"
+            )
+
+            # Look up result in cache
+            code_key = individual.code
+            if code_key not in self.cache:
+                logging.warning(
+                    f"Code not found in cache for response_id {response_id}. "
+                    f"Marking as invalid."
+                )
+                population[response_id] = self.mark_invalid_individual(
+                    individual, "Code not found in evaluation cache"
+                )
+                continue
+
+            # Retrieve cached results
+            cached_result = self.cache[code_key]
+
+            individual.exec_success = cached_result["exec_success"]
+            individual.traceback_msg = cached_result.get("traceback_msg")
+
+            if cached_result["exec_success"]:
+                # Apply objective type transformation (min vs max)
+                obj_value = cached_result["obj"]
+                individual.obj = (
+                    -obj_value if self.problem_prompts.obj_type == "max" else obj_value
+                )
+            else:
+                individual.obj = float("inf")
+
+            logging.info(
+                f"Iteration {self.iteration}, response_id {response_id}: "
+                f"Objective value: {individual.obj} (from cache)"
+            )
+
+        return population
