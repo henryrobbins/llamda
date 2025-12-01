@@ -12,7 +12,13 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
     python_requires=">=3.10, <3.12",
-    install_requires=[],
+    install_requires=[
+        "litellm",
+        "openai",
+        "numpy",
+        "torch",
+        "scipy",
+    ],
     extras_require={
         "dev": [
             "pytest>=8.3",
