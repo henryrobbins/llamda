@@ -1,7 +1,9 @@
+from importlib.resources import files
 import os
 import re
 from typing import TypeVar
 import yaml
+from enum import Enum
 from dataclasses import dataclass
 
 from llamda.individual import Individual
@@ -9,6 +11,15 @@ from llamda.utils import file_to_string
 
 
 T = TypeVar("T", bound=Individual)
+
+
+class ProblemName(Enum):
+    BPP_OFFLINE_ACO = "bpp_offline_aco"
+    BPP_ONLINE = "bpp_online"
+    CRVP_ACO = "crvp_aco"
+    MKP_ACO = "mkp_aco"
+    TSP_ACO = "tsp_aco"
+    TSP_CONSTRUCTIVE = "tsp_constructive"
 
 
 @dataclass
@@ -28,7 +39,8 @@ class Problem(BaseProblem):
     func_desc: str
     external_knowledge: str
 
-    def load_problem(path: str) -> "Problem":
+    @classmethod
+    def load_problem(cls, path: str) -> "Problem":
 
         with open(f"{path}/problem.yaml", "r") as f:
             config = yaml.safe_load(f)
@@ -40,7 +52,7 @@ class Problem(BaseProblem):
         else:
             external_knowledge = ""
 
-        return Problem(
+        return cls(
             name=config["problem_name"],
             type=config["problem_type"],
             obj_type=config["obj_type"],
@@ -52,6 +64,12 @@ class Problem(BaseProblem):
             func_desc=func_desc,
             external_knowledge=external_knowledge,
         )
+
+    @classmethod
+    def load_builtin(cls, problem_name: ProblemName) -> "Problem":
+
+        problem_path = files("llamda.prompts.problems") / problem_name.value
+        return cls.load_problem(str(problem_path))
 
 
 @dataclass

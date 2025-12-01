@@ -1,4 +1,3 @@
-from importlib.resources import files
 import logging
 from pathlib import Path
 import pytest
@@ -6,22 +5,22 @@ import pytest
 import numpy as np
 
 from llamda.llm_client.base import BaseLLMClientConfig
-from llamda.problem import Problem, adapt_prompt
+from llamda.problem import Problem, ProblemName, adapt_prompt
 from llamda.ga.eoh.eoh import EOH, EoHConfig
 
 from tests.common import EVALUATIONS_PATH, RESPONSES_PATH
 from tests.mocks import MockClient, MockEvaluator
 
 
-@pytest.mark.parametrize("problem_name", ["tsp_aco"])
-def test_eoh(problem_name: str, tmp_path: Path) -> None:
+@pytest.mark.parametrize("problem_name", [ProblemName.TSP_ACO])
+def test_eoh(problem_name: ProblemName, tmp_path: Path) -> None:
     np.random.seed(2024)
 
     client = MockClient(
         config=BaseLLMClientConfig(model="mock", temperature=1.0),
         responses_dir=str(RESPONSES_PATH / "eoh"),
     )
-    problem = Problem.load_problem(str(files("llamda.prompts.problems") / problem_name))
+    problem = Problem.load_builtin(problem_name)
     eoh_problem = adapt_prompt(problem)
     evaluator = MockEvaluator(
         eoh_problem, evaluation_path=str(EVALUATIONS_PATH / "eoh.json")
