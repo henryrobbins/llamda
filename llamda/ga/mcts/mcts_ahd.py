@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from llamda.ga.base import GeneticAlgorithm
-from llamda.ga.mcts.evolution import MCTSOperator
+from llamda.ga.mcts.mcts_prompts import MCTSOperator
 from llamda.ga.mcts.mcts import MCTS, MCTSNode
 from llamda.evaluate import Evaluator
 from llamda.ga.mcts.evolution_interface import MCTSIndividual, InterfaceEC

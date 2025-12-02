@@ -11,12 +11,13 @@ from llamda.utils import filter_code
 logger = logging.getLogger("llamda")
 
 
-class Evolution:
+class HSEvoPrompts:
 
     def __init__(self, problem: Problem) -> None:
 
         self.env = Environment(
-            loader=PackageLoader("llamda.prompts.ga", "hsevo"), undefined=StrictUndefined
+            loader=PackageLoader("llamda.prompts.ga", "hsevo"),
+            undefined=StrictUndefined,
         )
 
         self.problem = problem
@@ -38,9 +39,7 @@ class Evolution:
         )
 
         system_generator_template = self.env.get_template("system_generator.j2")
-        system_generator_prompt_full = system_generator_template.render(
-            seed=scientist
-        )
+        system_generator_prompt_full = system_generator_template.render(seed=scientist)
 
         # Generate responses
         system = system_generator_prompt_full
@@ -66,7 +65,9 @@ class Evolution:
         system_template = self.env.get_template("system_reflector.j2")
         system = system_template.render()
 
-        user_flash_reflection_template = self.env.get_template("user_flash_reflection.j2")
+        user_flash_reflection_template = self.env.get_template(
+            "user_flash_reflection.j2"
+        )
         user = user_flash_reflection_template.render(
             description=self.problem.description,
             lst_method="\n".join(lst_str_method),

@@ -8,7 +8,7 @@ import os
 from dataclasses import dataclass
 
 from llamda.ga.base import GeneticAlgorithm
-from llamda.ga.reevo.evolution import Evolution
+from llamda.ga.reevo.reevo_prompts import ReEvoPrompts
 from llamda.evaluate import Evaluator
 from llamda.individual import Individual
 from llamda.llm_client.base import BaseClient
@@ -80,7 +80,7 @@ class ReEvo(GeneticAlgorithm[ReEvoConfig, Problem]):
             crossover_llm=crossover_llm,
             mutation_llm=mutation_llm,
         )
-        self.evol = Evolution(self.problem)
+        self.evol = ReEvoPrompts(self.problem)
 
         self.evaluator = evaluator
 

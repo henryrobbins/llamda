@@ -33,7 +33,7 @@ def quote_and_join(items: list[str]) -> str:
         return f"'{items[0]}'"
 
 
-class Evolution:
+class MCTSPrompts:
 
     def __init__(self, problem: EohProblem):
         self.env = Environment(

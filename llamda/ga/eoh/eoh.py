@@ -10,7 +10,7 @@ import heapq
 import time
 
 from llamda.ga.base import GeneticAlgorithm
-from llamda.ga.eoh.eoh_evolution import EOHOperator
+from llamda.ga.eoh.eoh_prompts import EOHOperator
 from llamda.evaluate import Evaluator
 from llamda.ga.eoh.eoh_interface_EC import EOHIndividual, InterfaceEC
 from llamda.llm_client.base import BaseClient

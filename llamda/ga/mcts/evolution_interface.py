@@ -8,7 +8,7 @@ import numpy as np
 
 from llamda.evaluate import Evaluator
 from llamda.problem import EohProblem, hydrate_individual
-from llamda.ga.mcts.evolution import Evolution, MCTSIndividual, MCTSOperator
+from llamda.ga.mcts.mcts_prompts import MCTSPrompts, MCTSIndividual, MCTSOperator
 from llamda.llm_client.base import BaseClient
 from llamda.utils import parse_response
 
@@ -27,7 +27,7 @@ class InterfaceEC:
     ):
         self.m = m
         self.interface_eval = evaluator
-        self.evol = Evolution(problem)
+        self.evol = MCTSPrompts(problem)
         self.llm_client = llm_client
         self.output_dir = output_dir
 

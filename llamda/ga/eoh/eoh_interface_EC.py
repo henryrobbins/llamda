@@ -5,7 +5,7 @@
 import logging
 import numpy as np
 
-from llamda.ga.eoh.eoh_evolution import EOHIndividual, EOHOperator, Evolution
+from llamda.ga.eoh.eoh_prompts import EOHIndividual, EOHOperator, EOHPrompts
 from llamda.evaluate import Evaluator
 from llamda.problem import EohProblem, hydrate_individual
 from llamda.llm_client.base import BaseClient
@@ -27,7 +27,7 @@ class InterfaceEC:
         self.pop_size = pop_size
         self.m = m
         self.interface_eval = evaluator
-        self.evol = Evolution(problem=problem)
+        self.evol = EOHPrompts(problem=problem)
         self.llm_client = llm_client
         self.output_dir = output_dir
 

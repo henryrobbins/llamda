@@ -8,7 +8,7 @@ from llamda.problem import Problem
 from llamda.utils import filter_code
 
 
-class Evolution:
+class ReEvoPrompts:
 
     def __init__(self, problem: Problem) -> None:
         self.problem = problem

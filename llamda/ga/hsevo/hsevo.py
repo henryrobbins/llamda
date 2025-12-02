@@ -9,7 +9,7 @@ import json
 import tiktoken
 
 from llamda.ga.base import GeneticAlgorithm
-from llamda.ga.hsevo.evolution import Evolution
+from llamda.ga.hsevo.hsevo_prompts import HSEvoPrompts
 from llamda.evaluate import Evaluator
 from llamda.individual import Individual
 from llamda.llm_client.base import BaseClient
@@ -78,7 +78,7 @@ class HSEvo(GeneticAlgorithm[HSEvoConfig, Problem]):
         self.lst_good_reflection = []
         self.lst_bad_reflection = []
 
-        self.evol = Evolution(problem=self.problem)
+        self.evol = HSEvoPrompts(problem=self.problem)
 
         self.evaluator = evaluator
 
