@@ -4,12 +4,13 @@
 import logging
 from enum import StrEnum
 from dataclasses import dataclass
-from importlib.resources import files
+
+from jinja2 import Environment, PackageLoader, StrictUndefined
 
 from llamda.individual import Individual
 from llamda.problem import EohProblem
 from llamda.llm_client.base import BaseClient
-from llamda.utils import file_to_string, parse_response
+from llamda.utils import parse_response
 
 logger = logging.getLogger("llamda")
 
@@ -29,31 +30,29 @@ class MCTSOperator(StrEnum):
     S1 = "s1"
 
 
+def quote_and_join(items: list[str]) -> str:
+    """Quote each item and join with commas"""
+    if len(items) > 1:
+        return ", ".join(f"'{s}'" for s in items)
+    else:
+        return f"'{items[0]}'"
+
+
 class Evolution:
 
     def __init__(self, llm_client: BaseClient, problem: EohProblem):
 
-        self.prompts_dir = files("llamda.prompts.ga.mcts")
+        self.env = Environment(
+            loader=PackageLoader("llamda.prompts.ga", "mcts"), undefined=StrictUndefined
+        )
+        self.env.filters["quote_and_join"] = quote_and_join
+
         self.problem = problem
-        if len(self.problem.func_inputs) > 1:
-            self.joined_inputs = ", ".join(
-                "'" + s + "'" for s in self.problem.func_inputs
-            )
-        else:
-            self.joined_inputs = "'" + self.problem.func_inputs[0] + "'"
-
-        if len(self.problem.func_outputs) > 1:
-            self.joined_outputs = ", ".join(
-                "'" + s + "'" for s in self.problem.func_outputs
-            )
-        else:
-            self.joined_outputs = "'" + self.problem.func_outputs[0] + "'"
-
         self.llm_client = llm_client
 
     def get_prompt_post(self, code: str) -> str:
-        post = file_to_string(self.prompts_dir / "post.txt")
-        return post.format(
+        template = self.env.get_template("post.j2")
+        return template.render(
             description=self.problem.description,
             func_name=self.problem.func_name,
             inout_info=self.problem.inout_info,
@@ -62,8 +61,8 @@ class Evolution:
         )
 
     def get_prompt_refine(self, code: str, algorithm: str) -> str:
-        refine = file_to_string(self.prompts_dir / "refine.txt")
-        return refine.format(
+        template = self.env.get_template("refine.j2")
+        return template.render(
             description=self.problem.description,
             func_name=self.problem.func_name,
             inout_info=self.problem.inout_info,
@@ -73,89 +72,47 @@ class Evolution:
         )
 
     def get_prompt_i1(self) -> str:
-        i1 = file_to_string(self.prompts_dir / "i1.txt")
-        return i1.format(
+        template = self.env.get_template(f"{MCTSOperator.I1.value}.j2")
+        return template.render(
             description=self.problem.description,
             func_name=self.problem.func_name,
-            n_inputs=len(self.problem.func_inputs),
-            func_inputs=self.joined_inputs,
-            n_outputs=len(self.problem.func_outputs),
-            func_outputs=self.joined_outputs,
+            func_inputs=self.problem.func_inputs,
+            func_outputs=self.problem.func_outputs,
             inout_info=self.problem.inout_info,
             other_info=self.problem.other_info,
         )
 
     def get_prompt_e1(self, indivs: list[MCTSIndividual]) -> str:
-        prompt_indiv = ""
-        for i in range(len(indivs)):
-            prompt_indiv = (
-                prompt_indiv
-                + "No."
-                + str(i + 1)
-                + " algorithm's description, its corresponding code and "
-                + " its objective value are: \n"
-                + indivs[i].algorithm
-                + "\n"
-                + indivs[i].code
-                + "\n"
-                + f"Objective value: {indivs[i].obj}"
-                + "\n\n"
-            )
-
-        e1 = file_to_string(self.prompts_dir / "e1.txt")
-        return e1.format(
+        template = self.env.get_template(f"{MCTSOperator.E1.value}.j2")
+        return template.render(
             description=self.problem.description,
             func_name=self.problem.func_name,
-            n_inputs=len(self.problem.func_inputs),
-            func_inputs=self.joined_inputs,
-            n_outputs=len(self.problem.func_outputs),
-            func_outputs=self.joined_outputs,
+            func_inputs=self.problem.func_inputs,
+            func_outputs=self.problem.func_outputs,
             inout_info=self.problem.inout_info,
             other_info=self.problem.other_info,
-            n_indivs=len(indivs),
-            indivs=prompt_indiv,
+            indivs=indivs,
         )
 
     def get_prompt_e2(self, indivs: list[MCTSIndividual]) -> str:
-        prompt_indiv = ""
-        for i in range(len(indivs)):
-            prompt_indiv = (
-                prompt_indiv
-                + "No."
-                + str(i + 1)
-                + " algorithm's description, its corresponding code "
-                + "and its objective value are: \n"
-                + indivs[i].algorithm
-                + "\n"
-                + indivs[i].code
-                + "\n"
-                + f"Objective value: {indivs[i].obj}"
-                + "\n\n"
-            )
-
-        e2 = file_to_string(self.prompts_dir / "e2.txt")
-        return e2.format(
+        template = self.env.get_template(f"{MCTSOperator.E2.value}.j2")
+        return template.render(
             description=self.problem.description,
             func_name=self.problem.func_name,
-            n_inputs=len(self.problem.func_inputs),
-            func_inputs=self.joined_inputs,
-            n_outputs=len(self.problem.func_outputs),
-            func_outputs=self.joined_outputs,
+            func_inputs=self.problem.func_inputs,
+            func_outputs=self.problem.func_outputs,
             inout_info=self.problem.inout_info,
             other_info=self.problem.other_info,
-            n_indivs=len(indivs),
-            indivs=prompt_indiv,
+            indivs=indivs,
         )
 
     def get_prompt_m1(self, indiv1: MCTSIndividual) -> str:
-        m1 = file_to_string(self.prompts_dir / "m1.txt")
-        return m1.format(
+        template = self.env.get_template(f"{MCTSOperator.M1.value}.j2")
+        return template.render(
             description=self.problem.description,
             func_name=self.problem.func_name,
-            n_inputs=len(self.problem.func_inputs),
-            func_inputs=self.joined_inputs,
-            n_outputs=len(self.problem.func_outputs),
-            func_outputs=self.joined_outputs,
+            func_inputs=self.problem.func_inputs,
+            func_outputs=self.problem.func_outputs,
             inout_info=self.problem.inout_info,
             other_info=self.problem.other_info,
             algorithm=indiv1.algorithm,
@@ -163,14 +120,12 @@ class Evolution:
         )
 
     def get_prompt_m2(self, indiv1: MCTSIndividual) -> str:
-        m2 = file_to_string(self.prompts_dir / "m2.txt")
-        return m2.format(
+        template = self.env.get_template(f"{MCTSOperator.M2.value}.j2")
+        return template.render(
             description=self.problem.description,
             func_name=self.problem.func_name,
-            n_inputs=len(self.problem.func_inputs),
-            func_inputs=self.joined_inputs,
-            n_outputs=len(self.problem.func_outputs),
-            func_outputs=self.joined_outputs,
+            func_inputs=self.problem.func_inputs,
+            func_outputs=self.problem.func_outputs,
             inout_info=self.problem.inout_info,
             other_info=self.problem.other_info,
             algorithm=indiv1.algorithm,
@@ -178,34 +133,15 @@ class Evolution:
         )
 
     def get_prompt_s1(self, indivs: list[MCTSIndividual]) -> str:
-        prompt_indiv = ""
-        for i in range(len(indivs)):
-            prompt_indiv = (
-                prompt_indiv
-                + "No."
-                + str(i + 1)
-                + " algorithm's description, its corresponding code "
-                + "and its objective value are: \n"
-                + indivs[i].algorithm
-                + "\n"
-                + indivs[i].code
-                + "\n"
-                + f"Objective value: {indivs[i].obj}"
-                + "\n\n"
-            )
-
-        s1 = file_to_string(self.prompts_dir / "s1.txt")
-        return s1.format(
+        template = self.env.get_template(f"{MCTSOperator.S1.value}.j2")
+        return template.render(
             description=self.problem.description,
             func_name=self.problem.func_name,
-            n_inputs=len(self.problem.func_inputs),
-            func_inputs=self.joined_inputs,
-            n_outputs=len(self.problem.func_outputs),
-            func_outputs=self.joined_outputs,
+            func_inputs=self.problem.func_inputs,
+            func_outputs=self.problem.func_outputs,
             inout_info=self.problem.inout_info,
             other_info=self.problem.other_info,
-            n_indivs=len(indivs),
-            indivs=prompt_indiv,
+            indivs=indivs,
         )
 
     def _get_thought(self, prompt_content: str) -> str:

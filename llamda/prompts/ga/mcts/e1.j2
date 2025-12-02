@@ -1,0 +1,13 @@
+{{ description }}
+I have {{ indivs|length }} existing algorithms with their codes as follows:
+{% for indiv in indivs %}
+No.{{ loop.index }} algorithm's description, its corresponding code and  its objective value are:
+{{ indiv.algorithm }}
+{{ indiv.code }}
+Objective value: {{ indiv.obj }}
+
+{% endfor %}
+Please create a new algorithm that has a totally different form from the given algorithms. Try generating codes with different structures, flows or algorithms. The new algorithm should have a relatively low objective value.
+First, describe the design idea and main steps of your algorithm in one sentence. The description must be inside a brace outside the code implementation. Next, implement it in Python as a function named '{{ func_name }}'.
+This function should accept {{ func_inputs|length }} input(s): {{ func_inputs|quote_and_join }}. The function should return {{ func_outputs|length }} output(s): {{ func_outputs|quote_and_join }}. {{ inout_info }} {{ other_info }}
+Do not give additional explanations.

@@ -13,6 +13,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     python_requires=">=3.10, <3.12",
     install_requires=[
+        "Jinja2",
         "litellm",
         "openai",
         "numpy",

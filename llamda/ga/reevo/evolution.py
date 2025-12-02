@@ -1,13 +1,14 @@
 # Adapted from ReEvo: https://github.com/ai4co/reevo/blob/main/reevo.py
 # Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
 
-from importlib.resources import files
 import logging
+
+from jinja2 import Environment, PackageLoader, StrictUndefined
 
 from llamda.individual import Individual
 from llamda.llm_client.base import BaseClient
 from llamda.problem import Problem
-from llamda.utils import file_to_string, filter_code
+from llamda.utils import filter_code
 
 logger = logging.getLogger("llamda")
 
@@ -48,33 +49,30 @@ class Evolution:
         self.llm_clients = llm_clients
         self.problem = problem
 
-        self.reevo_prompts_dir = files("llamda.prompts.ga.reevo")
+        self.env = Environment(
+            loader=PackageLoader("llamda.prompts.ga", "reevo"), undefined=StrictUndefined
+        )
 
-        # Common prompts
-        self.system_generator_prompt = file_to_string(
-            self.reevo_prompts_dir / "system_generator.txt"
+    def seed_population(self, long_term_reflection_str: str) -> list[str]:
+
+        seed_template = self.env.get_template("seed.j2")
+        seed_prompt = seed_template.render(
+            seed_func=self.problem.seed_func,
+            func_name=self.problem.func_name,
         )
-        self.system_reflector_prompt = file_to_string(
-            self.reevo_prompts_dir / "system_reflector.txt"
-        )
-        self.user_generator_prompt = file_to_string(
-            self.reevo_prompts_dir / "user_generator.txt"
-        ).format(
+
+        system_generator_template = self.env.get_template("system_generator.j2")
+        system = system_generator_template.render()
+
+        user_generator_template = self.env.get_template("user_generator.j2")
+        user_generator_prompt = user_generator_template.render(
             func_name=self.problem.func_name,
             description=self.problem.description,
             func_desc=self.problem.func_desc,
         )
 
-    def seed_population(self, long_term_reflection_str: str) -> list[str]:
-
-        seed_prompt = file_to_string(self.reevo_prompts_dir / "seed.txt").format(
-            seed_func=self.problem.seed_func,
-            func_name=self.problem.func_name,
-        )
-
-        system = self.system_generator_prompt
         user = (
-            self.user_generator_prompt
+            user_generator_prompt
             + "\n"
             + seed_prompt
             + "\n"
@@ -102,10 +100,6 @@ class Evolution:
         Short-term reflection before crossovering two individuals.
         """
 
-        user_reflector_st_prompt = file_to_string(
-            self.reevo_prompts_dir / "user_reflector_st.txt"
-        )
-
         if ind1.obj == ind2.obj:
             raise ValueError(
                 "Two individuals to crossover have the same objective value!"
@@ -119,8 +113,11 @@ class Evolution:
         worse_code = filter_code(worse_ind.code)
         better_code = filter_code(better_ind.code)
 
-        system = self.system_reflector_prompt
-        user = user_reflector_st_prompt.format(
+        system_reflector_template = self.env.get_template("system_reflector.j2")
+        system = system_reflector_template.render()
+
+        user_reflector_st_template = self.env.get_template("user_reflector_st.j2")
+        user = user_reflector_st_template.render(
             func_name=self.problem.func_name,
             func_desc=self.problem.func_desc,
             description=self.problem.description,
@@ -173,12 +170,11 @@ class Evolution:
         Long-term reflection before mutation.
         """
 
-        user_reflector_lt_prompt = file_to_string(
-            self.reevo_prompts_dir / "user_reflector_lt.txt"
-        )
+        system_reflector_template = self.env.get_template("system_reflector.j2")
+        system = system_reflector_template.render()
 
-        system = self.system_reflector_prompt
-        user = user_reflector_lt_prompt.format(
+        user_reflector_lt_template = self.env.get_template("user_reflector_lt.j2")
+        user = user_reflector_lt_template.render(
             description=self.problem.description,
             prior_reflection=long_term_reflection_str,
             new_reflection="\n".join(short_term_reflections),
@@ -202,8 +198,6 @@ class Evolution:
         self, short_term_reflection_tuple: tuple[list[list[dict]], list[str], list[str]]
     ) -> list[str]:
 
-        crossover_prompt = file_to_string(self.reevo_prompts_dir / "crossover.txt")
-
         reflection_content_lst, worse_code_lst, better_code_lst = (
             short_term_reflection_tuple
         )
@@ -212,11 +206,22 @@ class Evolution:
             reflection_content_lst, worse_code_lst, better_code_lst
         ):
             # Crossover
-            system = self.system_generator_prompt
+            system_generator_template = self.env.get_template("system_generator.j2")
+            system = system_generator_template.render()
+
+            user_generator_template = self.env.get_template("user_generator.j2")
+            user_generator_prompt = user_generator_template.render(
+                func_name=self.problem.func_name,
+                description=self.problem.description,
+                func_desc=self.problem.func_desc,
+            )
+
             func_signature0 = self.problem.func_signature.format(version=0)
             func_signature1 = self.problem.func_signature.format(version=1)
-            user = crossover_prompt.format(
-                user_generator=self.user_generator_prompt,
+
+            crossover_template = self.env.get_template("crossover.j2")
+            user = crossover_template.render(
+                user_generator=user_generator_prompt,
                 func_signature0=func_signature0,
                 func_signature1=func_signature1,
                 worse_code=worse_code,
@@ -241,12 +246,21 @@ class Evolution:
         Elitist-based mutation. We mutate the best to generate n_pop new individuals.
         """
 
-        mutation_prompt = file_to_string(self.reevo_prompts_dir / "mutation.txt")
+        system_generator_template = self.env.get_template("system_generator.j2")
+        system = system_generator_template.render()
 
-        system = self.system_generator_prompt
+        user_generator_template = self.env.get_template("user_generator.j2")
+        user_generator_prompt = user_generator_template.render(
+            func_name=self.problem.func_name,
+            description=self.problem.description,
+            func_desc=self.problem.func_desc,
+        )
+
         func_signature1 = self.problem.func_signature.format(version=1)
-        user = mutation_prompt.format(
-            user_generator=self.user_generator_prompt,
+
+        mutation_template = self.env.get_template("mutation.j2")
+        user = mutation_template.render(
+            user_generator=user_generator_prompt,
             reflection=long_term_reflection_str + self.problem.external_knowledge,
             func_signature1=func_signature1,
             elitist_code=filter_code(elitist.code),

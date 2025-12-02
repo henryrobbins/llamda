@@ -1,7 +1,0 @@
-{description}
-I have {n_indivs} existing algorithms with their codes and objective values as follows:
-
-{indivs}Please create a new algorithm that has a similar form to the No.{n_indivs} algorithm and is inspired by the No.1 algorithm. The new algorithm should have a objective value lower than both algorithms.
-Firstly, list the common ideas in the No.1 algorithm that may give good performances. Secondly, based on the common idea, describe the design idea based on the No.{n_indivs} algorithm and main steps of your algorithm in one sentence. The description must be inside a brace. Thirdly, implement it in Python as a function named '{func_name}'.
-This function should accept {n_inputs} input(s): {func_inputs}. The function should return {n_outputs} output(s): {func_outputs}. {inout_info} {other_info}
-Do not give additional explanations.
