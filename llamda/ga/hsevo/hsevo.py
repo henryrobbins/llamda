@@ -3,6 +3,7 @@
 
 from dataclasses import dataclass
 import os
+from pathlib import Path
 import re
 import logging
 import numpy as np
@@ -60,6 +61,8 @@ class HSEvo(GeneticAlgorithm[HSEvoConfig, Problem]):
             output_dir=output_dir,
         )
 
+        self.output_dir = output_dir
+        os.makedirs(f"{self.output_dir}/thinking", exist_ok=True)
         self.temperature = self.llm_client.temperature
 
         self.mutation_rate = self.config.mutation_rate
@@ -115,14 +118,10 @@ class HSEvo(GeneticAlgorithm[HSEvoConfig, Problem]):
     def init_population(self) -> None:
         # Evaluate the seed function, and set it as Elite
         code = extract_code_from_generator(self.problem.seed_func).replace("v1", "v2")
-        seed_ind = HSEvoIndividual(
-            stdout_filepath=f"{self.output_dir}/problem_iter{self.iteration}_stdout0.txt",
-            code_path=f"{self.output_dir}/problem_iter{self.iteration}_code0.py",
-            code=code,
-            response_id=0,
-            tryHS=False,
+        seed_ind = HSEvoIndividual(name="seed", code=code, tryHS=False)
+        self.population = self.evaluator.batch_evaluate(
+            [seed_ind], Path(self.output_dir)
         )
-        self.population = self.evaluator.batch_evaluate([seed_ind])
         self.seed_ind = self.population[0]
 
         # If seed function is invalid, stop
@@ -145,60 +144,46 @@ class HSEvo(GeneticAlgorithm[HSEvoConfig, Problem]):
             messages = format_messages(pre_messages)
             messages_lst.append(messages)
 
-            # Write to file
-            file_name = f"{self.output_dir}/problem_iter{self.iteration}_prompt{i}.txt"
-            with open(file_name, "w") as file:
-                file.writelines(json.dumps(pre_messages))
-
         responses = self.llm_client.multi_chat_completion(
             messages_lst, 1, self.temperature + 0.3
         )
         self.cal_usage_LLM(messages_lst, responses)
 
         population = [
-            self.response_to_individual(response, response_id)
-            for response_id, response in enumerate(responses)
+            self.response_to_individual(response, f"seed_population_{i}", messages)
+            for i, (response, messages) in enumerate(zip(responses, messages_lst))
         ]
 
         # Run code and evaluate population
-        population = self.evaluator.batch_evaluate(population)
+        population = self.evaluator.batch_evaluate(population, Path(self.output_dir))
 
         # Update iteration
         self.population = population
         self.update_iter()
 
     def response_to_individual(
-        self, response: str, response_id: int, file_name: str | None = None
+        self, response: str, name: str, messages: list[str] | None = None
     ) -> HSEvoIndividual:
         """
         Convert response to individual
         """
         # Write response to file
-        file_name = (
-            f"problem_iter{self.iteration}_response{response_id}.txt"
-            if file_name is None
-            else file_name + ".txt"
-        )
-        file_name = f"{self.output_dir}/{file_name}"
+        individual_dir = f"{self.output_dir}/individuals/{name}"
+
+        os.makedirs(individual_dir, exist_ok=True)
+        file_name = f"{individual_dir}/response.txt"
+
         with open(file_name, "w", encoding="utf-8") as file:
             file.writelines(response + "\n")
 
+        if messages is not None:
+            with open(f"{individual_dir}/message.json", "w") as file:
+                file.write(json.dumps(messages, indent=4))
+
         code = extract_code_from_generator(response)
 
-        # Extract code and description from response
-        std_out_filepath = (
-            f"problem_iter{self.iteration}_stdout{response_id}.txt"
-            if file_name is None
-            else file_name.rstrip(".txt") + "_stdout.txt"
-        )
-
-        individual = HSEvoIndividual(
-            stdout_filepath=std_out_filepath,
-            code_path=f"problem_iter{self.iteration}_code{response_id}.py",
-            code=code,
-            response_id=response_id,
-            tryHS=False,
-        )
+        individual = HSEvoIndividual(name=name, code=code)
+        individual.write_code_to_file(f"{individual_dir}/code.py")
 
         return individual
 
@@ -214,7 +199,9 @@ class HSEvo(GeneticAlgorithm[HSEvoConfig, Problem]):
         if self.best_obj_overall is None or best_obj < self.best_obj_overall:
             self.best_obj_overall = best_obj
             self.best_code_overall = population[best_sample_idx].code
-            self.best_code_path_overall = population[best_sample_idx].code_path
+            self.best_code_path_overall = (
+                f"{self.output_dir}/{population[best_sample_idx].name}/code.py"
+            )
 
         # update elitist
         if self.elitist is None or best_obj < self.elitist.obj:
@@ -305,13 +292,13 @@ class HSEvo(GeneticAlgorithm[HSEvoConfig, Problem]):
 
         # Write reflections to file
         file_name = (
-            f"{self.output_dir}/problem_iter{self.iteration}_lst_code_method.txt"
+            f"{self.output_dir}/thinking/iteration{self.iteration}_lst_code_method.txt"
         )
         with open(file_name, "w") as file:
             file.writelines(json.dumps(pre_messages))
 
         file_name = (
-            f"{self.output_dir}/problem_iter{self.iteration}_flash_reflection.txt"
+            f"{self.output_dir}/thinking/iteration{self.iteration}_flash_reflection.txt"
         )
         with open(file_name, "w") as file:
             file.writelines(flash_reflection_res)
@@ -333,11 +320,11 @@ class HSEvo(GeneticAlgorithm[HSEvoConfig, Problem]):
             self.problem.external_knowledge + "\n" + comprehensive_response
         )
 
-        file_name = f"{self.output_dir}/problem_iter{self.iteration}_comprehensive_reflection_prompt.txt"
+        file_name = f"{self.output_dir}/thinking/iteration{self.iteration}_comprehensive_reflection_prompt.txt"
         with open(file_name, "w") as file:
             file.writelines(json.dumps(pre_messages))
 
-        file_name = f"{self.output_dir}/problem_iter{self.iteration}_comprehensive_reflection.txt"
+        file_name = f"{self.output_dir}/thinking/iteration{self.iteration}_comprehensive_reflection.txt"
         with open(file_name, "w") as file:
             file.writelines(self.str_comprehensive_memory)
 
@@ -362,10 +349,6 @@ class HSEvo(GeneticAlgorithm[HSEvoConfig, Problem]):
             )
             messages = format_messages(pre_messages)
 
-            # Write to file
-            file_name = f"{self.output_dir}/problem_iter{self.iteration}_response{num_choice}_prompt.txt"
-            with open(file_name, "w") as file:
-                file.writelines(json.dumps(pre_messages))
             num_choice += 1
 
             messages_lst.append(messages)
@@ -376,8 +359,10 @@ class HSEvo(GeneticAlgorithm[HSEvoConfig, Problem]):
         )
         self.cal_usage_LLM(messages_lst, response_lst)
         population = [
-            self.response_to_individual(response, response_id)
-            for response_id, response in enumerate(response_lst)
+            self.response_to_individual(
+                response, f"iteration{self.iteration}_crossover_{i}", messages
+            )
+            for i, (response, messages) in enumerate(zip(response_lst, messages_lst))
         ]
         return population
 
@@ -391,11 +376,6 @@ class HSEvo(GeneticAlgorithm[HSEvoConfig, Problem]):
         )
         messages = format_messages(pre_messages)
 
-        # Write to file
-        file_name = f"{self.output_dir}/problem_iter{self.iteration}_prompt.txt"
-        with open(file_name, "w") as file:
-            file.writelines(json.dumps(pre_messages))
-
         responses = self.llm_client.multi_chat_completion(
             [messages],
             int(self.config.pop_size * self.mutation_rate),
@@ -403,8 +383,10 @@ class HSEvo(GeneticAlgorithm[HSEvoConfig, Problem]):
         )
         self.cal_usage_LLM([messages], responses)
         population = [
-            self.response_to_individual(response, response_id)
-            for response_id, response in enumerate(responses)
+            self.response_to_individual(
+                response, f"iteration{self.iteration}_mutation_{i}", messages
+            )
+            for i, response in enumerate(responses)
         ]
 
         return population
@@ -435,13 +417,13 @@ class HSEvo(GeneticAlgorithm[HSEvoConfig, Problem]):
         Convert responses to population. Applied to the initial population.
         """
         population = []
-        for response_id, response in enumerate(responses):
-            filename = (
-                None
+        for i, response in enumerate(responses):
+            name = (
+                f"iteration{self.iteration}_response{i}"
                 if try_hs_idx is None
-                else f"problem_iter{self.iteration}_hs{try_hs_idx}"
+                else f"iteration{self.iteration}_hs{try_hs_idx}"
             )
-            individual = self.response_to_individual(response, response_id, filename)
+            individual = self.response_to_individual(response, name)
             population.append(individual)
         return population
 
@@ -464,7 +446,7 @@ class HSEvo(GeneticAlgorithm[HSEvoConfig, Problem]):
             str_create_pop.append(tmp_str)
 
         population_hs = self.responses_to_population(str_create_pop, try_hs_idx)
-        return self.evaluator.batch_evaluate(population_hs)
+        return self.evaluator.batch_evaluate(population_hs, Path(self.output_dir))
 
     def find_best_obj(self, population_hs: list[HSEvoIndividual]) -> int:
         objs = [individual.obj for individual in population_hs]
@@ -519,7 +501,7 @@ class HSEvo(GeneticAlgorithm[HSEvoConfig, Problem]):
         messages = format_messages(pre_messages)
 
         # Write to file
-        file_name = f"{self.output_dir}/problem_iter{self.iteration}_prompt.txt"
+        file_name = f"{self.output_dir}/thinking/iteration{self.iteration}_hs.txt"
         with open(file_name, "w") as file:
             file.writelines(json.dumps(pre_messages))
 
@@ -615,14 +597,16 @@ class HSEvo(GeneticAlgorithm[HSEvoConfig, Problem]):
             # Reflection
             self.flash_reflection(selected_population)
             self.comprehensive_reflection()
-            curr_code_path = self.elitist.code_path
+            curr_code_path = f"{self.output_dir}/{self.elitist.name}/code.py"
 
             logger.debug("Reflection complete")
 
             # Crossover
             crossed_population = self.crossover(selected_population)
             # Evaluate
-            self.population = self.evaluator.batch_evaluate(crossed_population)
+            self.population = self.evaluator.batch_evaluate(
+                crossed_population, Path(self.output_dir)
+            )
             # Update
             self.update_iter()
 
@@ -633,7 +617,9 @@ class HSEvo(GeneticAlgorithm[HSEvoConfig, Problem]):
             # Mutate
             mutated_population = self.mutate()
             # Evaluate
-            self.population.extend(self.evaluator.batch_evaluate(mutated_population))
+            self.population.extend(
+                self.evaluator.batch_evaluate(mutated_population, Path(self.output_dir))
+            )
             # Update
             self.update_iter()
 
@@ -641,7 +627,7 @@ class HSEvo(GeneticAlgorithm[HSEvoConfig, Problem]):
                 f"Mutation complete, generated {len(mutated_population)} individuals"
             )
 
-            if curr_code_path != self.elitist.code_path:
+            if curr_code_path != f"{self.output_dir}/{self.elitist.name}/code.py":
                 self.lst_good_reflection.append(self.str_flash_memory["exp"])
                 logger.debug("Elite changed, recording good reflection")
             else:

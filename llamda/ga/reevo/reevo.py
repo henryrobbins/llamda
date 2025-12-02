@@ -1,6 +1,8 @@
 # Adapted from ReEvo: https://github.com/ai4co/reevo/blob/main/reevo.py
 # Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
 
+import json
+from pathlib import Path
 from typing import Optional
 import logging
 import numpy as np
@@ -85,6 +87,8 @@ class ReEvo(GeneticAlgorithm[ReEvoConfig, Problem]):
 
         self.evaluator = evaluator
 
+        self.output_dir = output_dir
+        os.makedirs(f"{self.output_dir}/thinking", exist_ok=True)
         self.mutation_rate = self.config.mutation_rate
         self.iteration = 0
         self.elitist = None
@@ -98,13 +102,10 @@ class ReEvo(GeneticAlgorithm[ReEvoConfig, Problem]):
     def init_population(self) -> None:
         # Evaluate the seed function, and set it as Elite
         code = extract_code_from_generator(self.problem.seed_func).replace("v1", "v2")
-        seed_ind = Individual(
-            stdout_filepath=f"{self.output_dir}/problem_iter{self.iteration}_stdout0.txt",
-            code_path=f"{self.output_dir}/problem_iter{self.iteration}_code0.py",
-            code=code,
-            response_id=0,
+        seed_ind = Individual(name="seed", code=code)
+        self.population = self.evaluator.batch_evaluate(
+            [seed_ind], Path(self.output_dir)
         )
-        self.population = self.evaluator.batch_evaluate([seed_ind])
         self.seed_ind = self.population[0]
 
         # If seed function is invalid, stop
@@ -125,47 +126,38 @@ class ReEvo(GeneticAlgorithm[ReEvoConfig, Problem]):
         )
 
         population = [
-            self.response_to_individual(resp, index)
-            for index, resp in enumerate(responses)
+            self.response_to_individual(resp, messages, f"seed_population_{i}")
+            for i, resp in enumerate(responses)
         ]
 
         # Run code and evaluate population
-        population = self.evaluator.batch_evaluate(population)
+        population = self.evaluator.batch_evaluate(population, Path(self.output_dir))
         # Update iteration
         self.population = population
         self.update_iter()
 
     def response_to_individual(
-        self, response: str, response_id: int, file_name: str = None
+        self, response: str, messages: list[dict], name: str
     ) -> Individual:
         """
         Convert response to individual
         """
         # Write response to file
-        file_name = (
-            f"problem_iter{self.iteration}_response{response_id}.txt"
-            if file_name is None
-            else file_name + ".txt"
-        )
-        file_name = f"{self.output_dir}/{file_name}"
+        individual_dir = f"{self.output_dir}/individuals/{name}"
+
+        os.makedirs(individual_dir, exist_ok=True)
+        file_name = f"{individual_dir}/response.txt"
+
         with open(file_name, "w", encoding="utf-8") as file:
             file.writelines(response + "\n")
 
+        with open(f"{individual_dir}/message.json", "w") as file:
+            file.write(json.dumps(messages, indent=4))
+
         code = extract_code_from_generator(response)
 
-        # Extract code and description from response
-        std_out_filepath = (
-            f"problem_iter{self.iteration}_stdout{response_id}.txt"
-            if file_name is None
-            else file_name.rstrip(".txt") + "_stdout.txt"
-        )
-
-        individual = Individual(
-            stdout_filepath=std_out_filepath,
-            code_path=f"problem_iter{self.iteration}_code{response_id}.py",
-            code=code,
-            response_id=response_id,
-        )
+        individual = Individual(name=name, code=code)
+        individual.write_code_to_file(f"{individual_dir}/code.py")
 
         return individual
 
@@ -181,7 +173,9 @@ class ReEvo(GeneticAlgorithm[ReEvoConfig, Problem]):
         if self.best_obj_overall is None or best_obj < self.best_obj_overall:
             self.best_obj_overall = best_obj
             self.best_code_overall = population[best_sample_idx].code
-            self.best_code_path_overall = population[best_sample_idx].code_path
+            self.best_code_path_overall = (
+                f"{self.output_dir}/{population[best_sample_idx].name}/code.py"
+            )
 
         # update elitist
         if self.elitist is None or best_obj < self.elitist.obj:
@@ -277,15 +271,11 @@ class ReEvo(GeneticAlgorithm[ReEvoConfig, Problem]):
         )
 
         # Write reflections to file
-        file_name = (
-            f"{self.output_dir}/problem_iter{self.iteration}_short_term_reflections.txt"
-        )
+        file_name = f"{self.output_dir}/thinking/iteration{self.iteration}_short_term_reflections.txt"
         with open(file_name, "w") as file:
             file.writelines("\n".join(short_term_reflections) + "\n")
 
-        file_name = (
-            f"{self.output_dir}/problem_iter{self.iteration}_long_term_reflection.txt"
-        )
+        file_name = f"{self.output_dir}/thinking/iteration{self.iteration}_long_term_reflection.txt"
         with open(file_name, "w") as file:
             file.writelines(self.long_term_reflection_str + "\n")
 
@@ -337,14 +327,20 @@ class ReEvo(GeneticAlgorithm[ReEvoConfig, Problem]):
                 crossover_messages
             )
             crossed_population = [
-                self.response_to_individual(response, response_id)
-                for response_id, response in enumerate(crossed_response_lst)
+                self.response_to_individual(
+                    response, messages, f"iteration{self.iteration}_crossover_{i}"
+                )
+                for i, (response, messages) in enumerate(
+                    zip(crossed_response_lst, crossover_messages)
+                )
             ]
 
             logger.debug(f"Crossover generated {len(crossed_population)} individuals")
 
             # Evaluate
-            self.population = self.evaluator.batch_evaluate(crossed_population)
+            self.population = self.evaluator.batch_evaluate(
+                crossed_population, Path(self.output_dir)
+            )
             # Update
             self.update_iter()
             # Long-term reflection
@@ -361,14 +357,20 @@ class ReEvo(GeneticAlgorithm[ReEvoConfig, Problem]):
                 int(self.config.pop_size * self.config.mutation_rate),
             )
             mutated_population = [
-                self.response_to_individual(response, response_id)
-                for response_id, response in enumerate(mutated_response_lst)
+                self.response_to_individual(
+                    response,
+                    mutation_messages,
+                    f"iteration{self.iteration}_mutation_{i}",
+                )
+                for i, response in enumerate(mutated_response_lst)
             ]
 
             logger.debug(f"Mutation generated {len(mutated_population)} individuals")
 
             # Evaluate
-            self.population.extend(self.evaluator.batch_evaluate(mutated_population))
+            self.population.extend(
+                self.evaluator.batch_evaluate(mutated_population, Path(self.output_dir))
+            )
             # Update
             self.update_iter()
 

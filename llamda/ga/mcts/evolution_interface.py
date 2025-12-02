@@ -3,6 +3,8 @@
 
 import logging
 import copy
+import os
+from pathlib import Path
 
 import numpy as np
 
@@ -10,7 +12,7 @@ from llamda.evaluate import Evaluator
 from llamda.problem import EohProblem
 from llamda.ga.mcts.mcts_prompts import MCTSPrompts, MCTSIndividual, MCTSOperator
 from llamda.llm_client.base import BaseClient
-from llamda.ga.utils import generate_thought_and_code, hydrate_individual
+from llamda.ga.utils import generate_thought_and_code
 
 logger = logging.getLogger("llamda")
 
@@ -62,6 +64,7 @@ class InterfaceEC:
         self,
         pop: list[MCTSIndividual],
         operator: MCTSOperator,
+        name: str,
         father: MCTSIndividual | None = None,
     ) -> tuple[list[MCTSIndividual], MCTSIndividual]:
 
@@ -108,8 +111,17 @@ class InterfaceEC:
             algorithm = self._post_thought(code, thought)
             if not self.check_duplicate(pop, code):
                 offspring = MCTSIndividual(
-                    algorithm=algorithm, thought=thought, code=code
+                    name=name, algorithm=algorithm, thought=thought, code=code
                 )
+                individual_dir = f"{self.output_dir}/individuals/{offspring.name}"
+                os.makedirs(individual_dir, exist_ok=True)
+                offspring.write_code_to_file(f"{individual_dir}/code.py")
+                response_filepath = f"{individual_dir}/response.txt"
+                with open(response_filepath, "w") as f:
+                    f.write(response)
+                prompt_filepath = f"{individual_dir}/prompt.txt"
+                with open(prompt_filepath, "w") as f:
+                    f.write(prompt_content)
                 return parents, offspring
             else:
                 logger.warning("Duplicate code detected, regenerating offspring.")
@@ -117,14 +129,15 @@ class InterfaceEC:
         raise ValueError("Unable to generate unique offspring after multiple attempts.")
 
     def get_algorithm(
-        self, pop: list[MCTSIndividual], operator: MCTSOperator
+        self, pop: list[MCTSIndividual], operator: MCTSOperator, name: str
     ) -> tuple[int, list[MCTSIndividual], MCTSIndividual]:
         n_evals = 0
         while True:
             n_evals += 1
-            _, offspring = self.get_offspring(pop, operator)
-            offspring = hydrate_individual(offspring, 0, self.output_dir, 0)
-            obj = self.interface_eval.batch_evaluate([offspring], 0)[0].obj
+            _, offspring = self.get_offspring(pop, operator, name=name)
+            obj = self.interface_eval.batch_evaluate(
+                [offspring], Path(self.output_dir)
+            )[0].obj
             if (
                 obj == "timeout"
                 or obj == float("inf")
@@ -141,12 +154,14 @@ class InterfaceEC:
         pop: list[MCTSIndividual],
         node: MCTSIndividual,
         operator: MCTSOperator,
+        name: str,
     ) -> tuple[int, MCTSIndividual | None]:
         for i in range(3):
             eval_times += 1
-            _, offspring = self.get_offspring(pop, operator, father=node)
-            offspring = hydrate_individual(offspring, 0, self.output_dir, 0)
-            population = self.interface_eval.batch_evaluate([offspring], 0)
+            _, offspring = self.get_offspring(pop, operator, name=name, father=node)
+            population = self.interface_eval.batch_evaluate(
+                [offspring], Path(self.output_dir)
+            )
             objs = [indiv.obj for indiv in population]
             if objs == "timeout":
                 return eval_times, None

@@ -2,7 +2,9 @@
 # and https://github.com/ai4co/reevo/blob/main/reevo.py
 # Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
 
+import os
 import logging
+from pathlib import Path
 import subprocess
 from typing import TypeVar
 
@@ -28,7 +30,6 @@ class Evaluator:
         logger.warning(
             "Marking individual as invalid",
             extra={
-                "response_id": individual.response_id,
                 "traceback_msg": traceback_msg[:200],  # Truncate long messages
             },
         )
@@ -37,15 +38,13 @@ class Evaluator:
         individual.traceback_msg = traceback_msg
         return individual
 
-    def batch_evaluate(self, population: list[T], iteration: int = 0) -> list[T]:
+    def batch_evaluate(self, population: list[T], output_dir: Path) -> list[T]:
         """
         Evaluate population by running code in parallel and computing objective values.
         """
-        self.iteration = iteration
         logger.info(
             "Starting batch evaluation",
             extra={
-                "iteration": iteration,
                 "population_size": len(population),
                 "function_evals": self.function_evals,
             },
@@ -53,33 +52,27 @@ class Evaluator:
 
         inner_runs = []
         # Run code to evaluate
-        for response_id in range(len(population)):
+        for i, individual in enumerate(population):
+            stdout_filepath = output_dir / individual.name / "stdout.txt"
+            os.makedirs(stdout_filepath.parent, exist_ok=True)
             self.function_evals += 1
             # Skip if response is invalid
-            if population[response_id].code is None:
-                logger.debug(
-                    "Skipping invalid response",
-                    extra={"response_id": response_id, "iteration": iteration},
-                )
-                population[response_id] = self.mark_invalid_individual(
-                    population[response_id], "Invalid response!"
+            if individual.code is None:
+                logger.debug("Skipping invalid response")
+                individual = self.mark_invalid_individual(
+                    individual, "Invalid response!"
                 )
                 inner_runs.append(None)
                 continue
 
-            logger.info(f"Iteration {self.iteration}: Running Code {response_id}")
+            logger.info(f"Running Code {i} / {len(population)-1}")
 
             try:
-                process = self._run_code(population[response_id], response_id)
+                process = self._run_code(individual, i)
                 inner_runs.append(process)
             except Exception as e:  # If code execution fails
-                logger.exception(
-                    "Code execution error",
-                    extra={"response_id": response_id, "iteration": iteration},
-                )
-                population[response_id] = self.mark_invalid_individual(
-                    population[response_id], str(e)
-                )
+                logger.exception("Code execution error")
+                individual = self.mark_invalid_individual(individual, str(e))
                 inner_runs.append(None)
 
         # Update population with objective values
@@ -95,7 +88,6 @@ class Evaluator:
                     "Timeout expired during code execution",
                     extra={
                         "response_id": response_id,
-                        "iteration": self.iteration,
                         "timeout": self.timeout,
                     },
                 )
@@ -106,7 +98,6 @@ class Evaluator:
                 continue
 
             individual = population[response_id]
-            stdout_filepath = individual.stdout_filepath
             with open(stdout_filepath, "r") as f:  # read the stdout file
                 stdout_str = f.read()
             traceback_msg = filter_traceback(stdout_str)
@@ -127,7 +118,6 @@ class Evaluator:
                         "Failed to parse objective value",
                         extra={
                             "response_id": response_id,
-                            "iteration": self.iteration,
                             "error": str(e),
                         },
                     )
@@ -139,7 +129,6 @@ class Evaluator:
                     "Individual execution failed with traceback",
                     extra={
                         "response_id": response_id,
-                        "iteration": self.iteration,
                         "traceback": traceback_msg,
                     },
                 )
@@ -151,7 +140,6 @@ class Evaluator:
                 "Individual evaluated successfully",
                 extra={
                     "response_id": response_id,
-                    "iteration": self.iteration,
                     "objective": individual.obj,
                 },
             )
@@ -159,24 +147,22 @@ class Evaluator:
         logger.info(
             "Batch evaluation completed",
             extra={
-                "iteration": iteration,
                 "function_evals": self.function_evals,
                 "valid_individuals": sum(1 for ind in population if ind.exec_success),
             },
         )
         return population
 
-    def _run_code(self, individual: T, response_id: int) -> subprocess.Popen:
+    def _run_code(self, individual: T, stdout_filepath: Path) -> subprocess.Popen:
         """
         Write code into a file and run eval script.
         """
-        logger.debug(f"Iteration {self.iteration}: Processing Code Run {response_id}")
 
         with open(self.problem.code_path, "w") as file:
             file.writelines(individual.code + "\n")
 
         # Execute the python file with flags
-        with open(individual.stdout_filepath, "w") as f:
+        with open(stdout_filepath, "w") as f:
 
             process = subprocess.Popen(
                 [
@@ -190,12 +176,7 @@ class Evaluator:
                 stderr=f,
             )
 
-        block_until_running(
-            individual.stdout_filepath,
-            log_status=True,
-            iter_num=self.iteration,
-            response_id=response_id,
-        )
+        block_until_running(stdout_filepath, log_status=True)
         return process
 
 
@@ -212,22 +193,17 @@ def filter_traceback(s: str) -> str:
     return ""  # Return an empty string if no Traceback is found
 
 
-def block_until_running(
-    stdout_filepath: str,
-    log_status: bool = False,
-    iter_num: int = -1,
-    response_id: int = -1,
-) -> None:
+def block_until_running(stdout_filepath: Path, log_status: bool = False) -> None:
     # Ensure that the evaluation has started before moving on
     while True:
-        log = file_to_string(stdout_filepath)
+        log = file_to_string(str(stdout_filepath))
         if len(log) > 0:
             if log_status and "Traceback" in log:
                 logger.warning(
-                    f"Iteration {iter_num}: Code Run {response_id} execution error! (see {print_hyperlink(stdout_filepath, 'stdout')}))"
+                    f"Code Run execution error! (see {print_hyperlink(stdout_filepath, 'stdout')}))"
                 )
             else:
                 logger.info(
-                    f"Iteration {iter_num}: Code Run {response_id} successful! (see {print_hyperlink(stdout_filepath, 'stdout')})"
+                    f"Code Run successful! (see {print_hyperlink(stdout_filepath, 'stdout')})"
                 )
             break

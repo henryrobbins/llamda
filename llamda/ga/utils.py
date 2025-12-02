@@ -142,35 +142,3 @@ def filter_code(code_string: str) -> str:
 
 
 T = TypeVar("T", bound=Individual)
-
-
-def hydrate_individual(
-    individual: T,
-    response_id: int,
-    output_dir: str,
-    iteration: int = 0,
-    file_name: str | None = None,
-) -> T:
-
-    # Write response to file
-    file_name = (
-        f"problem_iter{iteration}_response{response_id}.txt"
-        if file_name is None
-        else file_name + ".txt"
-    )
-    file_name = f"{output_dir}/{file_name}"
-    with open(file_name, "w", encoding="utf-8") as file:
-        file.writelines(individual.code + "\n")
-
-    # Extract code and description from response
-    std_out_filepath = (
-        f"problem_iter{iteration}_stdout{response_id}.txt"
-        if file_name is None
-        else file_name.rstrip(".txt") + "_stdout.txt"
-    )
-
-    individual.stdout_filepath = std_out_filepath
-    individual.code_path = f"problem_iter{iteration}_code{response_id}.py"
-    individual.response_id = response_id
-
-    return individual

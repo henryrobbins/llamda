@@ -107,7 +107,6 @@ class MockEvaluator(Evaluator):
         self.timeout = timeout
         self.evaluation_path = Path(evaluation_path)
         self.function_evals = 0
-        self.iteration = 0
 
         # Load cache
         self._load_cache()
@@ -127,23 +126,20 @@ class MockEvaluator(Evaluator):
         individual.traceback_msg = traceback_msg
         return individual
 
-    def batch_evaluate(self, population: list[T], iteration: int = 0) -> list[T]:
+    def batch_evaluate(self, population: list[T], output_dir: Path) -> list[T]:
         """Evaluate population by looking up results in the cache."""
-        self.iteration = iteration
 
         for response_id, individual in enumerate(population):
             self.function_evals += 1
 
             # Skip if response is invalid
             if individual.code is None:
-                population[response_id] = self.mark_invalid_individual(
+                individual = self.mark_invalid_individual(
                     individual, "Invalid response!"
                 )
                 continue
 
-            logger.info(
-                f"Iteration {self.iteration}: Evaluating Code {response_id} from cache"
-            )
+            logger.info(f"Evaluating Code {response_id} from cache")
 
             # Look up result in cache
             code_key = individual.code
@@ -172,9 +168,6 @@ class MockEvaluator(Evaluator):
             else:
                 individual.obj = float("inf")
 
-            logger.info(
-                f"Iteration {self.iteration}, response_id {response_id}: "
-                f"Objective value: {individual.obj} (from cache)"
-            )
+            logger.info(f"Objective value: {individual.obj} (from cache)")
 
         return population

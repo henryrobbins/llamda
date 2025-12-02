@@ -183,7 +183,7 @@ class EOH(GeneticAlgorithm[EoHConfig, EohProblem]):
                 op_w = self.config.operator_weights[i]
                 if np.random.rand() < op_w:
                     _, offsprings = interface_ec.get_algorithm(
-                        population, EOHOperator(op)
+                        population, EOHOperator(op), f"population_{pop}_operator_{op}"
                     )
                 # Check duplication, and add the new offspring
                 self.add2pop(population, offsprings)

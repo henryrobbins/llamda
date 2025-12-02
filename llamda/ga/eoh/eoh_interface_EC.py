@@ -3,13 +3,15 @@
 # Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
 
 import logging
+import os
+from pathlib import Path
 import numpy as np
 
 from llamda.ga.eoh.eoh_prompts import EOHIndividual, EOHOperator, EOHPrompts
 from llamda.evaluate import Evaluator
 from llamda.problem import EohProblem
 from llamda.llm_client.base import BaseClient
-from llamda.ga.utils import generate_thought_and_code, hydrate_individual
+from llamda.ga.utils import generate_thought_and_code
 
 logger = logging.getLogger("llamda")
 
@@ -42,7 +44,7 @@ class InterfaceEC:
         n_create = 2
         population = []
         for _ in range(n_create):
-            _, pop = self.get_algorithm([], EOHOperator.I1)
+            _, pop = self.get_algorithm([], EOHOperator.I1, "init_population")
             for p in pop:
                 population.append(p)
         return population
@@ -50,20 +52,14 @@ class InterfaceEC:
     def population_generation_seed(
         self, seeds: list[EOHIndividual]
     ) -> list[EOHIndividual]:
-
-        population = [
-            hydrate_individual(indiv, i, self.output_dir)
-            for i, indiv in enumerate(seeds)
-        ]
-        population = self.interface_eval.batch_evaluate(population)
+        population = self.interface_eval.batch_evaluate(seeds, Path(self.output_dir))
         logger.info(
             "Initialization finished! Get " + str(len(seeds)) + " seed algorithms"
         )
-
         return population
 
     def get_offspring(
-        self, pop: list[EOHIndividual], operator: EOHOperator
+        self, pop: list[EOHIndividual], operator: EOHOperator, name: str
     ) -> tuple[list[EOHIndividual], EOHIndividual]:
 
         match operator:
@@ -95,7 +91,16 @@ class InterfaceEC:
                 llm_client=self.llm_client,
             )
             if not self.check_duplicate(pop, code):
-                offspring = EOHIndividual(algorithm=thought, code=code)
+                offspring = EOHIndividual(name=name, algorithm=thought, code=code)
+                individual_dir = f"{self.output_dir}/individuals/{offspring.name}"
+                os.makedirs(individual_dir, exist_ok=True)
+                offspring.write_code_to_file(f"{individual_dir}/code.py")
+                response_filepath = f"{individual_dir}/response.txt"
+                with open(response_filepath, "w") as f:
+                    f.write(response)
+                prompt_filepath = f"{individual_dir}/prompt.txt"
+                with open(prompt_filepath, "w") as f:
+                    f.write(prompt_content)
                 return parents, offspring
             else:
                 logger.warning("Duplicate code detected, regenerating offspring.")
@@ -103,19 +108,17 @@ class InterfaceEC:
         raise ValueError("Unable to generate unique offspring after multiple attempts.")
 
     def get_algorithm(
-        self, pop: list[EOHIndividual], operator: EOHOperator
+        self, pop: list[EOHIndividual], operator: EOHOperator, batch_name: str
     ) -> tuple[list[list[EOHIndividual]], list[EOHIndividual]]:
         offspring_list: list[tuple[list[EOHIndividual], EOHIndividual]] = []
-        for _ in range(self.pop_size):
-            p, offspring = self.get_offspring(pop, operator)
+        for i in range(self.pop_size):
+            p, offspring = self.get_offspring(
+                pop, operator, f"{batch_name}_offspring_{i}"
+            )
             offspring_list.append((p, offspring))
 
         pop = [offspring for _, offspring in offspring_list]
-        pop = [
-            hydrate_individual(offspring, i, self.output_dir)
-            for i, offspring in enumerate(pop)
-        ]
-        pop = self.interface_eval.batch_evaluate(pop, 0)
+        pop = self.interface_eval.batch_evaluate(pop, Path(self.output_dir))
         objs = [indiv.obj for indiv in pop]
         for i, (_, offspring) in enumerate(offspring_list):
             offspring.obj = np.round(objs[i], 5)

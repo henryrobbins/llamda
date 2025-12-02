@@ -88,6 +88,7 @@ class MCTS_AHD(GeneticAlgorithm[AHDConfig, EohProblem]):
                 pop=path_set,
                 node=cur_node.raw_info,
                 operator=MCTSOperator.S1,
+                name="s1_expansion",
             )
         elif option == "e1":
             e1_set = [
@@ -101,6 +102,7 @@ class MCTS_AHD(GeneticAlgorithm[AHDConfig, EohProblem]):
                 pop=e1_set,
                 node=cur_node.raw_info,
                 operator=MCTSOperator.E1,
+                name="e1_expansion",
             )
         else:
             self.eval_times, offsprings = self.interface_ec.evolve_algorithm(
@@ -108,6 +110,7 @@ class MCTS_AHD(GeneticAlgorithm[AHDConfig, EohProblem]):
                 pop=nodes_set,
                 node=cur_node.raw_info,
                 operator=MCTSOperator(option),
+                name=f"{option}_expansion",
             )
         if offsprings == None:
             logger.warning(f"Timeout emerge, no expanding with action {option}.")
@@ -177,7 +180,7 @@ class MCTS_AHD(GeneticAlgorithm[AHDConfig, EohProblem]):
         # main loop
         n_op = len(self.config.operators)
         n_evals, brothers, offspring = self.interface_ec.get_algorithm(
-            brothers, MCTSOperator.I1
+            brothers, MCTSOperator.I1, name="initialization"
         )
         self.eval_times += n_evals
         brothers.append(offspring)
@@ -206,7 +209,7 @@ class MCTS_AHD(GeneticAlgorithm[AHDConfig, EohProblem]):
 
         for i in range(1, self.config.init_size):
             n_evals, brothers, offspring = self.interface_ec.get_algorithm(
-                brothers, MCTSOperator.E1
+                brothers, MCTSOperator.E1, name=f"e1_initialization_{i}"
             )
             self.eval_times += n_evals
             brothers.append(offspring)
