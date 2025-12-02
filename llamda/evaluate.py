@@ -53,7 +53,9 @@ class Evaluator:
         inner_runs = []
         # Run code to evaluate
         for i, individual in enumerate(population):
-            stdout_filepath = output_dir / individual.name / "stdout.txt"
+            stdout_filepath = (
+                output_dir / "individuals" / individual.name / "stdout.txt"
+            )
             os.makedirs(stdout_filepath.parent, exist_ok=True)
             self.function_evals += 1
             # Skip if response is invalid
@@ -68,7 +70,7 @@ class Evaluator:
             logger.info(f"Running Code {i} / {len(population)-1}")
 
             try:
-                process = self._run_code(individual, i)
+                process = self._run_code(individual, stdout_filepath)
                 inner_runs.append(process)
             except Exception as e:  # If code execution fails
                 logger.exception("Code execution error")
