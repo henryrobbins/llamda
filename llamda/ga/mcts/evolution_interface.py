@@ -132,7 +132,7 @@ class InterfaceEC:
         self, pop: list[MCTSIndividual], operator: MCTSOperator, name: str
     ) -> tuple[int, list[MCTSIndividual], MCTSIndividual]:
         n_evals = 0
-        while True:
+        for _ in range(10):
             n_evals += 1
             _, offspring = self.get_offspring(pop, operator, name=name)
             obj = self.interface_eval.batch_evaluate(
@@ -147,6 +147,8 @@ class InterfaceEC:
 
             offspring.obj = float(np.round(obj, 5))
             return n_evals, pop, offspring
+
+        raise ValueError("Unable to generate offspring with unique objective value.")
 
     def evolve_algorithm(
         self,
