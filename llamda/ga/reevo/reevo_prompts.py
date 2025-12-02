@@ -5,7 +5,7 @@ from jinja2 import Environment, PackageLoader, StrictUndefined
 
 from llamda.individual import Individual
 from llamda.problem import Problem
-from llamda.utils import filter_code
+from llamda.ga.utils import filter_code
 
 
 class ReEvoPrompts:

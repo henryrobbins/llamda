@@ -13,7 +13,8 @@ from llamda.evaluate import Evaluator
 from llamda.individual import Individual
 from llamda.llm_client.base import BaseClient
 from llamda.problem import Problem
-from llamda.utils import extract_code_from_generator, print_hyperlink
+from llamda.utils import print_hyperlink
+from llamda.ga.utils import extract_code_from_generator
 
 logger = logging.getLogger("llamda")
 

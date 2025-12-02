@@ -8,7 +8,7 @@ from typing import TypeVar
 
 from llamda.individual import Individual
 from llamda.problem import BaseProblem
-from llamda.utils import block_until_running, filter_traceback
+from llamda.utils import file_to_string, print_hyperlink
 
 logger = logging.getLogger("llamda")
 
@@ -197,3 +197,37 @@ class Evaluator:
             response_id=response_id,
         )
         return process
+
+
+def filter_traceback(s: str) -> str:
+    lines = s.split("\n")
+    filtered_lines = []
+    for i, line in enumerate(lines):
+        if line.startswith("Traceback"):
+            for j in range(i, len(lines)):
+                if "Set the environment variable HYDRA_FULL_ERROR=1" in lines[j]:
+                    break
+                filtered_lines.append(lines[j])
+            return "\n".join(filtered_lines)
+    return ""  # Return an empty string if no Traceback is found
+
+
+def block_until_running(
+    stdout_filepath: str,
+    log_status: bool = False,
+    iter_num: int = -1,
+    response_id: int = -1,
+) -> None:
+    # Ensure that the evaluation has started before moving on
+    while True:
+        log = file_to_string(stdout_filepath)
+        if len(log) > 0:
+            if log_status and "Traceback" in log:
+                logger.warning(
+                    f"Iteration {iter_num}: Code Run {response_id} execution error! (see {print_hyperlink(stdout_filepath, 'stdout')}))"
+                )
+            else:
+                logger.info(
+                    f"Iteration {iter_num}: Code Run {response_id} successful! (see {print_hyperlink(stdout_filepath, 'stdout')})"
+                )
+            break

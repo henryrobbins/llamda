@@ -7,10 +7,10 @@ import copy
 import numpy as np
 
 from llamda.evaluate import Evaluator
-from llamda.problem import EohProblem, hydrate_individual
+from llamda.problem import EohProblem
 from llamda.ga.mcts.mcts_prompts import MCTSPrompts, MCTSIndividual, MCTSOperator
 from llamda.llm_client.base import BaseClient
-from llamda.utils import parse_response
+from llamda.ga.utils import parse_response, hydrate_individual
 
 logger = logging.getLogger("llamda")
 

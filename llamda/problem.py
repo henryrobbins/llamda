@@ -3,18 +3,13 @@ import logging
 import os
 from pathlib import Path
 import re
-from typing import TypeVar
 import yaml
 from enum import Enum
 from dataclasses import dataclass
 
-from llamda.individual import Individual
 from llamda.utils import file_to_string
 
 logger = logging.getLogger("llamda")
-
-
-T = TypeVar("T", bound=Individual)
 
 
 class ProblemName(Enum):
@@ -192,31 +187,3 @@ def adapt_prompt(problem: Problem) -> EohProblem:
         inout_info=problem.func_desc,
         other_info="",
     )
-
-
-def hydrate_individual(
-    individual: T, response_id, output_dir: str, iteration: int = 0, file_name=None
-) -> T:
-
-    # Write response to file
-    file_name = (
-        f"problem_iter{iteration}_response{response_id}.txt"
-        if file_name is None
-        else file_name + ".txt"
-    )
-    file_name = f"{output_dir}/{file_name}"
-    with open(file_name, "w", encoding="utf-8") as file:
-        file.writelines(individual.code + "\n")
-
-    # Extract code and description from response
-    std_out_filepath = (
-        f"problem_iter{iteration}_stdout{response_id}.txt"
-        if file_name is None
-        else file_name.rstrip(".txt") + "_stdout.txt"
-    )
-
-    individual.stdout_filepath = std_out_filepath
-    individual.code_path = f"problem_iter{iteration}_code{response_id}.py"
-    individual.response_id = response_id
-
-    return individual

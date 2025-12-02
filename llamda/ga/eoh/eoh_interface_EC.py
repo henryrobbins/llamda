@@ -7,9 +7,9 @@ import numpy as np
 
 from llamda.ga.eoh.eoh_prompts import EOHIndividual, EOHOperator, EOHPrompts
 from llamda.evaluate import Evaluator
-from llamda.problem import EohProblem, hydrate_individual
+from llamda.problem import EohProblem
 from llamda.llm_client.base import BaseClient
-from llamda.utils import parse_response
+from llamda.ga.utils import parse_response, hydrate_individual
 
 logger = logging.getLogger("llamda")
 
