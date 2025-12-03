@@ -10,7 +10,6 @@ from typing import TypeVar
 
 from llamda.individual import Individual
 from llamda.problem import BaseProblem
-from llamda.utils import file_to_string, print_hyperlink
 
 logger = logging.getLogger("llamda")
 
@@ -84,7 +83,7 @@ class Evaluator:
                 continue
 
             try:
-                process = self._run_code(individual, stdout_filepath)
+                process = self._run_code(individual)
                 inner_runs.append(process)
             except Exception as e:  # If code execution fails
                 logger.exception(
@@ -98,13 +97,17 @@ class Evaluator:
                 inner_runs.append(None)
 
         # Update population with objective values
-        for i, inner_run in enumerate(inner_runs):
+        for individual, inner_run in zip(population, inner_runs):
             if inner_run is None:  # If code execution fails, skip
                 continue
             try:
-                inner_run.communicate(
-                    timeout=self.timeout
-                )  # Wait for code execution to finish
+                stdout_str, _ = inner_run.communicate(timeout=self.timeout)
+                stdout_filepath = (
+                    output_dir / "individuals" / individual.name / "stdout.txt"
+                )
+                os.makedirs(stdout_filepath.parent, exist_ok=True)
+                with open(stdout_filepath, "w") as f:
+                    f.write(stdout_str)
             except subprocess.TimeoutExpired:
                 logger.warning(
                     "Timeout expired during code execution",
@@ -120,9 +123,6 @@ class Evaluator:
                 inner_run.kill()
                 continue
 
-            individual = population[i]
-            with open(stdout_filepath, "r") as f:  # read the stdout file
-                stdout_str = f.read()
             traceback_msg = filter_traceback(stdout_str)
 
             # Store objective value for each individual
@@ -137,15 +137,15 @@ class Evaluator:
                     )
                     individual.exec_success = True
                 except Exception:
-                    logger.warning(
+                    logger.exception(
                         "Failed to parse objective value",
                         extra={
                             **self._logging_context(),
                             "individual_name": individual.name,
                         },
                     )
-                    population[i] = self.mark_invalid_individual(
-                        population[i], "Invalid std out / objective value!"
+                    individual = self.mark_invalid_individual(
+                        individual, "Invalid std out / objective value!"
                     )
             else:  # Otherwise, also provide execution traceback error feedback
                 logger.warning(
@@ -156,9 +156,7 @@ class Evaluator:
                         "traceback": traceback_msg,
                     },
                 )
-                population[i] = self.mark_invalid_individual(
-                    population[i], traceback_msg
-                )
+                individual = self.mark_invalid_individual(individual, traceback_msg)
 
             logger.debug(
                 "Individual evaluated successfully",
@@ -183,7 +181,7 @@ class Evaluator:
         )
         return population
 
-    def _run_code(self, individual: T, stdout_filepath: Path) -> subprocess.Popen:
+    def _run_code(self, individual: T) -> subprocess.Popen:
         """
         Write code into a file and run eval script.
         """
@@ -191,22 +189,19 @@ class Evaluator:
         with open(self.problem.code_path, "w") as file:
             file.writelines(individual.code + "\n")
 
-        # Execute the python file with flags
-        with open(stdout_filepath, "w") as f:
+        process = subprocess.Popen(
+            [
+                "python",
+                "-u",
+                str(self.problem.eval_path),
+                f"{self.problem.size}",
+                "train",
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
 
-            process = subprocess.Popen(
-                [
-                    "python",
-                    "-u",
-                    str(self.problem.eval_path),
-                    f"{self.problem.size}",
-                    "train",
-                ],
-                stdout=f,
-                stderr=f,
-            )
-
-        block_until_running(stdout_filepath, log_status=True)
         return process
 
 
@@ -221,11 +216,3 @@ def filter_traceback(s: str) -> str:
                 filtered_lines.append(lines[j])
             return "\n".join(filtered_lines)
     return ""  # Return an empty string if no Traceback is found
-
-
-def block_until_running(stdout_filepath: Path, log_status: bool = False) -> None:
-    # Ensure that the evaluation has started before moving on
-    while True:
-        log = file_to_string(str(stdout_filepath))
-        if len(log) > 0:
-            break
