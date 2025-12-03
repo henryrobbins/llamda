@@ -172,6 +172,14 @@ class ReEvo(GeneticAlgorithm[ReEvoConfig, Problem]):
         Update after each iteration
         """
         population = self.population
+
+        # Save population checkpoint
+        population_checkpoint(
+            population=population,
+            name=f"iteration_{self.iteration}",
+            output_dir=self.output_dir,
+        )
+
         objs = [individual.obj for individual in population]
         best_obj, best_sample_idx = min(objs), np.argmin(np.array(objs))
 
@@ -213,12 +221,6 @@ class ReEvo(GeneticAlgorithm[ReEvoConfig, Problem]):
                 "function_evals": self.evaluator.function_evals,
                 **self._logging_context(),
             },
-        )
-
-        population_checkpoint(
-            population=self.population,
-            name=f"iteration_{self.iteration}",
-            output_dir=self.output_dir,
         )
 
         self.iteration += 1
