@@ -317,9 +317,11 @@ class MCTS_AHD(GeneticAlgorithm[AHDConfig, EohProblem]):
 
             filename = population_checkpoint(
                 population=nodes_set,
-                name=f"eval_{self.eval_times}",
+                name=f"iteration_{iteration}_evals_{self.eval_times}",
                 output_dir=self.output_dir,
             )
+
+            iteration += 1
 
         return nodes_set[0].code, filename
 
