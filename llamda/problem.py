@@ -29,6 +29,7 @@ class BaseProblem:
     size: int
     description: str
     func_name: str
+    func_outputs: list[str]
     path: Path
 
     @property
@@ -69,6 +70,7 @@ class Problem(BaseProblem):
             obj_type=config["obj_type"],
             size=config["problem_size"],
             func_name=config["func_name"],
+            func_outputs=config["func_outputs"],
             description=config["description"],
             path=path,
             seed_func=seed_func,
@@ -87,7 +89,6 @@ class Problem(BaseProblem):
 @dataclass
 class EohProblem(BaseProblem):
     func_inputs: list[str]
-    func_outputs: list[str]
     inout_info: str
     other_info: str
 
@@ -152,26 +153,10 @@ def adapt_prompt(problem: Problem) -> EohProblem:
     assert match is not None
     func_name = problem.func_name
     func_inputs = [txt.split(":")[0].strip() for txt in match.group(2).split(",")]
-    if func_name.startswith("select_next_node"):
-        func_outputs = ["next_node"]
-    elif func_name.startswith("priority"):
-        func_outputs = ["priority"]
-    elif func_name.startswith("heuristics"):
-        func_outputs = ["heuristics_matrix"]
-    elif func_name.startswith("crossover"):
-        func_outputs = ["offsprings"]
-    elif func_name.startswith("utility"):
-        func_outputs = ["utility_value"]
-    else:
-        func_outputs = ["result"]
 
     logger.debug(
         "Prompt adapted",
-        extra={
-            "func_name": func_name,
-            "func_inputs": func_inputs,
-            "func_outputs": func_outputs,
-        },
+        extra={"func_name": func_name, "func_inputs": func_inputs},
     )
 
     return EohProblem(
@@ -183,7 +168,7 @@ def adapt_prompt(problem: Problem) -> EohProblem:
         path=problem.path,
         func_name=func_name,
         func_inputs=func_inputs,
-        func_outputs=func_outputs,
+        func_outputs=problem.func_outputs,
         inout_info=problem.func_desc,
         other_info="",
     )
