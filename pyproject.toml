@@ -1,3 +1,42 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llamda"
+version = "0.0.1"
+authors = [
+    {name = "Henry Robbins", email = "hw.robbins@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.10, <3.12"
+dependencies = [
+    "Jinja2",
+    "litellm",
+    "openai",
+    "numpy",
+    "torch",
+    "scipy",
+    "scikit-learn",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "black>=25.1",
+    "flake8>=7.1",
+    "mypy>=1.16",
+    "pytest-cov>=6.0",
+    "sphinx>=8.1",
+    "sphinx-rtd-theme>=3.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.package-data]
+llamda = ["prompts/**/*", "problems/**/*"]
+
 [tool.black]
 line-length = 88
 target-version = ['py310']
