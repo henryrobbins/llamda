@@ -1,7 +1,14 @@
 # <img alt="llamda" src="branding/logo.png" height="90">
+[![PyPI version](https://img.shields.io/pypi/v/llamda)](https://pypi.org/project/llamda/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/llamda)](https://pypi.org/project/llamda/)
+[![CI](https://github.com/henryrobbins/llamda/actions/workflows/ci.yml/badge.svg)](https://github.com/henryrobbins/llamda/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/henryrobbins/llamda/graph/badge.svg)](https://codecov.io/gh/henryrobbins/llamda)
+[![Documentation Status](https://readthedocs.org/projects/llamda/badge/?version=latest)](https://llamda.readthedocs.io/en/latest/?badge=latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
 
 *llamda: LLm AutoMatically Designed Algorithms*
-
 
 ## Acknowledgments
 
