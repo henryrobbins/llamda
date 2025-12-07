@@ -4,6 +4,7 @@
 import numpy as np
 import numpy.typing as npt
 from typing import Tuple, List, Annotated
+from typing import Generator
 from math import floor
 
 IntArray = npt.NDArray[np.int_]
@@ -53,9 +54,6 @@ def random_sample_discrete_distribution(prob: FloatArray) -> int:
     cumprob = np.cumsum(prob)
     sampled = np.searchsorted(cumprob, next(uniform_generator) * cumprob[-1]).item()
     return sampled if sampled < len(cumprob) else len(cumprob) - 1
-
-
-from typing import Generator
 
 
 def uniform_number_generator(batch_size: int = 500) -> Generator[float, None, None]:
@@ -149,7 +147,9 @@ class ACO(object):
             fitnesses.append(fitness)
         return paths, np.array(costs, dtype=int), np.array(fitnesses, dtype=float)
 
-    def sample_path(self, prob: FloatArray) -> Tuple[
+    def sample_path(
+        self, prob: FloatArray
+    ) -> Tuple[
         Annotated[IntArray, "sampled path"],
         Annotated[int, "used bins"],
         Annotated[float, "fitness"],

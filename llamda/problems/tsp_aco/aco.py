@@ -101,9 +101,7 @@ class ACO:
         paths_list = []  # paths_list[i] is the ith move (tensor) for all ants
         paths_list.append(start)
 
-        log_probs_list = (
-            []
-        )  # log_probs_list[i] is the ith log_prob (tensor) for all ants' actions
+        log_probs_list = []  # log_probs_list[i] is the ith log_prob (tensor) for all ants' actions
 
         prev = start
         for _ in range(self.problem_size - 1):
