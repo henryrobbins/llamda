@@ -3,13 +3,9 @@
 
 import torch
 from torch.distributions import Categorical
-import random
-import itertools
-import numpy as np
 
 
 class ACO:
-
     def __init__(
         self,  # 0: depot
         distances,  # (n, n)
@@ -22,7 +18,6 @@ class ACO:
         beta=1,
         device="cpu",
     ):
-
         self.problem_size = len(distances)
         self.distances = (
             torch.tensor(distances, device=device)

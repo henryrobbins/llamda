@@ -7,7 +7,6 @@ from typing import Any
 
 
 class MCTSNode:
-
     def __init__(
         self,
         algorithm: str,

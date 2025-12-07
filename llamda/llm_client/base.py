@@ -45,7 +45,7 @@ class BaseClient(object):
                 if attempt == 2:  # Last attempt
                     logger.error("All 3 attempts failed")
                     raise
-                logger.warning(f"Attempt {attempt+1} failed with error: {e}")
+                logger.warning(f"Attempt {attempt + 1} failed with error: {e}")
                 time.sleep(1)
 
     def multi_chat_completion(

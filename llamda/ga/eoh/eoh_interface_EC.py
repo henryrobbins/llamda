@@ -61,7 +61,6 @@ class InterfaceEC:
     def get_offspring(
         self, pop: list[EOHIndividual], operator: EOHOperator, name: str
     ) -> tuple[list[EOHIndividual], EOHIndividual]:
-
         match operator:
             case EOHOperator.I1:
                 parents = []
@@ -127,7 +126,6 @@ class InterfaceEC:
         )
 
         for i in range(self.pop_size):
-
             logger.info(
                 f"Generating offspring [{i + 1}/{self.pop_size}]",
                 extra={**self._logging_context()},

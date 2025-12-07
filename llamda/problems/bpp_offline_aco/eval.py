@@ -39,7 +39,6 @@ def solve(inst: BPPInstance, heuristics, mode="sample"):
 
 
 if __name__ == "__main__":
-
     print("[*] Running ...")
 
     parser = argparse.ArgumentParser()

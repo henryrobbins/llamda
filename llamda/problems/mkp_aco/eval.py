@@ -31,7 +31,6 @@ def solve(prize: np.ndarray, weight: np.ndarray, heuristics):
 
 
 if __name__ == "__main__":
-
     print("[*] Running ...")
 
     parser = argparse.ArgumentParser()
@@ -48,7 +47,7 @@ if __name__ == "__main__":
 
     basepath = os.path.dirname(__file__)
     # automacially generate dataset if nonexists
-    if not os.path.isfile(os.path.join(basepath, f"dataset/train50_dataset.npz")):
+    if not os.path.isfile(os.path.join(basepath, "dataset/train50_dataset.npz")):
         from gen_inst import generate_datasets
 
         generate_datasets()

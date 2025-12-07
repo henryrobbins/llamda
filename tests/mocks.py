@@ -13,25 +13,21 @@ logger = logging.getLogger(__name__)
 
 
 class MockResponse:
-
     def __init__(self, content: str):
         self.message = MockMessage(content)
 
 
 class MockMessage:
-
     def __init__(self, content: str):
         self.content = content
 
 
 class MockClient(BaseClient):
-
     def __init__(
         self,
         config: BaseLLMClientConfig,
         responses_dir: str,
     ) -> None:
-
         super().__init__(config=config)
         self.responses_dir = responses_dir
         self.call_count = 0
@@ -95,14 +91,12 @@ T = TypeVar("T", bound=Individual)
 
 
 class MockEvaluator(Evaluator):
-
     def __init__(
         self,
         problem: BaseProblem,
         evaluation_path: str | Path,
         timeout: int = 30,
     ) -> None:
-
         self.problem = problem
         self.timeout = timeout
         self.evaluation_path = Path(evaluation_path)

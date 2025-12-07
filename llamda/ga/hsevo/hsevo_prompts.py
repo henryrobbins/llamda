@@ -12,9 +12,7 @@ logger = logging.getLogger("llamda")
 
 
 class HSEvoPrompts:
-
     def __init__(self, problem: Problem) -> None:
-
         self.env = Environment(
             loader=PackageLoader("llamda.prompts.ga", "hsevo"),
             undefined=StrictUndefined,
@@ -23,7 +21,6 @@ class HSEvoPrompts:
         self.problem = problem
 
     def init_population(self, long_term_reflection_str: str, scientist: str) -> dict:
-
         seed_template = self.env.get_template("seed.j2")
         seed_prompt = seed_template.render(
             seed_func=self.problem.seed_func,
@@ -61,7 +58,6 @@ class HSEvoPrompts:
         return pre_messages
 
     def flash_reflection(self, lst_str_method: list[str]) -> dict:
-
         system_template = self.env.get_template("system_reflector.j2")
         system = system_template.render()
 
@@ -125,7 +121,6 @@ class HSEvoPrompts:
         str_flash_memory: dict,
         str_comprehensive_memory: str,
     ) -> dict:
-
         # Crossover
         system_generator_template = self.env.get_template("system_generator.j2")
         system = system_generator_template.render(seed=scientist)

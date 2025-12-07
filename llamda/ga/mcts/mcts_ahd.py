@@ -3,7 +3,6 @@
 
 import copy
 import heapq
-import json
 import logging
 from dataclasses import dataclass, field
 
@@ -23,7 +22,6 @@ logger = logging.getLogger("llamda")
 
 @dataclass
 class AHDConfig:
-
     # MCTS configuration
     pop_size: int = 10  # Size of Elite set E, default = 10
     init_size: int = 4  # Number of initial nodes N_I, default = 4
@@ -38,7 +36,6 @@ class AHDConfig:
 
 
 class MCTS_AHD(GeneticAlgorithm[AHDConfig, EohProblem]):
-
     def __init__(
         self,
         config: AHDConfig,
@@ -47,7 +44,6 @@ class MCTS_AHD(GeneticAlgorithm[AHDConfig, EohProblem]):
         llm_client: BaseClient,
         output_dir: str,
     ) -> None:
-
         super().__init__(
             config=config,
             problem=problem,
@@ -254,7 +250,6 @@ class MCTS_AHD(GeneticAlgorithm[AHDConfig, EohProblem]):
 
         iteration = 0
         while self.eval_times < self.config.fe_max:
-
             logger.info(
                 "MCTS-AHD iteration",
                 extra={

@@ -61,7 +61,6 @@ def eval_heuristic(node_positions: np.ndarray, select_next_node) -> float:
 
 
 if __name__ == "__main__":
-
     print("[*] Running ...")
 
     parser = argparse.ArgumentParser()

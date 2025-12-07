@@ -2,7 +2,6 @@
 # Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
 
 import numpy as np
-import torch
 
 
 def gen_instance(n, m):

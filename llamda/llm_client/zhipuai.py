@@ -16,7 +16,6 @@ class ZhipuAIClientConfig(OpenAIClientConfig):
 
 
 class ZhipuAIClient(OpenAIClient):
-
     ClientClass = ZhipuAI
 
     def _chat_completion_api(

@@ -50,7 +50,6 @@ class Problem(BaseProblem):
 
     @classmethod
     def load_problem(cls, path: Path) -> "Problem":
-
         prompts_path = path / "prompts"
         with open(prompts_path / "problem.yaml", "r") as f:
             config = yaml.safe_load(f)
@@ -81,7 +80,6 @@ class Problem(BaseProblem):
 
     @classmethod
     def load_builtin(cls, problem_name: ProblemName) -> "Problem":
-
         problem_path = files("llamda.problems") / problem_name.value
         return cls.load_problem(problem_path)
 
@@ -148,7 +146,6 @@ in literature to select the next node in each step.",
 # Adapted from ReEvo: https://github.com/ai4co/reevo/blob/main/baselines/eoh/problem_adapter.py
 # Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
 def adapt_prompt(problem: Problem) -> EohProblem:
-
     match = re.match(r"^def +(.+?)\((.*)\) *-> *(.*?) *:", problem.func_signature)
     assert match is not None
     func_name = problem.func_name

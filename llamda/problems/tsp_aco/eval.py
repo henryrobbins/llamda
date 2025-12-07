@@ -29,7 +29,6 @@ def solve(node_pos, heuristics):
 
 
 if __name__ == "__main__":
-
     print("[*] Running ...")
 
     parser = argparse.ArgumentParser()

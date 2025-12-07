@@ -34,7 +34,6 @@ def quote_and_join(items: list[str]) -> str:
 
 
 class MCTSPrompts:
-
     def __init__(self, problem: EohProblem):
         self.env = Environment(
             loader=PackageLoader("llamda.prompts.ga", "mcts"), undefined=StrictUndefined

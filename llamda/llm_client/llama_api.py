@@ -16,16 +16,15 @@ class LlamaAPIClientConfig(OpenAIClientConfig):
 
 
 class LlamaAPIClient(OpenAIClient):
-
     def __init__(
         self,
         config: LlamaAPIClientConfig,
     ) -> None:
         if config.api_key is None:
             config.api_key = os.getenv("LLAMA_API_KEY", None)
-            assert (
-                config.api_key
-            ), "Please provide llama API key via environment variable LLAMA_API_KEY"
+            assert config.api_key, (
+                "Please provide llama API key via environment variable LLAMA_API_KEY"
+            )
         config.base_url = config.base_url or "https://api.llama-api.com"
 
         super().__init__(config=config)

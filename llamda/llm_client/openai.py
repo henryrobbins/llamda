@@ -21,7 +21,6 @@ class OpenAIClientConfig(BaseLLMClientConfig):
 
 
 class OpenAIClient(BaseClient):
-
     ClientClass = OpenAI
 
     def __init__(

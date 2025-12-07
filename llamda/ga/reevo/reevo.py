@@ -22,7 +22,6 @@ logger = logging.getLogger("llamda")
 
 
 class ReEvoLLMClients:
-
     def __init__(
         self,
         generator_llm: BaseClient,
@@ -42,7 +41,6 @@ class ReEvoLLMClients:
 
 @dataclass
 class ReEvoConfig:
-
     max_fe: int = 100  # maximum number of function evaluations
     pop_size: int = 10  # population size for GA
     init_pop_size: int = 30  # initial population size for GA
@@ -66,7 +64,6 @@ class ReEvo(GeneticAlgorithm[ReEvoConfig, Problem]):
         crossover_llm: Optional[BaseClient] = None,
         mutation_llm: Optional[BaseClient] = None,
     ) -> None:
-
         super().__init__(
             config=config,
             problem=problem,
@@ -311,7 +308,6 @@ class ReEvo(GeneticAlgorithm[ReEvoConfig, Problem]):
             file.writelines(self.long_term_reflection_str + "\n")
 
     def evolve(self) -> tuple[str, str]:
-
         logger.info("Starting ReEvo evolution", extra=self._logging_context())
 
         self.init_population()

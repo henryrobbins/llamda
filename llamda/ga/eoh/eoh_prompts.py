@@ -33,7 +33,6 @@ def quote_and_join(items: list[str]) -> str:
 
 
 class EOHPrompts:
-
     def __init__(self, problem: EohProblem) -> None:
         self.env = Environment(
             loader=PackageLoader("llamda.prompts.ga", "eoh"), undefined=StrictUndefined

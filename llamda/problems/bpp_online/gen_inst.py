@@ -78,8 +78,7 @@ def generate_datasets():
 
     # Saving datasets as pickle files, e.g {train_i: {capacity: 100, num_items: 5000, items: [1, 2, 3, ...]},...}
     weibull_5k_train = {
-        "train_"
-        + str(i): {
+        "train_" + str(i): {
             "capacity": bin_capacity,
             "num_items": len(training_data[i]),
             "items": training_data[i],
@@ -87,8 +86,7 @@ def generate_datasets():
         for i in range(len(training_data))
     }
     weibull_5k_val = {
-        "val_"
-        + str(i): {
+        "val_" + str(i): {
             "capacity": bin_capacity,
             "num_items": len(validation_data[i]),
             "items": validation_data[i],
@@ -96,8 +94,7 @@ def generate_datasets():
         for i in range(len(validation_data))
     }
     weibull_5k_test = {
-        "test_"
-        + str(i): {
+        "test_" + str(i): {
             "capacity": bin_capacity,
             "num_items": len(test_data_5k[i]),
             "items": test_data_5k[i],
@@ -105,8 +102,7 @@ def generate_datasets():
         for i in range(len(test_data_5k))
     }
     weibull_10k_test = {
-        "test_"
-        + str(i): {
+        "test_" + str(i): {
             "capacity": bin_capacity,
             "num_items": len(test_data_10k[i]),
             "items": test_data_10k[i],
@@ -114,8 +110,7 @@ def generate_datasets():
         for i in range(len(test_data_10k))
     }
     weibull_100k_test = {
-        "test_"
-        + str(i): {
+        "test_" + str(i): {
             "capacity": bin_capacity,
             "num_items": len(test_data_100k[i]),
             "items": test_data_100k[i],

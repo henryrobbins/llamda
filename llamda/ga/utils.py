@@ -145,7 +145,6 @@ def filter_code(code_string: str) -> str:
 def population_checkpoint(
     population: list[Individual], name: str, output_dir: str
 ) -> str:
-
     population_dir = f"{output_dir}/population"
     os.makedirs(population_dir, exist_ok=True)
     filename = f"{population_dir}/{name}.json"

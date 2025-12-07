@@ -78,7 +78,6 @@ class ACO(object):
         beta=1,
         greedy=False,
     ):
-
         self.problem_size = len(demand)
         self.capacity = capacity
         self.demand = demand
@@ -147,12 +146,13 @@ class ACO(object):
             fitnesses.append(fitness)
         return paths, np.array(costs, dtype=int), np.array(fitnesses, dtype=float)
 
-    def sample_path(self, prob: FloatArray) -> Tuple[
+    def sample_path(
+        self, prob: FloatArray
+    ) -> Tuple[
         Annotated[IntArray, "sampled path"],
         Annotated[int, "used bins"],
         Annotated[float, "fitness"],
     ]:
-
         if self.greedy_mode:
             sample_func = greedy_sample
         else:

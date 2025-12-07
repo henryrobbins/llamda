@@ -19,7 +19,6 @@ class LiteLLMClientConfig(BaseLLMClientConfig):
 
 
 class LiteLLMClient(BaseClient):
-
     def __init__(
         self,
         config: LiteLLMClientConfig,
@@ -27,7 +26,7 @@ class LiteLLMClient(BaseClient):
         super().__init__(config=config)
 
         if completion is None:
-            logger.fatal(f"Package `litellm` is required")
+            logger.fatal("Package `litellm` is required")
             exit(-1)
 
         from litellm import validate_environment

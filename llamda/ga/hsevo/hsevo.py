@@ -23,7 +23,6 @@ logger = logging.getLogger("llamda")
 
 @dataclass
 class HSEvoConfig:
-
     # Main GA loop parameters
     max_fe: int = 450  # maximum number of function evaluations
     pop_size: int = 10  # population size for GA
@@ -52,7 +51,6 @@ class HSEvo(GeneticAlgorithm[HSEvoConfig, Problem]):
         llm_client: BaseClient,
         output_dir: str,
     ) -> None:
-
         super().__init__(
             config=config,
             problem=problem,
@@ -316,7 +314,6 @@ class HSEvo(GeneticAlgorithm[HSEvoConfig, Problem]):
             file.writelines(flash_reflection_res)
 
     def comprehensive_reflection(self) -> None:
-
         pre_messages = self.evol.comprehensive_reflection(
             lst_good_reflection=self.lst_good_reflection,
             lst_bad_reflection=self.lst_bad_reflection,
@@ -575,7 +572,6 @@ class HSEvo(GeneticAlgorithm[HSEvoConfig, Problem]):
                 file.writelines("\n".join(map(str, objs + [self.local_sel_hs])) + "\n")
 
     def evolve(self) -> tuple[str, str]:
-
         logger.info("Starting HSEvo evolution", extra=self._logging_context())
 
         self.init_population()

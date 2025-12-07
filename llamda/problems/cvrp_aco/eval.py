@@ -36,7 +36,6 @@ def solve(node_pos, demand, heuristics):
 
 
 if __name__ == "__main__":
-
     print("[*] Running ...")
 
     parser = argparse.ArgumentParser()

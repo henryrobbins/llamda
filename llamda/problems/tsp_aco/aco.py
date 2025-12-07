@@ -6,11 +6,9 @@ from torch.distributions import Categorical
 
 
 class ACO:
-
     def __init__(
         self, distances, heuristic, n_ants=30, decay=0.9, alpha=1, beta=1, device="cpu"
     ):
-
         self.problem_size = len(distances)
         self.distances = (
             torch.tensor(distances, device=device)
@@ -93,9 +91,7 @@ class ACO:
         paths_list = []  # paths_list[i] is the ith move (tensor) for all ants
         paths_list.append(start)
 
-        log_probs_list = (
-            []
-        )  # log_probs_list[i] is the ith log_prob (tensor) for all ants' actions
+        log_probs_list = []  # log_probs_list[i] is the ith log_prob (tensor) for all ants' actions
 
         prev = start
         for _ in range(self.problem_size - 1):

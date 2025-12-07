@@ -35,7 +35,6 @@ logger = logging.getLogger("llamda")
 
 @dataclass
 class EoHConfig:
-
     # EC settings
     pop_size: int = 10  # number of algorithms in each population
     n_pop: int = 3  # number of populations
@@ -56,7 +55,6 @@ class EoHConfig:
 
 
 class EOH(GeneticAlgorithm[EoHConfig, EohProblem]):
-
     def __init__(
         self,
         config: EoHConfig,
@@ -65,7 +63,6 @@ class EOH(GeneticAlgorithm[EoHConfig, EohProblem]):
         llm_client: BaseClient,
         output_dir: str,
     ) -> None:
-
         super().__init__(
             config=config,
             problem=problem,
@@ -141,7 +138,6 @@ class EOH(GeneticAlgorithm[EoHConfig, EohProblem]):
         return self._create_new_population(interface_ec)
 
     def run(self) -> tuple[str, str]:
-
         logger.info("Starting EoH evolution", extra=self._logging_context())
 
         time_start = time.time()

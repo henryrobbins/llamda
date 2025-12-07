@@ -23,7 +23,6 @@ class AzureOpenAIClientConfig(BaseLLMClientConfig):
 
 
 class AzureOpenAIClient(BaseClient):
-
     ClientClass = AzureOpenAI
 
     def __init__(

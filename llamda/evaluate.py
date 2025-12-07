@@ -56,9 +56,8 @@ class Evaluator:
         inner_runs = []
         # Run code to evaluate
         for i, individual in enumerate(population):
-
             logger.info(
-                f"Evaluating individual [{i}/{len(population)-1}]",
+                f"Evaluating individual [{i}/{len(population) - 1}]",
                 extra={**self._logging_context(), "individual_name": individual.name},
             )
 

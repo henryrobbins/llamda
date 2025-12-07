@@ -9,7 +9,6 @@ from llamda.ga.utils import filter_code
 
 
 class ReEvoPrompts:
-
     def __init__(self, problem: Problem) -> None:
         self.problem = problem
         self.env = Environment(
@@ -18,7 +17,6 @@ class ReEvoPrompts:
         )
 
     def get_seed_population_messages(self, long_term_reflection_str: str) -> list[dict]:
-
         seed_template = self.env.get_template("seed.j2")
         seed_prompt = seed_template.render(
             seed_func=self.problem.seed_func,
@@ -133,7 +131,6 @@ class ReEvoPrompts:
     def get_crossover_messages(
         self, short_term_reflection_tuple: tuple[list[str], list[str], list[str]]
     ) -> list[list[dict]]:
-
         reflection_content_lst, worse_code_lst, better_code_lst = (
             short_term_reflection_tuple
         )

@@ -18,7 +18,6 @@ logger = logging.getLogger("llamda")
 
 
 class InterfaceEC:
-
     def __init__(
         self,
         m: int,
@@ -70,7 +69,6 @@ class InterfaceEC:
         name: str,
         father: MCTSIndividual | None = None,
     ) -> tuple[list[MCTSIndividual], MCTSIndividual]:
-
         match operator:
             case MCTSOperator.I1:
                 parents = []

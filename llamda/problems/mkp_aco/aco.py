@@ -7,7 +7,6 @@ import numpy as np
 
 
 class ACO:
-
     def __init__(
         self,  # constraints are set to 1 after normalize weight
         prize,  # shape [n,]
