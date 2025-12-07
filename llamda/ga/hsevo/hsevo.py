@@ -733,7 +733,7 @@ def extract_to_hs(input_string: str) -> tuple[dict | None, str | None]:
         exec_globals = {}
         exec(parameter_ranges_block, exec_globals)
         parameter_ranges = exec_globals["parameter_ranges"]
-    except:
+    except Exception:
         return None, None
 
     function_block = code_blocks[0].split("```")[0].strip()

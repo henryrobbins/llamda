@@ -119,7 +119,7 @@ class MCTS_AHD(GeneticAlgorithm[AHDConfig, EohProblem]):
                 operator=MCTSOperator(option),
                 name=name,
             )
-        if offsprings == None:
+        if offsprings is None:
             logger.warning(f"Timeout emerge, no expanding with action {option}.")
             return nodes_set
 
