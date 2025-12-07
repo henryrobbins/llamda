@@ -1,11 +1,29 @@
 test:
-	pytest
+	uv run pytest
 
 cov:
-	pytest --cov=llamda tests
+	uv run pytest --cov=llamda tests
 
 cov-report:
-	pytest --cov=llamda --cov-report=html tests
+	uv run pytest --cov=llamda --cov-report=html tests
+
+lint:
+	uv run ruff check .
+
+lint-fix:
+	uv run ruff check --fix .
+
+format:
+	uv run ruff format .
+
+format-fix:
+	uv run ruff format --fix .
+
+typecheck:
+	uv run mypy llamda
+
+typecheck-fix:
+	uv run mypy --fix-syntax llamda
 
 .PHONY: dist
 dist:

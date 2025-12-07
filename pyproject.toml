@@ -20,13 +20,16 @@ dependencies = [
     "scikit-learn",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "pytest>=8.3",
-    "black>=25.1",
-    "flake8>=7.1",
+    "ruff>=0.8",
     "mypy>=1.16",
     "pytest-cov>=6.0",
+]
+
+[project.optional-dependencies]
+docs = [
     "sphinx>=8.1",
     "sphinx-rtd-theme>=3.0",
 ]
@@ -37,13 +40,18 @@ where = ["."]
 [tool.setuptools.package-data]
 llamda = ["prompts/**/*", "problems/**/*"]
 
-[tool.black]
+[tool.ruff]
 line-length = 88
-target-version = ['py310']
+target-version = "py310"
 
-[tool.isort]
-profile = "black"
-line_length = 88
+[tool.ruff.lint]
+extend-ignore = ["E203", "E701"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["llamda"]
 
 [tool.mypy]
 disallow_untyped_defs = true
