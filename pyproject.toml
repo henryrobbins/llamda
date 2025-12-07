@@ -34,6 +34,7 @@ dev = [
     "ruff>=0.8",
     "mypy>=1.16",
     "pytest-cov>=6.0",
+    "structlog>=24.0",
 ]
 
 [project.optional-dependencies]
@@ -67,6 +68,4 @@ disallow_incomplete_defs = true
 
 [tool.pytest.ini_options]
 log_cli = true
-log_cli_level = "INFO"
-log_cli_format = "[%(levelname)s] %(name)s | %(asctime)s | %(message)s"
-log_cli_date_format = "%Y-%m-%dT%H:%M:%S"
+log_cli_level = "DEBUG"
