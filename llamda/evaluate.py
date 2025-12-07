@@ -53,7 +53,7 @@ class Evaluator:
             },
         )
 
-        inner_runs = []
+        inner_runs: list[subprocess.Popen[str] | None] = []
         # Run code to evaluate
         for i, individual in enumerate(population):
             logger.info(

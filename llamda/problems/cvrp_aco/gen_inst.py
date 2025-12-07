@@ -3,6 +3,7 @@
 
 import os
 import numpy as np
+import numpy.typing as npt
 
 CAPACITY = 50
 DEMAND_LOW = 1
@@ -10,7 +11,7 @@ DEMAND_HIGH = 9
 DEPOT_COOR = [0.5, 0.5]
 
 
-def gen_instance(n):
+def gen_instance(n: int) -> npt.NDArray[np.floating]:
     locations = np.random.rand(n, 2)
     demands = np.random.randint(low=DEMAND_LOW, high=DEMAND_HIGH + 1, size=n)
     depot = np.array([DEPOT_COOR])
@@ -26,7 +27,7 @@ def gen_instance(n):
     return np.concatenate((all_demands.reshape(-1, 1), all_locations), axis=1)
 
 
-def generate_datasets():
+def generate_datasets() -> None:
     basepath = os.path.dirname(__file__)
     os.makedirs(os.path.join(basepath, "dataset"), exist_ok=True)
 

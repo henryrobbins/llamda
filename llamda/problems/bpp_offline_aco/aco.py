@@ -11,7 +11,7 @@ FloatArray = npt.NDArray[np.float64]
 
 
 def organize_path(path: IntArray) -> Tuple[int, IntArray]:
-    order = {}
+    order: dict[int, int] = {}
     result = np.zeros_like(path)
     for i, v in enumerate(path):
         if v in order:
@@ -55,7 +55,10 @@ def random_sample_discrete_distribution(prob: FloatArray) -> int:
     return sampled if sampled < len(cumprob) else len(cumprob) - 1
 
 
-def uniform_number_generator(batch_size=500):
+from typing import Generator
+
+
+def uniform_number_generator(batch_size: int = 500) -> Generator[float, None, None]:
     # it's also slow to generate random numbers one by one
     while 1:
         numbers = np.random.random(batch_size)
@@ -72,12 +75,12 @@ class ACO(object):
         demand: IntArray,  # (n, )
         heuristic: FloatArray,  # (n, n)
         capacity: int,
-        n_ants=20,
-        decay=0.95,
-        alpha=1,
-        beta=1,
-        greedy=False,
-    ):
+        n_ants: int = 20,
+        decay: float = 0.95,
+        alpha: float = 1,
+        beta: float = 1,
+        greedy: bool = False,
+    ) -> None:
         self.problem_size = len(demand)
         self.capacity = capacity
         self.demand = demand
@@ -128,7 +131,7 @@ class ACO(object):
         assert self.is_valid_path(best_path)
         return organize_path(best_path)
 
-    def update_pheronome(self, paths: List[IntArray], fitnesses: FloatArray):
+    def update_pheronome(self, paths: List[IntArray], fitnesses: FloatArray) -> None:
         delta_phe = np.zeros_like(self.pheromone)  # problem_size x problem_size
         for path, f in zip(paths, fitnesses):
             delta_phe[path[:, None] == path[None, :]] += f / self.n_ants
@@ -146,9 +149,7 @@ class ACO(object):
             fitnesses.append(fitness)
         return paths, np.array(costs, dtype=int), np.array(fitnesses, dtype=float)
 
-    def sample_path(
-        self, prob: FloatArray
-    ) -> Tuple[
+    def sample_path(self, prob: FloatArray) -> Tuple[
         Annotated[IntArray, "sampled path"],
         Annotated[int, "used bins"],
         Annotated[float, "fitness"],

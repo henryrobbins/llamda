@@ -2,13 +2,23 @@
 # Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
 
 import torch
+from torch import Tensor
 from torch.distributions import Categorical
+import numpy as np
+import numpy.typing as npt
 
 
 class ACO:
     def __init__(
-        self, distances, heuristic, n_ants=30, decay=0.9, alpha=1, beta=1, device="cpu"
-    ):
+        self,
+        distances: npt.NDArray[np.floating] | Tensor,
+        heuristic: npt.NDArray[np.floating] | Tensor,
+        n_ants: int = 30,
+        decay: float = 0.9,
+        alpha: float = 1,
+        beta: float = 1,
+        device: str = "cpu",
+    ) -> None:
         self.problem_size = len(distances)
         self.distances = (
             torch.tensor(distances, device=device)
@@ -33,7 +43,7 @@ class ACO:
         self.device = device
 
     @torch.no_grad()
-    def run(self, n_iterations):
+    def run(self, n_iterations: int) -> Tensor:
         for _ in range(n_iterations):
             paths = self.gen_path(require_prob=False)
             costs = self.gen_path_costs(paths)
@@ -48,7 +58,7 @@ class ACO:
         return self.lowest_cost
 
     @torch.no_grad()
-    def update_pheronome(self, paths, costs):
+    def update_pheronome(self, paths: Tensor, costs: Tensor) -> None:
         """
         Args:
             paths: torch tensor with shape (problem_size, n_ants)
@@ -62,7 +72,7 @@ class ACO:
             self.pheromone[torch.roll(path, shifts=1), path] += 1.0 / cost
 
     @torch.no_grad()
-    def gen_path_costs(self, paths):
+    def gen_path_costs(self, paths: Tensor) -> Tensor:
         """
         Args:
             paths: torch tensor with shape (problem_size, n_ants)
@@ -75,7 +85,7 @@ class ACO:
         assert (self.distances[u, v] > 0).all()
         return torch.sum(self.distances[u, v], dim=1)
 
-    def gen_path(self, require_prob=False):
+    def gen_path(self, require_prob: bool = False) -> Tensor | tuple[Tensor, Tensor]:
         """
         Tour contruction for all ants
         Returns:
@@ -91,7 +101,9 @@ class ACO:
         paths_list = []  # paths_list[i] is the ith move (tensor) for all ants
         paths_list.append(start)
 
-        log_probs_list = []  # log_probs_list[i] is the ith log_prob (tensor) for all ants' actions
+        log_probs_list = (
+            []
+        )  # log_probs_list[i] is the ith log_prob (tensor) for all ants' actions
 
         prev = start
         for _ in range(self.problem_size - 1):
@@ -108,7 +120,9 @@ class ACO:
         else:
             return torch.stack(paths_list)
 
-    def pick_move(self, prev, mask, require_prob):
+    def pick_move(
+        self, prev: Tensor, mask: Tensor, require_prob: bool
+    ) -> tuple[Tensor, Tensor | None]:
         """
         Args:
             prev: tensor with shape (n_ants,), previous nodes for all ants

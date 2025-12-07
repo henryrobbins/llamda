@@ -22,16 +22,16 @@ class LlamaAPIClient(OpenAIClient):
     ) -> None:
         if config.api_key is None:
             config.api_key = os.getenv("LLAMA_API_KEY", None)
-            assert config.api_key, (
-                "Please provide llama API key via environment variable LLAMA_API_KEY"
-            )
+            assert (
+                config.api_key
+            ), "Please provide llama API key via environment variable LLAMA_API_KEY"
         config.base_url = config.base_url or "https://api.llama-api.com"
 
         super().__init__(config=config)
 
     def _chat_completion_api(
         self, messages: list[dict], temperature: float, n: int = 1
-    ) -> list[dict]:
+    ) -> list:
         assert n == 1
         response = self.client.chat.completions.create(
             model=self.model,

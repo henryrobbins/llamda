@@ -10,12 +10,15 @@ import numpy as np
 from scipy.spatial import distance_matrix
 
 from llamda.utils import load_heuristic_from_code
+from typing import Callable
 
 
 POSSIBLE_FUNC_NAMES = ["select_next_node", "select_next_node_v1", "select_next_node_v2"]
 
 
-def eval_heuristic(node_positions: np.ndarray, select_next_node) -> float:
+def eval_heuristic(
+    node_positions: np.ndarray, select_next_node: Callable[..., int]
+) -> float:
     """
     Generate solution for TSP problem using the GPT-generated heuristic algorithm.
 

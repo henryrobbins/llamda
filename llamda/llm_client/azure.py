@@ -8,7 +8,7 @@ from llamda.llm_client.base import BaseClient, BaseLLMClientConfig
 try:
     from openai import AzureOpenAI
 except ImportError:
-    AzureOpenAI = "openai"
+    AzureOpenAI = "openai"  # type: ignore[misc,assignment]
 
 
 logger = logging.getLogger(__name__)
@@ -46,7 +46,7 @@ class AzureOpenAIClient(BaseClient):
 
     def _chat_completion_api(
         self, messages: list[dict], temperature: float, n: int = 1
-    ) -> list[dict]:
+    ) -> list:
         response = self.client.chat.completions.create(
             model=self.model,
             messages=messages,

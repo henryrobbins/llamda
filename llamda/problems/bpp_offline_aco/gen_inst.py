@@ -24,14 +24,14 @@ dataset_conf = {
 }
 
 
-def generate_dataset(filepath, n, batch_size=64):
+def generate_dataset(filepath: str, n: int, batch_size: int = 64) -> None:
     demands = np.random.randint(
         low=DEMAND_LOW, high=DEMAND_HIGH + 1, size=(batch_size, n)
     )
     np.savez(filepath, demands=demands)
 
 
-def generate_datasets(basepath=None):
+def generate_datasets(basepath: str | None = None) -> None:
     import os
 
     basepath = basepath or os.path.join(os.path.dirname(__file__), "dataset")
@@ -44,7 +44,7 @@ def generate_datasets(basepath=None):
             generate_dataset(filepath, n, batch_size=5 if mood == "train" else 64)
 
 
-def load_dataset(fp) -> list[BPPInstance]:
+def load_dataset(fp: str) -> list[BPPInstance]:
     data = np.load(fp)
     demands = data["demands"]
     instances = []

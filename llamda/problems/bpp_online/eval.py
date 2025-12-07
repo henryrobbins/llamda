@@ -4,8 +4,10 @@
 import os
 import argparse
 import pickle
+from typing import Callable, Any
 
 import numpy as np
+import numpy.typing as npt
 
 from llamda.utils import load_heuristic_from_code
 
@@ -19,11 +21,13 @@ def get_valid_bin_indices(item: float, bins: np.ndarray) -> np.ndarray:
 
 
 def online_binpack(
-    items: tuple[float, ...], bins: np.ndarray, heuristics
-) -> tuple[list[list[float, ...], ...], np.ndarray]:
+    items: tuple[float, ...] | npt.NDArray[np.floating],
+    bins: np.ndarray,
+    heuristics: Callable[..., npt.NDArray[np.floating]],
+) -> tuple[list[list[float]], np.ndarray]:
     """Performs online binpacking of `items` into `bins`."""
     # Track which items are added to each bin.
-    packing = [[] for _ in bins]
+    packing: list[list[float]] = [[] for _ in bins]
     # Add items to bins.
     for item in items:
         # Extract bins that have sufficient space to fit item.
@@ -39,7 +43,9 @@ def online_binpack(
     return packing, bins
 
 
-def evaluate(instances: dict, heuristics) -> float:
+def evaluate(
+    instances: dict[str, Any], heuristics: Callable[..., npt.NDArray[np.floating]]
+) -> float:
     """Evaluate heuristic function on a set of online binpacking instances."""
     # List storing number of bins used for each instance.
     num_bins = []
@@ -66,7 +72,7 @@ def evaluate(instances: dict, heuristics) -> float:
 
 
 def is_valid_packing(
-    packing: list[list[float, ...], ...], items: list[float], capacity: float
+    packing: list[list[float]], items: list[float], capacity: float
 ) -> bool:
     """Returns whether `packing` is valid.
 

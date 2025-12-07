@@ -46,19 +46,19 @@ class MCTS:
         self.max_depth = 10
         self.epsilon = 1e-10
         self.discount_factor = 1
-        self.q_min = 0
-        self.q_max = -10000
-        self.rank_list = []
+        self.q_min: float = 0
+        self.q_max: float = -10000
+        self.rank_list: list[float] = []
 
         self.root = MCTSNode(
             algorithm=root_answer, code=root_answer, depth=0, obj=0, is_root=True
         )
 
         # Logs
-        self.critiques = []
-        self.refinements = []
-        self.rewards = []
-        self.selected_nodes = []
+        self.critiques: list[str] = []
+        self.refinements: list[str] = []
+        self.rewards: list[float] = []
+        self.selected_nodes: list[MCTSNode] = []
 
     def backpropagate(self, node: MCTSNode) -> None:
         if node.Q not in self.rank_list:

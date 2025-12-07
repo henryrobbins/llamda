@@ -4,7 +4,7 @@
 import os
 import time
 import logging
-import concurrent
+import concurrent.futures
 from dataclasses import dataclass
 
 
@@ -27,12 +27,12 @@ class BaseClient(object):
 
     def _chat_completion_api(
         self, messages: list[dict], temperature: float, n: int = 1
-    ) -> list[dict]:
+    ) -> list:
         raise NotImplementedError
 
     def chat_completion(
         self, n: int, messages: list[dict], temperature: float | None = None
-    ) -> list[dict]:
+    ) -> list:
         """
         Generate n responses using OpenAI Chat Completions API
         """

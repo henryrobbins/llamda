@@ -4,8 +4,10 @@
 import os
 import logging
 import argparse
+from typing import Callable
 
 import numpy as np
+import numpy.typing as npt
 
 from aco import ACO  # type: ignore
 from gen_inst import BPPInstance, load_dataset, dataset_conf  # type: ignore
@@ -20,7 +22,11 @@ N_ANTS = 20
 SAMPLE_COUNT = 200
 
 
-def solve(inst: BPPInstance, heuristics, mode="sample"):
+def solve(
+    inst: BPPInstance,
+    heuristics: Callable[..., npt.NDArray[np.floating]],
+    mode: str = "sample",
+) -> int:
     heu = heuristics(inst.demands.copy(), inst.capacity)  # normalized in ACO
     assert tuple(heu.shape) == (inst.n, inst.n)
     assert 0 < heu.max() < np.inf

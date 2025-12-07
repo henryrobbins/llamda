@@ -2,9 +2,12 @@
 # Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
 
 import numpy as np
+import numpy.typing as npt
 
 
-def gen_instance(n, m):
+def gen_instance(
+    n: int, m: int
+) -> tuple[npt.NDArray[np.floating], npt.NDArray[np.floating]]:
     """
     Generate *well-stated* MKP instances
     Args:
@@ -19,7 +22,7 @@ def gen_instance(n, m):
     return prize, weight_matrix  # (n, ), (n, m)
 
 
-def generate_dataset(filepath, n, m, batch_size=64):
+def generate_dataset(filepath: str, n: int, m: int, batch_size: int = 64) -> None:
     prizes = []
     weights = []
     for _ in range(batch_size):
@@ -31,7 +34,7 @@ def generate_dataset(filepath, n, m, batch_size=64):
     np.savez(filepath, prizes=prizes, weights=weights)
 
 
-def generate_datasets(basepath=None):
+def generate_datasets(basepath: str | None = None) -> None:
     import os
 
     basepath = basepath or os.path.join(os.path.dirname(__file__), "dataset")

@@ -20,7 +20,7 @@ class ZhipuAIClient(OpenAIClient):
 
     def _chat_completion_api(
         self, messages: list[dict], temperature: float, n: int = 1
-    ) -> list[dict]:
+    ) -> list:
         assert n == 1
         response = self.client.chat.completions.create(
             model=self.model,

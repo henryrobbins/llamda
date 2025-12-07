@@ -22,9 +22,6 @@ format-fix:
 typecheck:
 	uv run mypy llamda
 
-typecheck-fix:
-	uv run mypy --fix-syntax llamda
-
 .PHONY: dist
 dist:
 	rm -rf dist/*

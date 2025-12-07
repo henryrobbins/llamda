@@ -4,8 +4,10 @@
 import os
 import argparse
 import logging
+from typing import Callable
 
 import numpy as np
+import numpy.typing as npt
 import torch
 from aco import ACO  # type: ignore
 
@@ -18,7 +20,11 @@ N_ITERATIONS = 50
 N_ANTS = 10
 
 
-def solve(prize: np.ndarray, weight: np.ndarray, heuristics):
+def solve(
+    prize: np.ndarray,
+    weight: np.ndarray,
+    heuristics: Callable[..., npt.NDArray[np.floating]],
+) -> torch.Tensor:
     n, m = weight.shape
     heu = heuristics(prize.copy(), weight.copy()) + 1e-9
     assert heu.shape == (n,)

@@ -4,8 +4,10 @@
 import argparse
 import logging
 from os import path
+from typing import Callable
 
 import numpy as np
+import numpy.typing as npt
 from aco import ACO  # type: ignore
 from scipy.spatial import distance_matrix
 
@@ -18,7 +20,10 @@ N_ITERATIONS = 100
 N_ANTS = 30
 
 
-def solve(node_pos, heuristics):
+def solve(
+    node_pos: npt.NDArray[np.floating],
+    heuristics: Callable[..., npt.NDArray[np.floating]],
+) -> float:
     dist_mat = distance_matrix(node_pos, node_pos)
     dist_mat[np.diag_indices_from(dist_mat)] = 1  # set diagonal to a large number
     heu = heuristics(dist_mat.copy()) + 1e-9

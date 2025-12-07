@@ -7,12 +7,12 @@ import importlib.util
 from typing import Callable
 
 
-def file_to_string(filename):
+def file_to_string(filename: str | os.PathLike[str]) -> str:
     with open(filename, "r") as file:
         return file.read()
 
 
-def print_hyperlink(path, text=None):
+def print_hyperlink(path: str, text: str | None = None) -> str:
     """Print hyperlink to file or folder for convenient navigation"""
     # Format: \033]8;;file:///path/to/file\033\\text\033]8;;\033\\
     text = text or path

@@ -21,7 +21,7 @@ class LLMParsingError(Exception):
 
 
 # reevo + hsevo
-def extract_code_from_generator(content):
+def extract_code_from_generator(content: str) -> str | None:
     """Extract code from the response of the code generator."""
     pattern_code = r"```python(.*?)```"
     code_string = re.search(pattern_code, content, re.DOTALL)

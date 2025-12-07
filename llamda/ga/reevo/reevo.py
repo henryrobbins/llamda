@@ -243,7 +243,7 @@ class ReEvo(GeneticAlgorithm[ReEvoConfig, Problem]):
         probs = [1 / (rank + 1 + len(population)) for rank in ranks]
         # Normalize probabilities
         probs = [prob / sum(probs) for prob in probs]
-        selected_population = []
+        selected_population: list[Individual] = []
         trial = 0
         while len(selected_population) < 2 * self.config.pop_size:
             trial += 1

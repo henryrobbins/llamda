@@ -3,6 +3,7 @@
 
 from dataclasses import dataclass
 import os
+from typing import Any
 from pathlib import Path
 import re
 import logging
@@ -73,8 +74,8 @@ class HSEvo(GeneticAlgorithm[HSEvoConfig, Problem]):
         self.best_obj_overall = None
         self.best_code_overall = None
         self.best_code_path_overall = None
-        self.lst_good_reflection = []
-        self.lst_bad_reflection = []
+        self.lst_good_reflection: list[str] = []
+        self.lst_bad_reflection: list[str] = []
 
         self.evol = HSEvoPrompts(problem=self.problem)
 
@@ -224,7 +225,7 @@ class HSEvo(GeneticAlgorithm[HSEvoConfig, Problem]):
         """
         Random selection, select individuals with equal probability.
         """
-        selected_population = []
+        selected_population: list[HSEvoIndividual] = []
         # Eliminate invalid individuals
         if self.problem.type == "black_box":
             population = [
@@ -730,7 +731,7 @@ def extract_to_hs(input_string: str) -> tuple[dict | None, str | None]:
             keyword in parameter_ranges_block for keyword in ["inf", "np.inf", "None"]
         ):
             return None, None
-        exec_globals = {}
+        exec_globals: dict[str, Any] = {}
         exec(parameter_ranges_block, exec_globals)
         parameter_ranges = exec_globals["parameter_ranges"]
     except Exception:

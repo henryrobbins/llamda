@@ -5,7 +5,7 @@ import numpy as np
 import os
 
 
-def generate_datasets():
+def generate_datasets() -> None:
     basepath = os.path.join(os.path.dirname(__file__), "dataset")
     os.makedirs(basepath, exist_ok=True)
 

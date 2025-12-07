@@ -5,8 +5,10 @@ import os
 import argparse
 import inspect
 import logging
+from typing import Callable
 
 import numpy as np
+import numpy.typing as npt
 from aco import ACO  # type: ignore
 from scipy.spatial import distance_matrix
 
@@ -20,7 +22,11 @@ N_ANTS = 30
 CAPACITY = 50
 
 
-def solve(node_pos, demand, heuristics):
+def solve(
+    node_pos: npt.NDArray[np.floating],
+    demand: npt.NDArray[np.floating],
+    heuristics: Callable[..., npt.NDArray[np.floating]],
+) -> float:
     dist_mat = distance_matrix(node_pos, node_pos)
     dist_mat[np.diag_indices_from(dist_mat)] = 1  # set diagonal to a large number
     if len(inspect.getfullargspec(heuristics).args) == 4:

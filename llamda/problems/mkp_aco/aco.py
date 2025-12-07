@@ -2,6 +2,7 @@
 # Licensed under the MIT License (see THIRD-PARTY-LICENSES.txt)
 
 import torch
+from torch import Tensor
 from torch.distributions import Categorical
 import numpy as np
 
@@ -9,15 +10,15 @@ import numpy as np
 class ACO:
     def __init__(
         self,  # constraints are set to 1 after normalize weight
-        prize,  # shape [n,]
-        weight,  # shape [m, n]
-        heuristic,
-        n_ants=30,
-        decay=0.9,
-        alpha=1,
-        beta=1,
-        device="cpu",
-    ):
+        prize: Tensor,  # shape [n,]
+        weight: Tensor,  # shape [m, n]
+        heuristic: Tensor,
+        n_ants: int = 30,
+        decay: float = 0.9,
+        alpha: float = 1,
+        beta: float = 1,
+        device: str = "cpu",
+    ) -> None:
         self.n, self.m = weight.shape
 
         self.prize = prize
@@ -41,7 +42,7 @@ class ACO:
         self.device = device
         self.add_dummy_node()
 
-    def add_dummy_node(self):
+    def add_dummy_node(self) -> None:
         self.prize = torch.cat(
             (self.prize, torch.tensor([0.0], device=self.device))
         )  # (n+1,)
@@ -53,7 +54,7 @@ class ACO:
         )  # (n+1)
 
     @torch.no_grad()
-    def run(self, n_iterations):
+    def run(self, n_iterations: int) -> tuple[Tensor, Tensor | None]:
         for _ in range(n_iterations):
             sols = self.gen_sol()  # (n_ants, max_horizon)
             objs = self.gen_sol_obj(sols)  # (n_ants,)
@@ -66,7 +67,9 @@ class ACO:
         return self.alltime_best_obj, self.alltime_best_sol
 
     @torch.no_grad()
-    def update_pheronome(self, sols, objs, best_obj, best_idx):
+    def update_pheronome(
+        self, sols: Tensor, objs: Tensor, best_obj: float, best_idx: int
+    ) -> None:
         self.pheromone = self.pheromone * self.decay
         for i in range(self.n_ants):
             sol = sols[i]
@@ -74,7 +77,7 @@ class ACO:
             self.pheromone[sol] += self.Q * obj
 
     @torch.no_grad()
-    def gen_sol_obj(self, solutions):
+    def gen_sol_obj(self, solutions: Tensor) -> Tensor:
         """
         Args:
             solutions: (n_ants, max_horizon)
@@ -83,7 +86,7 @@ class ACO:
         """
         return self.prize[solutions.T].sum(dim=1)  # (n_ants,)
 
-    def gen_sol(self):
+    def gen_sol(self) -> Tensor:
         """
         Solution contruction for all ants
         """
@@ -106,7 +109,7 @@ class ACO:
             done = self.check_done(mask)
         return torch.stack(solutions)
 
-    def pick_item(self, mask, dummy_mask):
+    def pick_item(self, mask: Tensor, dummy_mask: Tensor) -> Tensor:
         phe = self.pheromone.unsqueeze(0).repeat(self.n_ants, 1)
         heu = self.heuristic.unsqueeze(0).repeat(self.n_ants, 1)
         dist = (phe**self.alpha) * (heu**self.beta) * mask * dummy_mask  # (n_ants, n+1)
@@ -114,16 +117,18 @@ class ACO:
         item = dist.sample()
         return item  # (n_ants,)
 
-    def check_done(self, mask):
+    def check_done(self, mask: Tensor) -> bool:
         # is mask all zero except for the dummy node?
-        return (mask[:, :-1] == 0).all()
+        return bool((mask[:, :-1] == 0).all())
 
-    def update_dummy_state(self, mask, dummy_mask):
+    def update_dummy_state(self, mask: Tensor, dummy_mask: Tensor) -> Tensor:
         finished = (mask[:, :-1] == 0).all(dim=1)
         dummy_mask[finished] = 1
         return dummy_mask
 
-    def update_knapsack(self, mask, knapsack, new_item):
+    def update_knapsack(
+        self, mask: Tensor, knapsack: Tensor, new_item: Tensor | None
+    ) -> tuple[Tensor, Tensor]:
         """
         Args:
             mask: (n_ants, n+1)
