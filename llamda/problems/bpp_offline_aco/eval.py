@@ -9,10 +9,13 @@ from typing import Callable
 import numpy as np
 import numpy.typing as npt
 
-from aco import ACO  # type: ignore
-from gen_inst import BPPInstance, load_dataset, dataset_conf  # type: ignore
 from llamda.utils import load_heuristic_from_code
-
+from llamda.problems.bpp_offline_aco.aco import ACO
+from llamda.problems.bpp_offline_aco.gen_inst import (
+    BPPInstance,
+    load_dataset,
+    dataset_conf,
+)
 
 POSSIBLE_FUNC_NAMES = ["heuristics", "heuristics_v1", "heuristics_v2", "heuristics_v3"]
 

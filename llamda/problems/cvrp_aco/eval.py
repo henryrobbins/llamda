@@ -9,10 +9,10 @@ from typing import Callable
 
 import numpy as np
 import numpy.typing as npt
-from aco import ACO  # type: ignore
 from scipy.spatial import distance_matrix
 
 from llamda.utils import load_heuristic_from_code
+from llamda.problems.cvrp_aco.aco import ACO
 
 
 POSSIBLE_FUNC_NAMES = ["heuristics", "heuristics_v1", "heuristics_v2", "heuristics_v3"]

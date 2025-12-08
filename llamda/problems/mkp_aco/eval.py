@@ -9,9 +9,9 @@ from typing import Callable
 import numpy as np
 import numpy.typing as npt
 import torch
-from aco import ACO  # type: ignore
 
 from llamda.utils import load_heuristic_from_code
+from llamda.problems.mkp_aco.aco import ACO
 
 
 POSSIBLE_FUNC_NAMES = ["heuristics", "heuristics_v1", "heuristics_v2", "heuristics_v3"]
